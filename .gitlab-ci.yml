@@ -9,6 +9,7 @@ services:
 test:
   stage: test
   script:
+    - apt update
     - apt install automake
     - bash --version
     - make test
