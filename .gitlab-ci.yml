@@ -10,6 +10,6 @@ test:
   stage: test
   script:
     - apt update
-    - apt install automake
+    - apt install -y make
     - bash --version
     - make test
