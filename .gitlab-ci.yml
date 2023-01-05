@@ -12,4 +12,6 @@ test:
     - apt update
     - apt install -y make
     - bash --version
+    - git submodule init
+    - git submodule update
     - make test
