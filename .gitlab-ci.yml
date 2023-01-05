@@ -1,0 +1,13 @@
+---
+image:
+  name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/debian/bullseye:slim
+
+services:
+  - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:20.10-dind
+    alias: docker
+
+test:
+  stage: test
+  script:
+    - bash --version
+    - make test
