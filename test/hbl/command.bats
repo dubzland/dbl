@@ -7,7 +7,7 @@ setup() {
 
 @test ".init() creates the HBL_COMMAND associative array" {
 	hbl::command::init
-	run hbl::util::is_dict? HBL_COMMAND
+	run hbl::util::is_dict HBL_COMMAND
 	assert_success
 }
 
@@ -18,7 +18,7 @@ setup() {
 
 @test ".init() creates the HBL_PARAMS associative array" {
 	hbl::command::init
-	run hbl::util::is_dict? HBL_PARAMS
+	run hbl::util::is_dict HBL_PARAMS
 	assert_success
 }
 
@@ -34,6 +34,6 @@ setup() {
 
 @test ".init() creates the HBL_COMMANDS array" {
 	hbl::command::init
-	run hbl::util::is_array? HBL_COMMANDS
+	run hbl::util::is_array HBL_COMMANDS
 	assert_success
 }

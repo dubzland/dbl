@@ -1,41 +1,17 @@
-#
-# MIT License
-#
-# Copyright (c) 2023 Josh Williams <jdubz@holodekk.io>
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-
 setup() {
 	load '../test_helper/common'
 
 	common_setup
 }
 
-@test ".set() returns 3 when insufficient arguments are passed" {
+@test ".set() when insufficient arguments are passed returns INVALID_ARGS" {
 	run hbl::dict::set mydict mykey
-	assert_failure 3
+	assert_failure $HBL_INVALID_ARGS
 }
 
-@test ".set() returns 2 when the dict does not exist" {
+@test ".set() when the dict does not exist returns UNDEFINED" {
 	run hbl::dict::set mydict mykey myval
-	assert_failure 2
+	assert_failure $HBL_UNDEFINED
 }
 
 @test ".set() assigns a value to the dict (by reference)" {
@@ -50,60 +26,60 @@ setup() {
 	assert_equal "${mydict[mykey]}" "myval with space"
 }
 
-@test ".has_key?() returns 3 when insufficient arguments are passed" {
+@test ".has_key() when insufficient arguments are passed returns INVALID_ARGS" {
 	declare -A mydict
-	run hbl::dict::has_key? mydict
-	assert_failure 3
+	run hbl::dict::has_key mydict
+	assert_failure $HBL_INVALID_ARGS
 }
 
-@test ".has_key?() returns 4 when too many arguments are passed" {
+@test ".has_key() when too many arguments are passed returns INVALID_ARGS" {
 	declare -A mydict
-	run hbl::dict::has_key? mydict myval extra
-	assert_failure 4
+	run hbl::dict::has_key mydict myval extra
+	assert_failure $HBL_INVALID_ARGS
 }
 
-@test ".has_key?() returns 2 when the dict does not exist" {
-	run hbl::dict::has_key? mydict mykey
-	assert_failure 2
+@test ".has_key() when the dict does not exist returns UNDEFINED" {
+	run hbl::dict::has_key mydict mykey
+	assert_failure $HBL_UNDEFINED
 }
 
-@test ".has_key?() returns 1 when the key does not exist" {
+@test ".has_key() when the key does not exist returns ERROR" {
 	declare -Ag mydict
-	run hbl::dict::has_key? mydict mykey
-	assert_failure 1
+	run hbl::dict::has_key mydict mykey
+	assert_failure $HBL_ERROR
 }
 
-@test ".has_key?() returns 0 when the key exists" {
+@test ".has_key() returns 0" {
 	declare -Ag mydict
 	mydict[mykey]=myval
-	run hbl::dict::has_key? mydict mykey
+	run hbl::dict::has_key mydict mykey
 	assert_success
 }
 
-@test ".get() returns 3 when insufficient arguments are passed" {
+@test ".get() when insufficient arguments are passed returns INVALID_ARGS" {
 	declare -A mydict
 	run hbl::dict::get mydict
-	assert_failure 3
+	assert_failure $HBL_INVALID_ARGS
 }
 
-@test ".get() returns 4 when too many arguments are passed" {
+@test ".get() when too many arguments are passed returns INVALID_ARGS" {
 	declare -A mydict
 	run hbl::dict::get mydict myval myvar extra
-	assert_failure 4
+	assert_failure $HBL_INVALID_ARGS
 }
 
-@test ".get() returns 2 when the dict does not exist" {
+@test ".get() when the dict does not exist returns UNDEFINED" {
 	run hbl::dict::get mydict mykey myvar
-	assert_failure 2
+	assert_failure $HBL_UNDEFINED
 }
 
-@test ".get() returns 1 when the key does not exist" {
+@test ".get() when the key does not exist returns ERROR" {
 	declare -Ag mydict
 	run hbl::dict::get mydict mykey myvar
-	assert_failure 1
+	assert_failure $HBL_ERROR
 }
 
-@test ".get() returns 0 when the key exists" {
+@test ".get() succeeds" {
 	declare -Ag mydict
 	mydict[mykey]=myval
 	run hbl::dict::get mydict mykey myvar

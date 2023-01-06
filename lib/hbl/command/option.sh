@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 function hbl::command::option::create() {
+	[[ $# -eq 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
 	local command_id option_name
 	command_id="$1" option_name="$2"
 	local option_index=0

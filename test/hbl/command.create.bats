@@ -6,9 +6,19 @@ setup() {
 	hbl::command::init
 }
 
+@test ".create() when insufficient arguments are passed returns INVALID_ARGS" {
+	run hbl::command::create
+	assert_failure $HBL_INVALID_ARGS
+}
+
+@test ".create() when too many arguments are passed returns INVALID_ARGS" {
+	run hbl::command::create "test-command" test_command_run command_id extra
+	assert_failure $HBL_INVALID_ARGS
+}
+
 @test ".create() creates the global command dict" {
 	hbl::command::create "test-command" test_command_run command_id
-	run hbl::util::is_dict? HBL_COMMAND_0
+	run hbl::util::is_dict HBL_COMMAND_0
 	assert_success
 }
 
@@ -24,21 +34,21 @@ setup() {
 
 @test ".create() sets an empty parent" {
 	hbl::command::create "test-command" test_command_run command_id
-	run hbl::dict::has_key? "HBL_COMMAND_0" "parent"
+	run hbl::dict::has_key "HBL_COMMAND_0" "parent"
 	assert_success
 	assert_equal "${HBL_COMMAND_0[parent]}" ""
 }
 
 @test ".create() sets the name" {
 	hbl::command::create "test-command" test_command_run command_id
-	run hbl::dict::has_key? "HBL_COMMAND_0" "name"
+	run hbl::dict::has_key "HBL_COMMAND_0" "name"
 	assert_success
 	assert_equal "${HBL_COMMAND_0[name]}" "test-command"
 }
 
 @test ".create() sets the entrypoint" {
 	hbl::command::create "test-command" test_command_run command_id
-	run hbl::dict::has_key? "HBL_COMMAND_0" "entrypoint"
+	run hbl::dict::has_key "HBL_COMMAND_0" "entrypoint"
 	assert_success
 	assert_equal "${HBL_COMMAND_0[entrypoint]}" "test_command_run"
 }
@@ -46,7 +56,7 @@ setup() {
 @test ".create() assigns to the global HBL_COMMANDS array" {
 	declare -ag HBL_COMMANDS
 	hbl::command::create "test-command" test_command_run command_id
-	run hbl::array::contains? HBL_COMMANDS "HBL_COMMAND_0"
+	run hbl::array::contains HBL_COMMANDS "HBL_COMMAND_0"
 	assert_success
 }
 

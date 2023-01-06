@@ -11,6 +11,16 @@ setup() {
 	hbl_test::stub_command_create
 }
 
+@test ".add_subcommand() when insufficient arguments are passed returns INVALID_ARGS" {
+	run hbl::command::add_subcommand
+	assert_failure $HBL_INVALID_ARGS
+}
+
+@test ".add_subcommand() when too many arguments are passed returns INVALID_ARGS" {
+	run hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id extra
+	assert_failure $HBL_INVALID_ARGS
+}
+
 @test ".add_subcommand() creates the command" {
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
 	assert_equal "$command_create_called" 1
@@ -20,30 +30,18 @@ setup() {
 }
 
 @test ".add_subcommand() sets the parent" {
-	HBL_COMMANDS+=("HBL_COMMAND_0")
-	declare -Ag HBL_COMMAND_0
-	HBL_COMMAND_0[name]="test-command"
-	hbl_test::stub_command_create
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
 	assert_equal "${SUBCOMMAND_ID[parent]}" "HBL_COMMAND_0"
 }
 
 @test ".add_subcommand() sets the full_name" {
-	HBL_COMMANDS+=("HBL_COMMAND_0")
-	declare -Ag HBL_COMMAND_0
-	HBL_COMMAND_0[name]="test-command"
-	hbl_test::stub_command_create
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
 	assert_equal "${SUBCOMMAND_ID[full_name]}" "test-command subcommand"
 }
 
 @test ".add_subcommand() assigns the command to the parent's subcommands" {
-	HBL_COMMANDS+=("HBL_COMMAND_0")
-	declare -Ag HBL_COMMAND_0
 	declare -Ag HBL_COMMAND_0_SUBCOMMANDS
-	HBL_COMMAND_0[name]="test-command"
-	hbl_test::stub_command_create
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
-	run hbl::dict::has_key? "HBL_COMMAND_0_SUBCOMMANDS" "subcommand"
+	run hbl::dict::has_key "HBL_COMMAND_0_SUBCOMMANDS" "subcommand"
 	assert_success
 }

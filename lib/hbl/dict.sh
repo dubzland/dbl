@@ -1,64 +1,47 @@
-function hbl::dict::set() {
-	if [[ $# -lt 3 ]]; then
-		echo "Not enough arguments to hbl::dict::set -- $#" >&2
-		return 3
-	fi
+#!/usr/bin/env bash
 
-	if hbl::util::is_dict? $1; then
+function hbl::dict::set() {
+	[[ $# -ge 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	if hbl::util::is_dict $1; then
 		local -n __ref=$1
 		__ref[$2]="${@:3}"
 	else
-		return 2
+		return $HBL_UNDEFINED
 	fi
 
-	return 0
+	return $HBL_SUCCESS
 }
 
-function hbl::dict::has_key?() {
-	if [[ $# -gt 2 ]]; then
-		echo "Too many arguments to hbl::dict::has_key? -- $#" >&2
-		return 4
-	fi
+function hbl::dict::has_key() {
+	[[ $# -eq 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
-	if [[ $# -lt 2 ]]; then
-		echo "Not enough arguments to hbl::dict::has_key? -- $#" >&2
-		return 3
-	fi
-
-	if hbl::util::is_dict? $1; then
+	if hbl::util::is_dict $1; then
 		local -n __ref=$1
 		for key in "${!__ref[@]}"; do
-			[[ "${key}" == "$2" ]] && return 0
+			[[ "${key}" == "$2" ]] && return $HBL_SUCCESS
 		done
 	else
-		return 2
+		return $HBL_UNDEFINED
 	fi
 
-	return 1
+	return $HBL_ERROR
 }
 
 function hbl::dict::get() {
-	if [[ $# -gt 3 ]]; then
-		echo "Too many arguments to hbl::dict::get -- $#" >&2
-		return 4
-	fi
-
-	if [[ $# -lt 3 ]]; then
-		echo "Not enough arguments to hbl::dict::get -- $#" >&2
-		return 3
-	fi
+	[[ $# -eq 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
 	local -n __ret=$3
 
-	if hbl::util::is_dict? $1; then
+	if hbl::util::is_dict $1; then
 		local -n __ref=$1
-		if hbl::dict::has_key? $1 $2; then
+		if hbl::dict::has_key $1 $2; then
 			__ret="${__ref[$2]}"
-			return 0
+			return $HBL_SUCCESS
 		fi
 	else
-		return 2
+		return $HBL_UNDEFINED
 	fi
 
-	return 1
+	return $HBL_ERROR
 }

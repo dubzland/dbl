@@ -8,7 +8,7 @@ common_setup() {
 	source ./lib/hbl.sh
 }
 
-function hbl_test::is_defined?() {
+function hbl_test::is_defined() {
 	if declare -p "$1" >/dev/null  2>&1; then
 		return 0
 	fi
@@ -17,8 +17,8 @@ function hbl_test::is_defined?() {
 	return 1
 }
 
-function hbl_test::is_array?() {
-	if hbl_test::is_defined? "$1"; then
+function hbl_test::is_array() {
+	if hbl_test::is_defined "$1"; then
 		[[ "$(declare -p $1 2>/dev/null)" == "declare -a"* ]] && return 0
 	fi
 
@@ -26,8 +26,8 @@ function hbl_test::is_array?() {
 	return 1
 }
 
-function hbl_test::is_dict?() {
-	if hbl_test::is_defined? "$1"; then
+function hbl_test::is_dict() {
+	if hbl_test::is_defined "$1"; then
 		[[ "$(declare -p $1 2>/dev/null)" == "declare -A"* ]] && return 0
 	fi
 

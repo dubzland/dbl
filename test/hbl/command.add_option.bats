@@ -17,6 +17,16 @@ setup() {
 	}
 }
 
+@test ".add_option() when insufficient arguments are passed returns INVALID_ARGS" {
+	run hbl::command::add_option
+	assert_failure $HBL_INVALID_ARGS
+}
+
+@test ".add_option() when too many arguments are passed returns INVALID_ARGS" {
+	run hbl::command::add_option "TEST_COMMAND_ID" "test_option" option_id extra
+	assert_failure $HBL_INVALID_ARGS
+}
+
 @test ".add_option() creates the option" {
 	hbl::command::add_option "TEST_COMMAND_ID" "test_option" option_id
 	assert_equal $option_create_called 1

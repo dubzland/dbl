@@ -1,36 +1,14 @@
 #!/usr/bin/env bash
-#
-# MIT License
-#
-# Copyright (c) [2022] [Josh Williams]
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-
-readonly HBL_COMMAND_PREFIX="HBL"
 
 function hbl::command::create() {
-	local name entrypoint
+	[[ $# -eq 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	local name entrypoint command_index
 	name="$1" entrypoint="$2"
+
 	local -n command_id__ref="$3"
 
-	local command_index="${#HBL_COMMANDS[@]}"
+	command_index="${#HBL_COMMANDS[@]}"
 	command_id__ref="HBL_COMMAND_${command_index}"
 	declare -Ag "${command_id__ref}"
 
@@ -85,13 +63,15 @@ function hbl::command::init() {
 }
 
 function hbl::command::add_option() {
+	[[ $# -eq 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
 	local command_id option_name
 	command_id="$1" option_name="$2"
 	local -n option_id__ref="$3"
 
-	if hbl::command::option::create $command_id "${option_name}" ${!option_id__ref}; then
+	if hbl::command::option::create "$command_id" "${option_name}" "${!option_id__ref}"; then
 		local command_options="${command_id}_OPTIONS"
-		if ! hbl::util::is_dict? "$command_options"; then
+		if ! hbl::util::is_dict "$command_options"; then
 			declare -Ag "$command_options"
 		fi
 		hbl::dict::set "$command_options" "$option_name" "$option_id__ref"
@@ -103,6 +83,8 @@ function hbl::command::add_option() {
 }
 
 function hbl::command::add_subcommand() {
+	[[ $# -eq 4 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
 	local parent_id name entrypoint
 	parent_id="$1" name="$2" entrypoint="$3"
 	local -n command_id__ref="$4"

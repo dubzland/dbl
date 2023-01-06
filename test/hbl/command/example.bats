@@ -10,6 +10,6 @@ setup() {
 
 @test "init() assigns the EXAMPLES module" {
 	hbl::command::examples::init 'test'
-	run hbl_test::is_dict? "HBL_TEST_EXAMPLES"
+	run hbl_test::is_dict "HBL_TEST_EXAMPLES"
 	assert_success
 }
