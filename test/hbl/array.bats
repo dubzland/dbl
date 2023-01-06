@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
 #
 # MIT License
 #
-# Copyright (c) [2022] [Josh Williams]
+# Copyright (c) 2023 Josh Williams <jdubz@holodekk.io>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +22,35 @@
 # SOFTWARE.
 #
 
-readonly HBL_OPTIONS_SUFFIX="_OPTIONS"
+setup() {
+	load '../test_helper/common'
+	common_setup
+}
 
-function hbl::command::options::init() {
-	local command_id="$1"
-	local -n command__ref="${HBL_COMMANDS[${command_id}]}"
+@test ".contains?() when insufficient arguments are passed returns 101" {
+	run hbl::array::contains?
+	assert_failure 101
+}
 
-	command__ref[options]="${command__ref[module]}${HBL_OPTIONS_SUFFIX}"
-	declare -Ag "${command__ref[options]}"
-	local -n command_options__ref="${command__ref[options]}"
-	command_options__ref=()
+@test ".contains?() when too many arguments are passed returns 102" {
+	run hbl::array::contains? haystack needle extra
+	assert_failure 102
+}
+
+@test ".contains?() for a non-existent arrray returns 2" {
+	run hbl::array::contains? haystack needle
+	assert_failure 2
+}
+
+@test ".contains?() when the value is not present returns 1" {
+	declare -a haystack
+	run hbl::array::contains? haystack needle
+	assert_failure 1
+}
+
+@test ".contains?() when the value is present returns 0" {
+	declare -a haystack
+	haystack=("needle")
+	run hbl::array::contains? haystack needle
+	assert_success
 }

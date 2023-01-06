@@ -26,52 +26,21 @@
 readonly HBL_COMMAND_PREFIX="HBL"
 
 function hbl::command::create() {
-	local parent_id name desc namespace module
-	parent_id="$1" name="$2" desc="$3" namespace="" module=""
-	local -n command_id__ref="$4"
+	local name entrypoint
+	name="$1" entrypoint="$2"
+	local -n command_id__ref="$3"
 
-	hbl::util::string_to_underscore "${name}" namespace
-	hbl::util::string_to_constant "${name}" module
+	local command_index="${#HBL_COMMANDS[@]}"
+	command_id__ref="HBL_COMMAND_${command_index}"
+	declare -Ag "${command_id__ref}"
 
-	if [[ -n "${parent_id}" ]]; then
-		local -n parent__ref="${HBL_COMMANDS[${parent_id}]}"
-		namespace="${parent__ref[namespace]}::${namespace}"
-		module="${parent__ref[module]}_${module}"
-		fullname="${parent__ref[name]} ${name}"
-		command_id__ref="${parent__ref[name]}::${name}"
-	else
-		fullname="${name}"
-		module="${HBL_COMMAND_PREFIX}_${module}"
-		command_id__ref="${name}"
-	fi
+	local -n command__ref="${command_id__ref}"
+	command__ref[id]="${command_id__ref}"
+	command__ref[parent]=""
+	command__ref[name]="${name}"
+	command__ref[entrypoint]="${entrypoint}"
 
-	declare -Ag "${module}"
-	local -n command__ref="${module}"
-	command__ref=( \
-		[id]="${command_id__ref}" \
-		[parent]="${parent_id}" \
-		[name]="${name}" \
-		[fullname]="${fullname}" \
-		[namespace]="${namespace}" \
-		[module]="${module}" \
-		[desc]="${desc}" \
-	)
-
-	HBL_COMMANDS["${command_id__ref}"]="${command__ref[module]}"
-
-	# Options
-	hbl::command::options::init "${command_id__ref}"
-
-	# Examples
-	hbl::command::examples::init "${command_id__ref}"
-
-	# Subcommands
-	hbl::command::subcommands::init "${command_id__ref}"
-
-	# If this is a subcommand, add it to the parent
-	if [[ -n "${parent_id}" ]]; then
-		hbl::command::subcommands::add "${parent_id}" "${command_id__ref}"
-	fi
+	HBL_COMMANDS+=("${command_id__ref}")
 }
 
 function hbl::command::init() {
@@ -84,5 +53,68 @@ function hbl::command::init() {
 	HBL_PARAMS[verbose]=0
 	HBL_PARAMS[showhelp]=0
 
-	declare -Ag HBL_COMMANDS
+	declare -ag HBL_COMMANDS
+
+	# hbl::add_command "backup-client" backup_client::run command_id
+	# hbl::command::set_entrypoint backup_client::run
+	# hbl::command::set_description $command_id "Manage backup jobs."
+
+	# hbl::command::add_option $command_id job_directory option_id
+	# hbl::command::option::set_type $option_id "dir"
+	# hbl::command::option::set_short $option_id "d"
+	# hbl::command::option::set_long $option_id "job_directory"
+	# hbl::command::option::set_placeholder $option_id "dir"
+	# hbl::command::option::set_description $option_id "Backup job directory."
+
+	# readonly HBC=hbl::command
+	# readonly HBCO=hbl::command::option
+	# hbl::add_command "backup-client" command_id
+	# $HC::set_entrypoint backup_client::run
+	# $HC::set_description $command_id "Manage backup jobs."
+
+	# $HC::add_option $command_id job_directory option_id
+
+	# $HCO::set_type        $option_id "dir"
+	# $HCO::set_short       $option_id "d"
+	# $HCO::set_long        $option_id "job_directory"
+	# $HCO::set_placeholder $option_id "dir"
+	# $HCO::set_description $option_id "Backup job directory."
+
+	# $HC::add_subcommand $backup_client_id "list" backup_client::list::run list_id
+	# $HC::set_description $list_id
+}
+
+function hbl::command::add_option() {
+	local command_id option_name
+	command_id="$1" option_name="$2"
+	local -n option_id__ref="$3"
+
+	if hbl::command::option::create $command_id "${option_name}" ${!option_id__ref}; then
+		local command_options="${command_id}_OPTIONS"
+		if ! hbl::util::is_dict? "$command_options"; then
+			declare -Ag "$command_options"
+		fi
+		hbl::dict::set "$command_options" "$option_name" "$option_id__ref"
+	else
+		return 1
+	fi
+
+	return 0
+}
+
+function hbl::command::add_subcommand() {
+	local parent_id name entrypoint
+	parent_id="$1" name="$2" entrypoint="$3"
+	local -n command_id__ref="$4"
+
+	if hbl::command::create "$name" "$entrypoint" "${!command_id__ref}"; then
+		local -n command__ref="$command_id__ref"
+		local -n parent__ref="$parent_id"
+		command__ref[parent]="$parent_id"
+		command__ref[full_name]="${parent__ref[name]} $name"
+		local -n parent_subcommands__ref="${parent_id}_SUBCOMMANDS"
+		parent_subcommands__ref[$name]="$command_id"
+		return 0
+	fi
+	return 0
 }

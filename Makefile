@@ -33,7 +33,7 @@ clean:
 all: $(PKG) $(SIG)
 
 test:
-	./test/bats/bin/bats test/*.bats
+	./test/bats/bin/bats -r test/hbl.*.bats test/hbl
 
 tag:
 	git tag v$(VERSION)

@@ -23,27 +23,27 @@
 # SOFTWARE.
 #
 
-function hbl::util::fn_exists() {
-	declare -f -F "$1" > /dev/null
-	return $?
-}
-
-function hbl::util::is_defined() {
-	if declare -p "$1" 2>/dev/null; then
+function hbl::util::is_defined?() {
+	if declare -p "$1" 2>&1 >/dev/null; then
 		return 0
 	fi
 	return 1
 }
 
-function hbl::util::is_array() {
-	if is_defined "$1"; then
+function hbl::util::is_function?() {
+	declare -f -F "$1" 2>&1 >/dev/null
+	return $?
+}
+
+function hbl::util::is_array?() {
+	if hbl::util::is_defined? "$1"; then
 		[[ "$(declare -p $1 2>/dev/null)" == "declare -a"* ]] && return 0
 	fi
 	return 1
 }
 
-function hbl::util::is_associative_array() {
-	if is_defined "$1"; then
+function hbl::util::is_dict?() {
+	if hbl::util::is_defined? "$1"; then
 		[[ "$(declare -p $1 2>/dev/null)" == "declare -A"* ]] && return 0
 	fi
 	return 1
