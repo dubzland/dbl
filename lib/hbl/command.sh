@@ -63,6 +63,42 @@ function hbl::command::init() {
 }
 
 function hbl::command::add_option() {
+	[[ $# -eq 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	local command_id example
+	command_id="$1" example="$2"
+
+	local command_examples="${command_id}_EXAMPLES"
+	hbl::util::is_array "$command_examples" || declare -Ag "$command_options"
+	hbl::array::append "$command_examples" "$example"
+	# if hbl::command::option::create "$command_id" "${option_name}" "${!option_id__ref}"; then
+	# 	local command_options="${command_id}_OPTIONS"
+	# 	if ! hbl::util::is_dict "$command_options"; then
+	# 		declare -Ag "$command_options"
+	# 	fi
+	# 	hbl::dict::set "$command_options" "$option_name" "$option_id__ref"
+	# else
+	# 	return 1
+	# fi
+
+	return 0
+}
+function hbl::command::add_example() {
+	[[ $# -eq 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	local command_id example command_examples
+	command_id="$1" example="$2"
+
+	command_examples="${command_id}_EXAMPLES"
+	hbl::util::is_array "$command_examples" || declare -ag "${command_examples}"
+
+	local -n command_examples__ref="$command_examples"
+	command_examples__ref+=("$2")
+
+	return 0
+}
+
+function hbl::command::add_option() {
 	[[ $# -eq 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
 	local command_id option_name

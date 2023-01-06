@@ -27,6 +27,21 @@ setup() {
 @test ".contains() when the value is present returns 0" {
 	declare -a haystack
 	haystack=("needle")
-	run hbl::array::contains haystack needle
-	assert_success
+	hbl::array::contains haystack needle
+}
+
+@test ".append() when insufficient arguments are passed returns INVALID_ARGS" {
+	run hbl::array::append
+	assert_failure $HBL_INVALID_ARGS
+}
+
+@test ".append() when the first argument isn't an array returns INVALID_ARGS" {
+	run hbl::array::append not_array foo
+	assert_failure $HBL_INVALID_ARGS
+}
+
+@test ".append() adds to the array" {
+	declare -a myarray
+	hbl::array::append myarray foo
+	hbl::array::contains myarray foo
 }

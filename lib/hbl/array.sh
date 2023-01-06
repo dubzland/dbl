@@ -14,3 +14,13 @@ function hbl::array::contains() {
 
 	return 1
 }
+
+function hbl::array::append() {
+	[[ $# -ge 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	hbl::util::is_array "$1" || hbl::error::invalid_args "${FUNCNAME[0]}" || return
+
+	local -n array__ref="$1"; shift
+	array__ref+=("$@")
+	return 0
+}
