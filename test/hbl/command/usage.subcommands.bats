@@ -38,7 +38,11 @@ setup() {
 	TEST_COMMAND_SUBCOMMANDS=("TEST_SUBCOMMAND1" "TEST_SUBCOMMAND2")
 	run hbl::command::usage::subcommands TEST_COMMAND
 	assert_success
+	assert_output - <<-EOF
+		Subcommands:
+		  execute                   Another test subcommand.
+		  run                       A test subcommand.
+
+	EOF
 	assert_line --index 0 "Subcommands:"
-	assert_line --index 1 "  execute                   Another test subcommand."
-	assert_line --index 2 "  run                       A test subcommand."
 }

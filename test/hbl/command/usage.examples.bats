@@ -24,8 +24,11 @@ setup() {
 	TEST_COMMAND_EXAMPLES=()
 	run hbl::command::usage::examples TEST_COMMAND
 	assert_success
-	assert_line --index 0 "Usage:"
-	assert_line --index 1 "  test-command <options>"
+	assert_output - <<-EOF
+		Usage:
+		  test-command <options>
+
+	EOF
 }
 
 @test ".examples() when the command has some displays them with a header" {
@@ -33,6 +36,9 @@ setup() {
 	TEST_COMMAND_EXAMPLES=("-a <options>")
 	run hbl::command::usage::examples TEST_COMMAND
 	assert_success
-	assert_line --index 0 "Usage:"
-	assert_line --index 1 "  test-command -a <options>"
+	assert_output - <<-EOF
+		Usage:
+		  test-command -a <options>
+
+	EOF
 }

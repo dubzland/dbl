@@ -26,6 +26,9 @@ setup() {
 	TEST_COMMAND[desc]="Test Description"
 	run hbl::command::usage::description TEST_COMMAND
 	assert_success
-	assert_line --index 0 "Description"
-	assert_line --index 1 "  Test Description"
+	assert_output - <<-EOF
+	Description
+	  Test Description
+
+	EOF
 }

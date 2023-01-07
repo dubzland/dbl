@@ -40,6 +40,10 @@ function hbl::command::add_example() {
 	local command_id example command_examples
 	command_id="$1" example="$2"
 
+	# ensure the command exists
+	hbl::util::is_dict "$command_id" \
+		|| hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
 	command_examples="${command_id}_EXAMPLES"
 	hbl::util::is_array "$command_examples" || declare -ag "${command_examples}"
 
@@ -55,6 +59,10 @@ function hbl::command::add_option() {
 	local command_id option_name
 	command_id="$1" option_name="$2"
 	local -n option_id__ref="$3"
+
+	# ensure the command exists
+	hbl::util::is_dict "$command_id" \
+		|| hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
 	if hbl::command::option::create "$command_id" "${option_name}" "${!option_id__ref}"; then
 		local command_options="${command_id}_OPTIONS"
@@ -76,6 +84,10 @@ function hbl::command::add_subcommand() {
 	parent_id="$1" name="$2" entrypoint="$3"
 	local -n command_id__ref="$4"
 
+	# ensure the parent command exists
+	hbl::util::is_dict "$parent_id" \
+		|| hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
 	if hbl::command::create "$name" "$entrypoint" "${!command_id__ref}"; then
 		local -n command__ref="$command_id__ref"
 		local -n parent__ref="$parent_id"
@@ -87,8 +99,23 @@ function hbl::command::add_subcommand() {
 		fi
 		local -n parent_subcommands__ref="$parent_subcommands"
 		parent_subcommands__ref+=("$command_id")
-		return 0
 	fi
+
+	return 0
+}
+
+function hbl::command::set_description() {
+	[[ $# -eq 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	local command_id description
+	command_id="$1" description="$2"
+
+	# ensure the command exists
+	hbl::util::is_dict "$command_id" \
+		|| hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+
+	local -n command__ref="$command_id"
+	command__ref[desc]="$description"
 
 	return 0
 }

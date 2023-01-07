@@ -42,12 +42,12 @@ function hbl::command::usage::examples() {
 			done
 		else
 			if [[ -n "${command__ref[fullname]}" ]]; then
-				printf "%s%s <options>\n" "${HBL_INDENT}" "${command__ref[fullname]}" "$ex"
+				printf "%s%s <options>\n" "${HBL_INDENT}" "${command__ref[fullname]}"
 			else
-				printf "%s%s <options>\n" "${HBL_INDENT}" "${command__ref[name]}" "$ex"
+				printf "%s%s <options>\n" "${HBL_INDENT}" "${command__ref[name]}"
 			fi
 		fi
-		printf "\r\n"
+		printf "\n"
 	fi
 
 	return 0
@@ -66,7 +66,7 @@ function hbl::command::usage::description() {
 	if [[ -n "${desc}" ]]; then
 		printf "Description\n"
 		printf "%s%s\n" "${HBL_INDENT}" "${desc}"
-		printf "\r\n"
+		printf "\n"
 	fi
 
 	return 0
@@ -107,6 +107,7 @@ function hbl::command::usage::subcommands() {
 				local -n subcommand__ref="${subcommand_dict[$sub]}"
 				printf "%s%-26s%s\n" "${HBL_INDENT}" "$sub" "${subcommand__ref[desc]}"
 			done
+			printf "\n"
 		fi
 	fi
 
