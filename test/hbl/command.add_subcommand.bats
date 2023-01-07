@@ -23,7 +23,7 @@ setup() {
 
 @test ".add_subcommand() creates the command" {
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
-	assert_equal "$command_create_called" 1
+	assert_equal "$command_create_invoked" 1
 	assert_equal ${command_create_args[0]} "subcommand"
 	assert_equal ${command_create_args[1]} "subcommand_run"
 	assert_equal ${command_create_args[2]} "command_id"

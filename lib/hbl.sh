@@ -7,6 +7,8 @@ source "${HBL_LIB}/array.sh"
 source "${HBL_LIB}/command.sh"
 # shellcheck source=lib/hbl/command/option.sh
 source "${HBL_LIB}/command/option.sh"
+# shellcheck source=lib/hbl/command/usage.sh
+source "${HBL_LIB}/command/usage.sh"
 # shellcheck source=lib/hbl/dict.sh
 source "${HBL_LIB}/dict.sh"
 # shellcheck source=lib/hbl/error.sh

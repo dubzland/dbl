@@ -7,9 +7,9 @@ setup() {
 
 	declare -a option_create_args
 	option_create_args=()
-	option_create_called=0
+	option_create_invoked=0
 	function hbl::command::option::create() {
-		option_create_called=1
+		option_create_invoked=1
 		option_create_args=("$@")
 		local -n option_id__ref="$3"
 		option_id__ref="${1}_TEST_OPTION_ID"
@@ -29,7 +29,7 @@ setup() {
 
 @test ".add_option() creates the option" {
 	hbl::command::add_option "TEST_COMMAND_ID" "test_option" option_id
-	assert_equal $option_create_called 1
+	assert_equal $option_create_invoked 1
 }
 
 @test ".add_option() passes the proper arguments to option::create()" {

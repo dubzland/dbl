@@ -33,9 +33,9 @@ function make_subcommand() {
 function hbl_test::stub_command_create() {
 	declare -a command_create_args
 	command_create_args=()
-	command_create_called=0
+	command_create_invoked=0
 	function hbl::command::create() {
-		command_create_called=1
+		command_create_invoked=1
 		command_create_args=("$@")
 		local -n command_id__ref="$3"
 		command_id__ref="SUBCOMMAND_ID"

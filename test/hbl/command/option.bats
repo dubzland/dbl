@@ -1,7 +1,7 @@
 setup() {
 	load '../../test_helper/common'
 	common_setup
-	declare -Ag TEST_COMMAND
+	declare -A TEST_COMMAND
 	TEST_COMMAND=()
 }
 

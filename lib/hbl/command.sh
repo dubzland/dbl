@@ -93,7 +93,7 @@ function hbl::command::add_example() {
 	hbl::util::is_array "$command_examples" || declare -ag "${command_examples}"
 
 	local -n command_examples__ref="$command_examples"
-	command_examples__ref+=("$2")
+	command_examples__ref+=("$example")
 
 	return 0
 }
