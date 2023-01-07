@@ -14,6 +14,11 @@ setup() {
 	assert_failure $HBL_INVALID_ARGS
 }
 
+@test ".examples() when the command does not exist returns INVALID_ARGS" {
+	run hbl::command::usage::examples BAD_COMMAND
+	assert_failure $HBL_INVALID_ARGS
+}
+
 @test ".examples() when the command doesn't have any displays a default" {
 	TEST_COMMAND['name']="test-command"
 	TEST_COMMAND_EXAMPLES=()

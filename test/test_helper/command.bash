@@ -38,8 +38,8 @@ function hbl_test::stub_command_create() {
 		command_create_invoked=1
 		command_create_args=("$@")
 		local -n command_id__ref="$3"
-		command_id__ref="SUBCOMMAND_ID"
-		declare -Ag SUBCOMMAND_ID
+		command_id__ref="STUB_COMMAND_ID"
+		declare -Ag STUB_COMMAND_ID
 		return 0
 	}
 }

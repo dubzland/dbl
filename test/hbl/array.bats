@@ -45,3 +45,9 @@ setup() {
 	hbl::array::append myarray foo
 	hbl::array::contains myarray foo
 }
+
+@test ".bubble_sort() properly sorts the array" {
+	declare -a myarray=("orange" "apple" "lemon" "banana")
+	hbl::array::bubble_sort myarray "${myarray[@]}"
+	assert_equal "${myarray[*]}" "apple banana lemon orange"
+}

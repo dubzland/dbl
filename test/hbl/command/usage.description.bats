@@ -10,6 +10,11 @@ setup() {
 	assert_failure $HBL_INVALID_ARGS
 }
 
+@test ".description() when the command does not exist returns INVALID_ARGS" {
+	run hbl::command::usage::description BAD_COMMAND
+	assert_failure $HBL_INVALID_ARGS
+}
+
 @test ".description() when the command doesn't have one displays nothing" {
 	TEST_COMMAND[desc]=""
 	run hbl::command::usage::description TEST_COMMAND

@@ -121,7 +121,7 @@ function hbl::command::add_option() {
 function hbl::command::add_subcommand() {
 	[[ $# -eq 4 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
-	local parent_id name entrypoint
+	local parent_id name entrypoint parent_subcommands
 	parent_id="$1" name="$2" entrypoint="$3"
 	local -n command_id__ref="$4"
 
@@ -130,9 +130,14 @@ function hbl::command::add_subcommand() {
 		local -n parent__ref="$parent_id"
 		command__ref[parent]="$parent_id"
 		command__ref[full_name]="${parent__ref[name]} $name"
-		local -n parent_subcommands__ref="${parent_id}_SUBCOMMANDS"
-		parent_subcommands__ref[$name]="$command_id"
+		parent_subcommands="${parent_id}_SUBCOMMANDS"
+		if ! hbl::util::is_array "$parent_subcommands"; then
+			declare -ag "$parent_subcommands"
+		fi
+		local -n parent_subcommands__ref="$parent_subcommands"
+		parent_subcommands__ref+=("$command_id")
 		return 0
 	fi
+
 	return 0
 }

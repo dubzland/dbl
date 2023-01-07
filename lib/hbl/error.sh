@@ -18,3 +18,13 @@ function hbl::error::invalid_args() {
 	echo "Invalid arguments to ${function_name} -- ${args}" >&2
 	return $HBL_INVALID_ARGS
 }
+
+function hbl::error::undefined() {
+	[[ $# -lt 2 ]] && exit 99
+
+	local function_name variable_name
+	function_name=$1 variable_name="$2"
+
+	echo "error: ${function_name}: ${variable_name} is undefined" >&2
+	return $HBL_UNDEFINED
+}

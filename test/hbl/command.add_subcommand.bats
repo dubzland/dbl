@@ -31,17 +31,17 @@ setup() {
 
 @test ".add_subcommand() sets the parent" {
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
-	assert_equal "${SUBCOMMAND_ID[parent]}" "HBL_COMMAND_0"
+	assert_equal "${STUB_COMMAND_ID[parent]}" "HBL_COMMAND_0"
 }
 
 @test ".add_subcommand() sets the full_name" {
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
-	assert_equal "${SUBCOMMAND_ID[full_name]}" "test-command subcommand"
+	assert_equal "${STUB_COMMAND_ID[full_name]}" "test-command subcommand"
 }
 
 @test ".add_subcommand() assigns the command to the parent's subcommands" {
-	declare -Ag HBL_COMMAND_0_SUBCOMMANDS
+	declare -ag HBL_COMMAND_0_SUBCOMMANDS
 	hbl::command::add_subcommand HBL_COMMAND_0 "subcommand" subcommand_run command_id
-	run hbl::dict::has_key "HBL_COMMAND_0_SUBCOMMANDS" "subcommand"
+	run hbl::array::contains "HBL_COMMAND_0_SUBCOMMANDS" "STUB_COMMAND_ID"
 	assert_success
 }

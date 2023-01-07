@@ -13,3 +13,13 @@ setup() {
 	run hbl::error::invalid_args foo 2 bar
 	assert_failure $HBL_INVALID_ARGS
 }
+
+@test ".undefined() prints the proper error" {
+	run hbl::error::undefined foo bar
+	assert_output "error: foo: bar is undefined"
+}
+
+@test ".undefined returns UNDEFINED" {
+	run hbl::error::undefined foo bar
+	assert_failure $HBL_UNDEFINED
+}

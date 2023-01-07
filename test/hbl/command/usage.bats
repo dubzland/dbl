@@ -12,14 +12,23 @@ setup() {
 		return 0
 	}
 
-	declare -a usage_show_args
+	declare -a usage_description_args
 	usage_description_args=()
 	usage_description_invoked=0
 	function hbl::command::usage::description() {
 		usage_description_invoked=1
 		usage_description_args=("$@")
-		local -n command_id__ref="$1"
 		echo "Description"
+		return 0
+	}
+
+	declare -a usage_subcommands_args
+	usage_subcommands_args=()
+	usage_subcommands_invoked=0
+	function hbl::command::usage::subcommands() {
+		usage_subcommands_invoked=1
+		usage_subcommands_args=("$@")
+		echo "Subcommands"
 		return 0
 	}
 }
@@ -41,4 +50,11 @@ setup() {
 	assert_equal $usage_description_invoked 1
 	assert_equal ${#usage_description_args[@]} 1
 	assert_equal ${usage_description_args[0]} "TEST_COMMAND"
+}
+
+@test ".show() displays the subcommands" {
+	hbl::command::usage::show "TEST_COMMAND"
+	assert_equal $usage_subcommands_invoked 1
+	assert_equal ${#usage_subcommands_args[@]} 1
+	assert_equal ${usage_subcommands_args[0]} "TEST_COMMAND"
 }
