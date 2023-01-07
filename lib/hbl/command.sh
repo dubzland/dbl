@@ -32,57 +32,8 @@ function hbl::command::init() {
 	HBL_PARAMS[showhelp]=0
 
 	declare -ag HBL_COMMANDS
-
-	# hbl::add_command "backup-client" backup_client::run command_id
-	# hbl::command::set_entrypoint backup_client::run
-	# hbl::command::set_description $command_id "Manage backup jobs."
-
-	# hbl::command::add_option $command_id job_directory option_id
-	# hbl::command::option::set_type $option_id "dir"
-	# hbl::command::option::set_short $option_id "d"
-	# hbl::command::option::set_long $option_id "job_directory"
-	# hbl::command::option::set_placeholder $option_id "dir"
-	# hbl::command::option::set_description $option_id "Backup job directory."
-
-	# readonly HBC=hbl::command
-	# readonly HBCO=hbl::command::option
-	# hbl::add_command "backup-client" command_id
-	# $HC::set_entrypoint backup_client::run
-	# $HC::set_description $command_id "Manage backup jobs."
-
-	# $HC::add_option $command_id job_directory option_id
-
-	# $HCO::set_type        $option_id "dir"
-	# $HCO::set_short       $option_id "d"
-	# $HCO::set_long        $option_id "job_directory"
-	# $HCO::set_placeholder $option_id "dir"
-	# $HCO::set_description $option_id "Backup job directory."
-
-	# $HC::add_subcommand $backup_client_id "list" backup_client::list::run list_id
-	# $HC::set_description $list_id
 }
 
-function hbl::command::add_option() {
-	[[ $# -eq 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
-
-	local command_id example
-	command_id="$1" example="$2"
-
-	local command_examples="${command_id}_EXAMPLES"
-	hbl::util::is_array "$command_examples" || declare -Ag "$command_options"
-	hbl::array::append "$command_examples" "$example"
-	# if hbl::command::option::create "$command_id" "${option_name}" "${!option_id__ref}"; then
-	# 	local command_options="${command_id}_OPTIONS"
-	# 	if ! hbl::util::is_dict "$command_options"; then
-	# 		declare -Ag "$command_options"
-	# 	fi
-	# 	hbl::dict::set "$command_options" "$option_name" "$option_id__ref"
-	# else
-	# 	return 1
-	# fi
-
-	return 0
-}
 function hbl::command::add_example() {
 	[[ $# -eq 2 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
