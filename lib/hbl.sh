@@ -28,11 +28,16 @@ function hbl::init() {
 }
 
 function hbl::add_command() {
-	[[ $# -eq 3 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+	[[ $# -eq 3 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]] || hbl::error::argument "name" "$1"|| exit
+	[[ -n "$2" ]] || hbl::error::argument "entrypoint" "$2" || exit
+	[[ -n "$3" ]] || hbl::error::argument "command_id_var" "$3" || exit
 
 	local name entrypoint
-	name="$1" entrypoint="$2"
-	local -n command_id__ref="$3"
+	name="$1" entrypoint="$2" command_id_var="$3"
+
+	local -n command_id__ref="$command_id_var"
+	command_id__ref=""
 
 	hbl::command::create "$name" "$entrypoint" "${!command_id__ref}"
 }

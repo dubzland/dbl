@@ -17,14 +17,33 @@ setup() {
 	TEST_SUBCOMMAND2[desc]="Another test subcommand."
 }
 
-@test ".subcommands() when insufficient arguments are passed returns INVALID_ARGS" {
+#
+# hbl::command::usage::subcommands()
+#
+@test ".subcommands() with insufficient arguments exits with ERR_INVOCATION" {
 	run hbl::command::usage::subcommands
-	assert_failure $HBL_INVALID_ARGS
+	assert_failure $HBL_ERR_INVOCATION
 }
 
-@test ".subcommands() when the command does not exist returns INVALID_ARGS" {
-	run hbl::command::usage::subcommands BAD_COMMAND
-	assert_failure $HBL_INVALID_ARGS
+@test ".subcommands() with too many arguments exits with ERR_INVOCATION" {
+	run hbl::command::usage::subcommands "TEST_COMMAND" "extra"
+	assert_failure $HBL_ERR_INVOCATION
+}
+
+@test ".subcommands() with an empty command id exits with ERR_ARGUMENT" {
+	run hbl::command::usage::subcommands ""
+	assert_failure $HBL_ERR_ARGUMENT
+}
+
+@test ".subcommands() with an undefined command exits with ERR_UNDEFINED" {
+	run hbl::command::usage::subcommands "INVALID_COMMAND"
+	assert_failure $HBL_ERR_UNDEFINED
+}
+
+@test ".subcommands() with a non-command argument exits with ERR_INVALID_COMMAND" {
+	declare -a INVALID_COMMAND
+	run hbl::command::usage::subcommands "INVALID_COMMAND"
+	assert_failure $HBL_ERR_INVALID_COMMAND
 }
 
 @test ".subcommands() when the command doesn't have any displays nothing" {

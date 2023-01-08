@@ -4,7 +4,10 @@ HBL_INDENT="  "
 readonly HBL_INDENT
 
 function hbl::command::usage::show() {
-	[[ $# -eq 1 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]] || hbl::error::argument 'command_id' "$1" || exit
+
+	hbl::command::ensure_command "$1" || exit
 
 	local command_id="$1"
 	command_id="$1"
@@ -17,12 +20,13 @@ function hbl::command::usage::show() {
 }
 
 function hbl::command::usage::examples() {
-	[[ $# -eq 1 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]]  || hbl::error::argument "command_id" "$1" || exit
+
+	hbl::command::ensure_command "$1" || exit
 
 	local command_id command_examples
 	command_id="$1"
-
-	hbl::util::is_dict "$command_id" || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
 	local -n command__ref="${command_id}"
 
@@ -54,15 +58,17 @@ function hbl::command::usage::examples() {
 }
 
 function hbl::command::usage::description() {
-	[[ $# -eq 1 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]]  || hbl::error::argument "command_id" "$1" || exit
 
-	local command_id
+	hbl::command::ensure_command "$1" || exit
+
+	local command_id desc
 	command_id="$1"
 
-	hbl::util::is_dict "$command_id" || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
-
 	local -n command__ref="$command_id"
-	local desc="${command__ref[desc]}"
+	desc="${command__ref[desc]}"
+
 	if [[ -n "${desc}" ]]; then
 		printf "Description\n"
 		printf "%s%s\n" "${HBL_INDENT}" "${desc}"
@@ -73,14 +79,15 @@ function hbl::command::usage::description() {
 }
 
 function hbl::command::usage::subcommands() {
-	[[ $# -eq 1 ]] || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
+	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]]  || hbl::error::argument "command_id" "$1" || exit
+
+	hbl::command::ensure_command "$1" || exit
 
 	local command_id subcommand_id command_subcommands
 	local -A subcommand_dict
 	local -a subcommand_names
 	command_id="$1" subcommand_dict=() subcommand_names=()
-
-	hbl::util::is_dict "$command_id" || hbl::error::invalid_args "${FUNCNAME[0]}" "$@" || return
 
 	local -n command__ref="${command_id}"
 
@@ -102,7 +109,7 @@ function hbl::command::usage::subcommands() {
 			done
 
 			subcommand_names=("${!subcommand_dict[@]}")
-			hbl::array::bubble_sort subcommand_names "${subcommand_names[@]}"
+			hbl::array::bubble_sort subcommand_names
 			for sub in "${subcommand_names[@]}"; do
 				local -n subcommand__ref="${subcommand_dict[$sub]}"
 				printf "%s%-26s%s\n" "${HBL_INDENT}" "$sub" "${subcommand__ref[desc]}"

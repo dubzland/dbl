@@ -5,14 +5,33 @@ setup() {
 	declare -Ag TEST_COMMAND
 }
 
-@test ".description() when insufficient arguments are passed returns INVALID_ARGS" {
+#
+# hbl::command::usage::description()
+#
+@test ".description() with insufficient arguments exits with ERR_INVOCATION" {
 	run hbl::command::usage::description
-	assert_failure $HBL_INVALID_ARGS
+	assert_failure $HBL_ERR_INVOCATION
 }
 
-@test ".description() when the command does not exist returns INVALID_ARGS" {
-	run hbl::command::usage::description BAD_COMMAND
-	assert_failure $HBL_INVALID_ARGS
+@test ".description() with too many arguments exits with ERR_INVOCATION" {
+	run hbl::command::usage::description "TEST_COMMAND" "extra"
+	assert_failure $HBL_ERR_INVOCATION
+}
+
+@test ".description() with an empty command id exits with ERR_ARGUMENT" {
+	run hbl::command::usage::description ""
+	assert_failure $HBL_ERR_ARGUMENT
+}
+
+@test ".description() with an undefined command exits with ERR_UNDEFINED" {
+	run hbl::command::usage::description "INVALID_COMMAND"
+	assert_failure $HBL_ERR_UNDEFINED
+}
+
+@test ".description() with a non-command argument exits with ERR_INVALID_COMMAND" {
+	declare -a INVALID_COMMAND
+	run hbl::command::usage::description "INVALID_COMMAND"
+	assert_failure $HBL_ERR_INVALID_COMMAND
 }
 
 @test ".description() when the command doesn't have one displays nothing" {

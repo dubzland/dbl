@@ -2,6 +2,9 @@ setup() {
 	load '../../test_helper/common'
 	common_setup
 
+	declare -Ag TEST_COMMAND
+	TEST_COMMAND=([name]="test-command" [entrypoint]="test_command::run")
+
 	declare -a usage_examples_args
 	usage_examples_args=()
 	usage_examples_invoked=0
@@ -33,9 +36,33 @@ setup() {
 	}
 }
 
-@test ".show() when insufficient arguments are passed returns INVALID_ARGS" {
+#
+# hbl::command::usage::show()
+#
+@test ".show() with insufficient arguments exits with ERR_INVOCATION" {
 	run hbl::command::usage::show
-	assert_failure $HBL_INVALID_ARGS
+	assert_failure $HBL_ERR_INVOCATION
+}
+
+@test ".show() with too many arguments exits with ERR_INVOCATION" {
+	run hbl::command::usage::show "TEST_COMMAND" "extra"
+	assert_failure $HBL_ERR_INVOCATION
+}
+
+@test ".show() with an empty command id exits with ERR_ARGUMENT" {
+	run hbl::command::usage::show ""
+	assert_failure $HBL_ERR_ARGUMENT
+}
+
+@test ".show() with an undefined command exits with ERR_UNDEFINED" {
+	run hbl::command::usage::show "INVALID_COMMAND"
+	assert_failure $HBL_ERR_UNDEFINED
+}
+
+@test ".show() with a non-command argument exits with ERR_INVALID_COMMAND" {
+	declare -a INVALID_COMMAND
+	run hbl::command::usage::show "INVALID_COMMAND"
+	assert_failure $HBL_ERR_INVALID_COMMAND
 }
 
 @test ".show() displays the examples" {
