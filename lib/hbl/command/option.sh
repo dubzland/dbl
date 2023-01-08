@@ -42,6 +42,19 @@ function hbl::command::option::set_type() {
 	return 0
 }
 
+function hbl::command::option::set_short_flag() {
+	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]] || hbl::error::argument 'option_id' "$1" || exit
+	[[ -n "$2" ]] || hbl::error::argument 'option_short_flag' "$2" || exit
+	[[ ${#2} -eq 1 ]] || hbl::error::argument 'option_short_flag' "$2" || exit
+
+	hbl::command::option::ensure_option "$1" || exit
+
+	hbl::dict::set "$1" 'short_flag' "$2"
+
+	return 0
+}
+
 function hbl::command::option::ensure_option() {
 	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]] || hbl::error::argument 'option_id' "$@" || exit

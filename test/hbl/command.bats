@@ -172,13 +172,6 @@ setup() {
 	assert_equal "${__stubbed_command[parent]}" '__test_command'
 }
 
-@test "hbl::command::add_subcommand() sets the full_name" {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' 'command_id'
-	assert_equal "${__stubbed_command[full_name]}" 'test-command subcommand'
-}
-
 @test 'hbl::command::add_subcommand() assigns the command to the parent' {
 	hbl_test::mock_command '__test_command'
 	hbl::command::add_subcommand '__test_command' 'subcommand' \

@@ -34,11 +34,5 @@ function hbl::add_command() {
 	[[ -n "$2" ]] || hbl::error::argument "entrypoint" "$2" || exit
 	[[ -n "$3" ]] || hbl::error::argument "command_id_var" "$3" || exit
 
-	local name entrypoint
-	name="$1" entrypoint="$2" command_id_var="$3"
-
-	local -n command_id__ref="$command_id_var"
-	command_id__ref=""
-
-	hbl::command::create "$name" "$entrypoint" "${!command_id__ref}"
+	hbl::command::create "$1" "$2" "$3"
 }

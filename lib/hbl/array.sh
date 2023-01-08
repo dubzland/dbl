@@ -6,12 +6,9 @@ function hbl::array::contains() {
 
 	hbl::array::ensure_array "$1" || exit
 
-	local needle
-	needle="$2"
-
 	local -n haystack__ref="$1"
 	for val in "${haystack__ref[@]}"; do
-		[[ "${val}" == "${needle}" ]] && return $HBL_SUCCESS
+		[[ "${val}" == "$2" ]] && return $HBL_SUCCESS
 	done
 
 	return $HBL_ERROR
@@ -23,10 +20,7 @@ function hbl::array::append() {
 
 	hbl::array::ensure_array "$1" || exit
 
-	local array
-	array="$1"
-
-	local -n array__ref="$array"
+	local -n array__ref="$1"
 	array__ref+=("${@:2}")
 
 	return $HBL_SUCCESS

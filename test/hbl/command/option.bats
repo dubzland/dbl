@@ -54,6 +54,49 @@ setup() {
 }
 
 #
+# hbl::command::option::set_short_flag()
+#
+@test 'hbl::command::option::set_short_flag() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::option::set_short_flag
+	assert_failure $HBL_ERR_INVOCATION
+
+	# too many arguments
+	run hbl::command::option::set_short_flag '__test_option' 'a' 'extra'
+	assert_failure $HBL_ERR_INVOCATION
+
+	# empty option id
+	run hbl::command::option::set_short_flag '' 'a'
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# empty flag
+	run hbl::command::option::set_short_flag '__test_option' ''
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid short flag
+	run hbl::command::option::set_short_flag '__test_option' 'ab'
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid option
+	function hbl::command::option::ensure_option() { return 1; }
+	run hbl::command::option::set_short_flag '__test_option' 'a'
+	assert_failure $HBL_INVALID_ARGS
+	unset hbl::command::option::ensure_option
+}
+
+@test 'hbl::command::option::set_short_flag() succeeds' {
+	hbl_test::mock_option '__test_option'
+	run hbl::command::option::set_short_flag '__test_option' 'a'
+	assert_success
+}
+
+@test 'hbl::command::option::set_short_flag() assigns the flag to the option' {
+	hbl_test::mock_option '__test_option'
+	hbl::command::option::set_short_flag '__test_option' 'a'
+	assert_equal "${__test_option[short_flag]}" 'a'
+}
+
+#
 # hbl::command::option::ensure_option()
 #
 @test 'hbl::command::option::ensure_option() validates its arguments' {
