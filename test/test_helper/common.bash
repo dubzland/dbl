@@ -8,6 +8,24 @@ common_setup() {
 	source ./lib/hbl.sh
 }
 
+function assert_dict() {
+	[[ "$(declare -p $1 2>/dev/null)" == "declare -A"* ]]
+}
+
+function assert_array() {
+	[[ "$(declare -p $1 2>/dev/null)" == "declare -a"* ]]
+}
+
+function assert_array_contains() {
+	local -n array__ref="$1"
+	for val in "${array__ref[@]}"; do
+		[[ "${val}" == "$2" ]] && return 0
+	done
+
+	return 1
+
+}
+
 function hbl_test::is_defined() {
 	if declare -p "$1" >/dev/null  2>&1; then
 		return 0
@@ -23,14 +41,5 @@ function hbl_test::is_array() {
 	fi
 
 	echo "$1 is not an array."
-	return 1
-}
-
-function hbl_test::is_dict() {
-	if hbl_test::is_defined "$1"; then
-		[[ "$(declare -p $1 2>/dev/null)" == "declare -A"* ]] && return 0
-	fi
-
-	echo "$1 is not an associative array."
 	return 1
 }

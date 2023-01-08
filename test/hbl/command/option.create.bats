@@ -8,62 +8,51 @@ setup() {
 #
 # hbl::command::option::create()
 #
-@test ".create() with insufficient arguments exits with ERR_INVOCATION" {
+@test 'hbl::command::option::create() validates its arguments' {
+	# insufficient arguments
 	run hbl::command::option::create
 	assert_failure $HBL_ERR_INVOCATION
-	assert_output \
-		"hbl::command::option::create: invalid arguments -- ''"
-}
 
-@test ".create() with too many arguments exits with ERR_INVOCATION" {
-	run hbl::command::option::create "TEST_COMMAND" "test_option" \
-		"option_id_var" "extra"
+	# too many arguments
+	run hbl::command::option::create 'TEST_COMMAND' 'test_option' \
+		'option_id_var' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
-	assert_output \
-		"hbl::command::option::create: invalid arguments -- 'TEST_COMMAND test_option option_id_var extra'"
-}
 
-@test ".create() with an empty command id exits with ERR_ARGUMENT" {
-	run hbl::command::option::create "" "test_option" "option_id_var"
+	# empty command id
+	run hbl::command::option::create '' 'test_option' 'option_id_var'
 	assert_failure $HBL_ERR_ARGUMENT
-}
 
-@test ".create() with an empty option name exits with ERR_ARGUMENT" {
-	run hbl::command::option::create "TEST_COMMAND" "" "option_id_var"
+	# empty option name
+	run hbl::command::option::create 'TEST_COMMAND' '' 'option_id_var'
 	assert_failure $HBL_ERR_ARGUMENT
-}
 
-@test ".create() with an empty option id var exits with ERR_ARGUMENT" {
-	run hbl::command::option::create "TEST_COMMAND" "test_option" ""
+	# empty option id var
+	run hbl::command::option::create 'TEST_COMMAND' 'test_option' ''
 	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid command
+	function hbl::command::ensure_command() { return 1; }
+	run hbl::command::option::create 'TEST_COMMAND' 'test_option' 'option_id'
+	assert_failure
+	unset hbl::command::ensure_command
 }
 
-@test ".create() with an undefined command exits with ERR_UNDEFINED" {
-	run hbl::command::option::create "UNDEFINED_COMMAND" "test_option" "option_id"
-	assert_failure $HBL_ERR_UNDEFINED
-}
-
-@test ".create() with a non-command argument exits with ERR_INVALID_COMMAND" {
-	declare -a INVALID_COMMAND
-	run hbl::command::option::create "INVALID_COMMAND" "test_option" "option_id"
-	assert_failure $HBL_ERR_INVALID_COMMAND
-}
-
-@test ".create() creates the option" {
-	hbl::command::option::create "TEST_COMMAND" "test_option" option_id
-	run hbl::util::is_dict "TEST_COMMAND_OPTION_0"
+@test 'hbl::command::option::create() succeeds' {
+	run hbl::command::option::create 'TEST_COMMAND' 'test_option' 'option_id'
 	assert_success
 }
 
-@test ".create() assigns the option name" {
-	hbl::command::option::create "TEST_COMMAND" "test_option" option_id
-	run hbl::dict::has_key "TEST_COMMAND_OPTION_0" "name"
-	assert_success
-	hbl::dict::get "TEST_COMMAND_OPTION_0" "name" option_name
-	assert_equal "${option_name}" "test_option"
+@test 'hbl::command::option::create() creates the option' {
+	hbl::command::option::create 'TEST_COMMAND' 'test_option' 'option_id'
+	assert_dict 'TEST_COMMAND_OPTION_0'
 }
 
-@test ".create() returns the option id" {
-	hbl::command::option::create "TEST_COMMAND" "test_option" option_id
-	assert_equal "${option_id}" "TEST_COMMAND_OPTION_0"
+@test 'hbl::command::option::create() assigns the option name' {
+	hbl::command::option::create 'TEST_COMMAND' 'test_option' 'option_id'
+	assert_equal "${TEST_COMMAND_OPTION_0[name]}" 'test_option'
+}
+
+@test 'hbl::command::option::create() assigns the option id' {
+	hbl::command::option::create 'TEST_COMMAND' 'test_option' 'option_id'
+	assert_equal "${option_id}" 'TEST_COMMAND_OPTION_0'
 }

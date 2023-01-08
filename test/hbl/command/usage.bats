@@ -3,85 +3,178 @@ setup() {
 	common_setup
 
 	declare -Ag TEST_COMMAND
-	TEST_COMMAND=([name]="test-command" [entrypoint]="test_command::run")
+	TEST_COMMAND[name]="test-command"
 
-	declare -a usage_examples_args
-	usage_examples_args=()
-	usage_examples_invoked=0
-	function hbl::command::usage::examples() {
-		usage_examples_invoked=1
-		usage_examples_args=("$@")
-		echo "Examples"
-		return 0
-	}
+	declare -ag TEST_COMMAND_SUBCOMMANDS
+	TEST_COMMAND_SUBCOMMANDS=()
 
-	declare -a usage_description_args
-	usage_description_args=()
-	usage_description_invoked=0
-	function hbl::command::usage::description() {
-		usage_description_invoked=1
-		usage_description_args=("$@")
-		echo "Description"
-		return 0
-	}
+	declare -Ag TEST_SUBCOMMAND1
+	TEST_SUBCOMMAND1[name]="run"
+	TEST_SUBCOMMAND1[desc]="A test subcommand."
 
-	declare -a usage_subcommands_args
-	usage_subcommands_args=()
-	usage_subcommands_invoked=0
-	function hbl::command::usage::subcommands() {
-		usage_subcommands_invoked=1
-		usage_subcommands_args=("$@")
-		echo "Subcommands"
-		return 0
-	}
+	declare -Ag TEST_SUBCOMMAND2
+	TEST_SUBCOMMAND2[name]="execute"
+	TEST_SUBCOMMAND2[desc]="Another test subcommand."
 }
 
 #
-# hbl::command::usage::show()
+# hbl::command::usage::description()
 #
-@test ".show() with insufficient arguments exits with ERR_INVOCATION" {
-	run hbl::command::usage::show
+@test 'hbl::command::usage::description() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::usage::description
 	assert_failure $HBL_ERR_INVOCATION
-}
 
-@test ".show() with too many arguments exits with ERR_INVOCATION" {
-	run hbl::command::usage::show "TEST_COMMAND" "extra"
+	# too many arguments
+	run hbl::command::usage::description 'TEST_COMMAND' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
-}
 
-@test ".show() with an empty command id exits with ERR_ARGUMENT" {
-	run hbl::command::usage::show ""
+	# empty command id
+	run hbl::command::usage::description ''
 	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid command
+	function hbl::command::ensure_command() { return 1; }
+	run hbl::command::usage::description "INVALID_COMMAND"
+	unset hbl::command::ensure_command
+	assert_failure
 }
 
-@test ".show() with an undefined command exits with ERR_UNDEFINED" {
-	run hbl::command::usage::show "INVALID_COMMAND"
-	assert_failure $HBL_ERR_UNDEFINED
+@test 'hbl::command::usage::description() with an empty description succeeds' {
+	TEST_COMMAND[desc]=''
+	run hbl::command::usage::description 'TEST_COMMAND'
+	assert_success
 }
 
-@test ".show() with a non-command argument exits with ERR_INVALID_COMMAND" {
-	declare -a INVALID_COMMAND
-	run hbl::command::usage::show "INVALID_COMMAND"
-	assert_failure $HBL_ERR_INVALID_COMMAND
+@test 'hbl::command::usage::description() with an empty description displays nothing' {
+	TEST_COMMAND[desc]=''
+	run hbl::command::usage::description 'TEST_COMMAND'
+	assert_output ''
 }
 
-@test ".show() displays the examples" {
-	hbl::command::usage::show "TEST_COMMAND"
-	assert_equal $usage_examples_invoked 1
-	assert_equal ${#usage_examples_args[@]} 1
-	assert_equal ${usage_examples_args[0]} "TEST_COMMAND"
+@test 'hbl::command::usage::description() with a description succeeds' {
+	TEST_COMMAND[desc]='Test Description'
+	run hbl::command::usage::description 'TEST_COMMAND'
+	assert_success
 }
 
-@test ".show() displays the description" {
-	hbl::command::usage::show "TEST_COMMAND"
-	assert_equal $usage_description_invoked 1
-	assert_equal ${#usage_description_args[@]} 1
-	assert_equal ${usage_description_args[0]} "TEST_COMMAND"
+@test 'hbl::command::usage::description() with a description displays it with a header' {
+	TEST_COMMAND[desc]='Test Description'
+	run hbl::command::usage::description 'TEST_COMMAND'
+	assert_output - <<-EOF
+	Description
+	  Test Description
+
+	EOF
 }
 
-@test ".show() displays the subcommands" {
-	hbl::command::usage::show "TEST_COMMAND"
-	assert_equal $usage_subcommands_invoked 1
-	assert_equal ${#usage_subcommands_args[@]} 1
-	assert_equal ${usage_subcommands_args[0]} "TEST_COMMAND"
+#
+# hbl::command::usage::examples()
+#
+@test 'hbl::command::usage::examples() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::usage::examples
+	assert_failure $HBL_ERR_INVOCATION
+
+	# too many arguments
+	run hbl::command::usage::examples 'TEST_COMMAND' 'extra'
+	assert_failure $HBL_ERR_INVOCATION
+
+	# empty command id
+	run hbl::command::usage::examples ''
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid command
+	function hbl::command::ensure_command() { return 1; }
+	run hbl::command::usage::examples "INVALID_COMMAND"
+	assert_failure
+	unset hbl::command::ensure_command
+}
+
+@test 'hbl::command::usage::examples() with no examples succeeds' {
+	TEST_COMMAND['name']="test-command"
+	TEST_COMMAND_EXAMPLES=()
+	run hbl::command::usage::examples TEST_COMMAND
+	assert_success
+}
+
+@test 'hbl::command::usage::examples() with no examples displays a default' {
+	TEST_COMMAND['name']="test-command"
+	TEST_COMMAND_EXAMPLES=()
+	run hbl::command::usage::examples TEST_COMMAND
+	assert_output - <<-EOF
+		Usage:
+		  test-command <options>
+
+	EOF
+}
+
+@test 'hbl::command::usage::examples() with examples succeeds' {
+	TEST_COMMAND[name]="test-command"
+	TEST_COMMAND_EXAMPLES=("-a <options>")
+	run hbl::command::usage::examples TEST_COMMAND
+	assert_success
+}
+
+@test 'hbl::command::usage::examples() with examples displays them with a header' {
+	TEST_COMMAND[name]="test-command"
+	TEST_COMMAND_EXAMPLES=("-a <options>")
+	run hbl::command::usage::examples TEST_COMMAND
+	assert_output - <<-EOF
+		Usage:
+		  test-command -a <options>
+
+	EOF
+}
+
+#
+# hbl::command::usage::subcommands()
+#
+@test 'hbl::command::usage::subcommands() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::usage::subcommands
+	assert_failure $HBL_ERR_INVOCATION
+
+	# too many arguments
+	run hbl::command::usage::subcommands 'TEST_COMMAND' 'extra'
+	assert_failure $HBL_ERR_INVOCATION
+
+	# empty command id
+	run hbl::command::usage::subcommands ''
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid command
+	function hbl::command::ensure_command() { return 1; }
+	run hbl::command::usage::subcommands 'TEST_COMMAND'
+	assert_failure
+	unset hbl::command::ensure_command
+}
+
+@test 'hbl::command::usage::subcommands() with no subcommands succeeds' {
+	TEST_COMMAND_SUBCOMMANDS=()
+	run hbl::command::usage::subcommands 'TEST_COMMAND'
+	assert_success
+}
+
+@test 'hbl::command::usage::subcommands() with no subcommands displays nothing' {
+	TEST_COMMAND_SUBCOMMANDS=()
+	run hbl::command::usage::subcommands 'TEST_COMMAND'
+	assert_output ""
+}
+
+@test 'hbl::command::usage::subcommands() with subcommands succeeds' {
+	TEST_COMMAND_SUBCOMMANDS=('TEST_SUBCOMMAND1' 'TEST_SUBCOMMAND2')
+	run hbl::command::usage::subcommands 'TEST_COMMAND'
+	assert_success
+}
+@test 'hbl::command::usage::subcommands() with subcommands displays them with a header' {
+	TEST_COMMAND_SUBCOMMANDS=('TEST_SUBCOMMAND1' 'TEST_SUBCOMMAND2')
+	run hbl::command::usage::subcommands TEST_COMMAND
+	assert_success
+	assert_output - <<-EOF
+		Subcommands:
+		  execute                   Another test subcommand.
+		  run                       A test subcommand.
+
+	EOF
 }

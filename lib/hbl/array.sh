@@ -4,7 +4,7 @@ function hbl::array::contains() {
 	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]]  || hbl::error::argument 'haystack' "$1" || exit
 
-	hbl::array::validate "$1" || exit
+	hbl::array::ensure_array "$1" || exit
 
 	local needle
 	needle="$2"
@@ -21,7 +21,7 @@ function hbl::array::append() {
 	[[ $# -ge 2 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
 
-	hbl::array::validate "$1" || exit
+	hbl::array::ensure_array "$1" || exit
 
 	local array
 	array="$1"
@@ -36,7 +36,7 @@ function hbl::array::bubble_sort() {
 	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
 
-	hbl::array::validate "$1" || exit
+	hbl::array::ensure_array "$1" || exit
 
 	local swapped
 	swapped=0
@@ -62,7 +62,7 @@ function hbl::array::bubble_sort() {
 	return 0
 }
 
-function hbl::array::validate() {
+function hbl::array::ensure_array() {
 	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]] || hbl::error::argument 'array' "$@" || exit
 
