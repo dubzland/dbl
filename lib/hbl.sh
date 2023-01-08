@@ -13,6 +13,8 @@ source "${HBL_LIB}/hbl/command/usage.sh"
 source "${HBL_LIB}/hbl/dict.sh"
 # shellcheck source=lib/hbl/error.sh
 source "${HBL_LIB}/hbl/error.sh"
+# shellcheck source=lib/hbl/string.sh
+source "${HBL_LIB}/hbl/string.sh"
 # shellcheck source=lib/hbl/util.sh
 source "${HBL_LIB}/hbl/util.sh"
 

@@ -4,6 +4,6 @@
 
 ## Todo
 + update variable naming
-- extract string
++ extract string
 - option usage
 - option parsing
