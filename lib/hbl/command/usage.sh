@@ -25,10 +25,11 @@ function hbl::command::usage::examples() {
 
 	hbl::command::ensure_command "$1" || exit
 
-	local command_id command_examples
-	command_id="$1"
+	local command_id command_examples command_name
+	command_id="$1" command_name=""
 
-	local -n command__ref="${command_id}"
+	hbl::dict::get "$command_id" 'fullname' command_name
+	[[ -z "$command_name" ]] && hbl::dict::get "$command_id" 'name' command_name
 
 	command_examples="${command_id}__examples"
 
@@ -38,18 +39,10 @@ function hbl::command::usage::examples() {
 		local -n command_examples__ref="$command_examples"
 		if [[ ${#command_examples__ref[@]} -gt 0 ]]; then
 			for ex in "${command_examples__ref[@]}"; do
-				if [[ -n "${command__ref[fullname]}" ]]; then
-					printf "%s%s %s\n" "${HBL_INDENT}" "${command__ref[fullname]}" "$ex"
-				else
-					printf "%s%s %s\n" "${HBL_INDENT}" "${command__ref[name]}" "$ex"
-				fi
+				printf "%s%s %s\n" "${HBL_INDENT}" "${command_name}" "$ex"
 			done
 		else
-			if [[ -n "${command__ref[fullname]}" ]]; then
-				printf "%s%s <options>\n" "${HBL_INDENT}" "${command__ref[fullname]}"
-			else
-				printf "%s%s <options>\n" "${HBL_INDENT}" "${command__ref[name]}"
-			fi
+			printf "%s%s <options>\n" "${HBL_INDENT}" "${command_name}"
 		fi
 		printf "\n"
 	fi
@@ -63,13 +56,13 @@ function hbl::command::usage::description() {
 
 	hbl::command::ensure_command "$1" || exit
 
-	local description
+	local desc
 
-	hbl::dict::get "$1" 'desc' 'description'
+	hbl::dict::get "$1" 'desc' desc
 
-	if [[ -n "${description}" ]]; then
+	if [[ -n "${desc}" ]]; then
 		printf "Description\n"
-		printf "%s%s\n" "${HBL_INDENT}" "${description}"
+		printf "%s%s\n" "${HBL_INDENT}" "${desc}"
 		printf "\n"
 	fi
 
@@ -82,12 +75,11 @@ function hbl::command::usage::subcommands() {
 
 	hbl::command::ensure_command "$1" || exit
 
-	local command_id subcommand_id command_subcommands
+	local command_id command_subcommands subcommand_id subcommand_name
+	local subcommand_desc
 	local -A subcommand_dict
 	local -a subcommand_names
 	command_id="$1" subcommand_dict=() subcommand_names=()
-
-	local -n command__ref="${command_id}"
 
 	command_subcommands="${command_id}__subcommands"
 
@@ -98,8 +90,8 @@ function hbl::command::usage::subcommands() {
 			printf "Subcommands:\n"
 			for subcommand_id in "${command_subcommands__ref[@]}"; do
 				if hbl::util::is_dict "$subcommand_id"; then
-					local -n subcommand__ref="$subcommand_id"
-					subcommand_dict["${subcommand__ref[name]}"]="$subcommand_id"
+					hbl::dict::get "$subcommand_id" 'name' subcommand_name
+					hbl::dict::set subcommand_dict "$subcommand_name" "$subcommand_id"
 				else
 					hbl::error::undefined "${FUNCNAME[0]}" "$subcommand_id"
 					return
@@ -109,8 +101,9 @@ function hbl::command::usage::subcommands() {
 			subcommand_names=("${!subcommand_dict[@]}")
 			hbl::array::bubble_sort subcommand_names
 			for sub in "${subcommand_names[@]}"; do
-				local -n subcommand__ref="${subcommand_dict[$sub]}"
-				printf "%s%-26s%s\n" "${HBL_INDENT}" "$sub" "${subcommand__ref[desc]}"
+				hbl::dict::get subcommand_dict "$sub" subcommand_id
+				hbl::dict::get "$subcommand_id" 'desc' subcommand_desc
+				printf "%s%-26s%s\n" "${HBL_INDENT}" "$sub" "$subcommand_desc"
 			done
 			printf "\n"
 		fi

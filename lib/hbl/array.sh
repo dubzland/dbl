@@ -67,9 +67,9 @@ function hbl::array::ensure_array() {
 	[[ -n "$1" ]] || hbl::error::argument 'array' "$@" || exit
 
 	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_undefined 2 "$1" || return
 	hbl::util::is_array "$1" \
-		|| hbl::error::_invalid_array "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_invalid_array 2 "$1" || return
 
 	return $HBL_SUCCESS
 }

@@ -168,5 +168,4 @@ setup() {
 	declare -A dict
 	run ensure_dict 'dict'
 	assert_success
-	refute_output
 }

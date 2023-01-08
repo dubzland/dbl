@@ -60,6 +60,12 @@ setup() {
 	assert_equal "${__test_command__option_0[name]}" 'test_option'
 }
 
+@test 'hbl::command::option::create() assigns the command id' {
+	hbl_test::mock_command '__test_command'
+	hbl::command::option::create '__test_command' 'test_option' 'option_id'
+	assert_equal "${__test_command__option_0[command_id]}" '__test_command'
+}
+
 @test 'hbl::command::option::create() assigns the option id to the result var' {
 	declare -A __test_command
 	hbl::command::option::create '__test_command' 'test_option' 'option_id'

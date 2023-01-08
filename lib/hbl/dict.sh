@@ -54,9 +54,9 @@ function hbl::dict::ensure_dict() {
 	[[ -n "$1" ]] || hbl::error::argument 'dict' "$@" || exit
 
 	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_undefined 2 "$1" || return
 	hbl::util::is_dict "$1" \
-		|| hbl::error::_invalid_dict "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_invalid_dict 2 "$1" || return
 
 	return $HBL_SUCCESS
 }

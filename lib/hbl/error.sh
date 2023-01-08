@@ -25,105 +25,86 @@ readonly HBL_ERR_TEST_ERROR
 function hbl::error::_invocation() {
 	[[ $# -ge 1 ]] || exit 99
 
-	local function_name function_args
-	function_name="$1" function_args="${@:2}"
-
-	printf "%s: invalid arguments -- '%s'\n" \
-		"$function_name" "$function_args" >&2
+	hbl::error::_display $1 $HBL_ERR_INVOCATION \
+		"invalid arguments -- '${@:2}'"
 
 	return $HBL_ERR_INVOCATION
 }
 
 function hbl::error::invocation() {
-	hbl::error::_invocation "${FUNCNAME[1]}" "$@"
+	hbl::error::_invocation 2 "$@"
 }
 
 function hbl::error::_argument() {
 	[[ $# -eq 3 ]] || exit 99
 
-	local function_name argument_name argument_value
-	function_name="$1" argument_name="$2" argument_value="$3"
+	hbl::error::_display $1 $HBL_ERR_ARGUMENT \
+		"invalid argument for '$2' -- '$3'"
 
-	printf "%s: invalid argument for '%s' -- '%s'\n" \
-		"$function_name" "$argument_name" "$argument_value" >&2
 	return $HBL_ERR_ARGUMENT
 }
 
 function hbl::error::argument() {
-	hbl::error::_argument "${FUNCNAME[1]}" "$@"
+	hbl::error::_argument 2 "$@"
 }
 
 function hbl::error::_undefined() {
 	[[ $# -ne 2 ]] && exit 99
 
-	local function_name variable_name
-	function_name="$1" variable_name="$2"
+	hbl::error::_display $1 $HBL_ERR_UNDEFINED \
+		"variable is undefined -- '$2'"
 
-	printf "%s: variable is undefined -- '%s'\n" \
-		"$function_name" "$variable_name" >&2
 	return $HBL_ERR_UNDEFINED
 }
 
 function hbl::error::undefined() {
-	hbl::error::_undefined "${FUNCNAME[1]}" "$@"
+	hbl::error::_undefined 2 "$@"
 }
 
 function hbl::error::_invalid_command() {
 	[[ $# -eq 2 ]] || exit 99
 
-	local function_name command_id
-	function_name="$1" command_id="$2"
-
-	printf "%s: invalid command id -- '%s'\n" \
-		"$function_name" "$command_id" >&2
+	hbl::error::_display $1 $HBL_ERR_INVALID_COMMAND \
+		"invalid command id -- '$2'"
 
 	return $HBL_ERR_INVALID_COMMAND
 }
 
 function hbl::error::invalid_command() {
-	hbl::error::_invalid_command "${FUNCNAME[1]}" "$@"
+	hbl::error::_invalid_command 2 "$@"
 }
 
 function hbl::error::_invalid_array() {
 	[[ $# -eq 2 ]] || exit 99
 
-	local function_name array_name
-	function_name="$1" array_name="$2"
-
-	printf "%s: not an array -- '%s'\n" \
-		"$function_name" "$array_name" >&2
+	hbl::error::_display $1 $HBL_ERR_INVALID_ARRAY \
+		"not an array -- '$2'"
 
 	return $HBL_ERR_INVALID_ARRAY
 }
 
 function hbl::error::invalid_array() {
-	hbl::error::_invalid_array "${FUNCNAME[1]}" "$@"
+	hbl::error::_invalid_array 2 "$@"
 }
 
 function hbl::error::_invalid_dict() {
 	[[ $# -eq 2 ]] || exit 99
 
-	local function_name dict_name
-	function_name="$1" dict_name="$2"
-
-	printf "%s: not a dictionary -- '%s'\n" \
-		"$function_name" "$dict_name" >&2
+	hbl::error::_display $1 $HBL_ERR_INVALID_DICT \
+		"not a dictionary -- '$2'"
 
 	return $HBL_ERR_INVALID_DICT
 }
 
 function hbl::error::invalid_dict() {
-	hbl::error::_invalid_dict "${FUNCNAME[1]}" "$@"
+	hbl::error::_invalid_dict 2 "$@"
 }
 
 function hbl::error::_invalid_option() {
 	[[ $# -eq 2 ]] || exit 99
 
-	local function_name option_id
-	function_name="$1" option_id="$2"
-
-	printf "%s: invalid option id -- '%s'\n" \
-		"$function_name" "$option_id" >&2
+	hbl::error::_display $1 $HBL_ERR_INVALID_OPTION \
+		"invalid option id -- '$2'"
 
 	return $HBL_ERR_INVALID_OPTION
 }
@@ -135,7 +116,7 @@ function hbl::error::invalid_option() {
 function hbl::error::_test_error() {
 	local -i offset
 	offset=$1
-	hbl::error::display_error $offset \
+	hbl::error::_display_error $offset \
 		$HBL_ERR_TEST_ERROR \
 		"this is a test" \
 	return $HBL_ERR_TEST_ERROR
@@ -145,9 +126,11 @@ function hbl::error::test_error() {
 	hbl::error::_test_error 2
 }
 
-function hbl::error::display_error() {
+function hbl::error::_display() {
 	local -i offset code
 	local message code_string
+
+	[[ $TRACE -ge 1 ]] || return
 
 	offset=$1
 	code=$2

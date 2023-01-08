@@ -22,6 +22,7 @@ function hbl::command::option::create() {
 	declare -Ag "${option_id__ref}"
 	hbl::dict::set "${option_id__ref}" 'name' "$option_name"
 	hbl::dict::set "${option_id__ref}" 'id' "$option_id__ref"
+	hbl::dict::set "${option_id__ref}" 'command_id' "$command_id"
 
 	return 0
 }
@@ -36,10 +37,7 @@ function hbl::command::option::set_type() {
 
 	hbl::command::option::ensure_option "$1" || exit
 
-	local option_id option_type
-	option_id="$1" option_type="$2"
-	local -n option__ref="$option_id"
-	option__ref[type]="$option_type"
+	hbl::dict::set "$1" 'type' "$2"
 
 	return 0
 }
@@ -49,9 +47,9 @@ function hbl::command::option::ensure_option() {
 	[[ -n "$1" ]] || hbl::error::argument 'option_id' "$@" || exit
 
 	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_undefined 2 "$1" || return
 	hbl::util::is_dict "$1" \
-		|| hbl::error::_invalid_option "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_invalid_option 2 "$1" || return
 
 	return $HBL_SUCCESS
 }

@@ -42,13 +42,13 @@ setup() {
 }
 
 @test 'hbl::command::option::set_type() succeeds' {
-	declare -A __test_option
+	hbl_test::mock_option '__test_option'
 	run hbl::command::option::set_type '__test_option' 'number'
 	assert_success
 }
 
 @test 'hbl::command::option::set_type() assigns the type to the option' {
-	declare -A __test_option
+	hbl_test::mock_option '__test_option'
 	hbl::command::option::set_type '__test_option' 'number'
 	assert_equal "${__test_option[type]}" 'number'
 }

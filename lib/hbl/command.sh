@@ -130,8 +130,8 @@ function hbl::command::ensure_command() {
 	[[ -n "$1" ]] || hbl::error::argument 'command_id' "$@" || exit
 
 	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_undefined 2 "$1" || return
 	hbl::util::is_dict "$1" \
-		|| hbl::error::_invalid_command "${FUNCNAME[1]}" "$1" || return
+		|| hbl::error::_invalid_command 2 "$1" || return
 	return 0
 }
