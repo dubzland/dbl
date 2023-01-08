@@ -11,8 +11,8 @@ function hbl::command::create() {
 
 	local -n command_id__ref="$command_id_var"
 
-	command_index="${#HBL_COMMANDS[@]}"
-	command_id__ref="HBL_COMMAND_${command_index}"
+	command_index="${#__hbl_commands[@]}"
+	command_id__ref="__hbl_command_${command_index}"
 	declare -Ag "${command_id__ref}"
 
 	local -n command__ref="${command_id__ref}"
@@ -21,22 +21,18 @@ function hbl::command::create() {
 	command__ref[name]="${command_name}"
 	command__ref[entrypoint]="${command_entrypoint}"
 
-	HBL_COMMANDS+=("${command_id__ref}")
+	__hbl_commands+=("${command_id__ref}")
 
 	return 0
 }
 
 function hbl::command::init() {
-	declare -Ag HBL_COMMAND
-	HBL_COMMAND=()
-	HBL_COMMAND[name]=""
+	declare -Ag __hbl_params
+	__hbl_params=()
+	__hbl_params[verbose]=0
+	__hbl_params[showhelp]=0
 
-	declare -Ag HBL_PARAMS
-	HBL_PARAMS=()
-	HBL_PARAMS[verbose]=0
-	HBL_PARAMS[showhelp]=0
-
-	declare -ag HBL_COMMANDS
+	declare -ag __hbl_commands
 }
 
 function hbl::command::add_example() {
@@ -49,7 +45,7 @@ function hbl::command::add_example() {
 	local command_id example command_examples
 	command_id="$1" example="$2"
 
-	command_examples="${command_id}_EXAMPLES"
+	command_examples="${command_id}__examples"
 	hbl::util::is_array "$command_examples" || declare -ag "${command_examples}"
 
 	local -n command_examples__ref="$command_examples"
@@ -72,7 +68,7 @@ function hbl::command::add_option() {
 	option_id__ref=""
 
 	if hbl::command::option::create "$command_id" "${option_name}" "${!option_id__ref}"; then
-		local command_options="${command_id}_OPTIONS"
+		local command_options="${command_id}__options"
 		if ! hbl::util::is_dict "$command_options"; then
 			declare -Ag "$command_options"
 		fi
@@ -102,7 +98,7 @@ function hbl::command::add_subcommand() {
 		local -n parent__ref="$parent_id"
 		command__ref[parent]="$parent_id"
 		command__ref[full_name]="${parent__ref[name]} $name"
-		parent_subcommands="${parent_id}_SUBCOMMANDS"
+		parent_subcommands="${parent_id}__subcommands"
 		if ! hbl::util::is_array "$parent_subcommands"; then
 			declare -ag "$parent_subcommands"
 		fi

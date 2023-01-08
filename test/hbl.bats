@@ -4,17 +4,20 @@ setup() {
 	common_setup
 }
 
-@test ".init() creates the HBL dict" {
-	hbl::init "/my/executable" && [ $? -eq 0 ]
-	[ -v HBL[@] ]
+#
+# hbl::init()
+#
+@test 'hbl::init() creates the __hbl dict' {
+	hbl::init '/my/executable'
+	[ -v __hbl[@] ]
 }
 
-@test ".init() assigns the program to the HBL dict" {
-	hbl::init "/my/executable" && [ $? -eq 0 ]
-	assert_equal "${HBL[program]}" "/my/executable"
+@test 'hbl::init() assigns the program to the __hbl dict' {
+	hbl::init '/my/executable'
+	assert_equal "${__hbl[program]}" "/my/executable"
 }
 
-@test ".init() assigns the script to the HBL dict" {
-	hbl::init "/my/executable" && [ $? -eq 0 ]
-	assert_equal "${HBL[script]}" "executable"
+@test ".init() assigns the script to the __hbl dict" {
+	hbl::init '/my/executable'
+	assert_equal "${__hbl[script]}" "executable"
 }

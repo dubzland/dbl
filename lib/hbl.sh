@@ -20,10 +20,10 @@ function hbl::init() {
 	local script
 	script="$(basename "$1")"
 
-	declare -Ag HBL
-	HBL=()
-	HBL[program]="$1"
-	HBL[script]="${script}"
+	declare -Ag __hbl
+	__hbl=()
+	__hbl[program]="$1"
+	__hbl[script]="${script}"
 }
 
 function hbl::add_command() {

@@ -8,6 +8,14 @@ common_setup() {
 	source ./lib/hbl.sh
 }
 
+function hbl_test::mock_command() {
+	local command_id
+	command_id="$1"
+	declare -A "$command_id"
+	local -n command__ref="$command_id"
+	command__ref[name]='test-command'
+}
+
 function assert_dict() {
 	[[ "$(declare -p $1 2>/dev/null)" == "declare -A"* ]]
 }

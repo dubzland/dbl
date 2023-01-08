@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-HBL_INDENT="  "
+HBL_INDENT=${HBL_INDENT:-"  "}
 readonly HBL_INDENT
 
 function hbl::command::usage::show() {
@@ -30,7 +30,7 @@ function hbl::command::usage::examples() {
 
 	local -n command__ref="${command_id}"
 
-	command_examples="${command_id}_EXAMPLES"
+	command_examples="${command_id}__examples"
 
 	printf "Usage:\n"
 
@@ -63,15 +63,13 @@ function hbl::command::usage::description() {
 
 	hbl::command::ensure_command "$1" || exit
 
-	local command_id desc
-	command_id="$1"
+	local description
 
-	local -n command__ref="$command_id"
-	desc="${command__ref[desc]}"
+	hbl::dict::get "$1" 'desc' 'description'
 
-	if [[ -n "${desc}" ]]; then
+	if [[ -n "${description}" ]]; then
 		printf "Description\n"
-		printf "%s%s\n" "${HBL_INDENT}" "${desc}"
+		printf "%s%s\n" "${HBL_INDENT}" "${description}"
 		printf "\n"
 	fi
 
@@ -91,7 +89,7 @@ function hbl::command::usage::subcommands() {
 
 	local -n command__ref="${command_id}"
 
-	command_subcommands="${command_id}_SUBCOMMANDS"
+	command_subcommands="${command_id}__subcommands"
 
 	if hbl::util::is_array "$command_subcommands"; then
 		local -n command_subcommands__ref="$command_subcommands"

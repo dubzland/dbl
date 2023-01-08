@@ -1,9 +1,10 @@
 setup() {
 	load '../../test_helper/common'
+	load '../../test_helper/command'
 	common_setup
 
-	declare -Ag TEST_COMMAND
-	TEST_COMMAND=([name]="test-command" [entrypoint]="test_command::run")
+	# declare -Ag TEST_COMMAND
+	# TEST_COMMAND=([name]="test-command" [entrypoint]="test_command::run")
 
 	declare -a usage_examples_args
 	usage_examples_args=()
@@ -45,7 +46,7 @@ setup() {
 	assert_failure $HBL_ERR_INVOCATION
 
 	# too many arguments
-	run hbl::command::usage::show 'TEST_COMMAND' 'extra'
+	run hbl::command::usage::show '__test_command' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
 
 	# empty command id
@@ -54,33 +55,37 @@ setup() {
 
 	# invalid command
 	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::usage::show 'TEST_COMMAND'
+	run hbl::command::usage::show '__test_command'
 	assert_failure
 	unset hbl::command::ensure_command
 }
 
 @test 'hbl::command::usage::show() succeeds' {
-	run hbl::command::usage::show 'TEST_COMMAND'
+	hbl_test::mock_command '__test_command'
+	run hbl::command::usage::show '__test_command'
 	assert_success
 }
 
 @test 'hbl::command::usage::show() displays the examples' {
-	hbl::command::usage::show 'TEST_COMMAND'
+	hbl_test::mock_command '__test_command'
+	hbl::command::usage::show '__test_command'
 	assert_equal $usage_examples_invoked 1
 	assert_equal ${#usage_examples_args[@]} 1
-	assert_equal ${usage_examples_args[0]} 'TEST_COMMAND'
+	assert_equal ${usage_examples_args[0]} '__test_command'
 }
 
 @test 'hbl::command::usage::show() displays the description' {
-	hbl::command::usage::show 'TEST_COMMAND'
+	hbl_test::mock_command '__test_command'
+	hbl::command::usage::show '__test_command'
 	assert_equal $usage_description_invoked 1
 	assert_equal ${#usage_description_args[@]} 1
-	assert_equal ${usage_description_args[0]} 'TEST_COMMAND'
+	assert_equal ${usage_description_args[0]} '__test_command'
 }
 
 @test 'hbl::command::usage::show() displays the subcommands' {
-	hbl::command::usage::show 'TEST_COMMAND'
+	hbl_test::mock_command '__test_command'
+	hbl::command::usage::show '__test_command'
 	assert_equal $usage_subcommands_invoked 1
 	assert_equal ${#usage_subcommands_args[@]} 1
-	assert_equal ${usage_subcommands_args[0]} 'TEST_COMMAND'
+	assert_equal ${usage_subcommands_args[0]} '__test_command'
 }

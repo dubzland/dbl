@@ -8,34 +8,24 @@ setup() {
 #
 # hbl::command::init()
 #
-@test 'hbl::command::init() creates the HBL_COMMAND associative array' {
+@test 'hbl::command::init() creates the __hbl_params associative array' {
 	hbl::command::init
-	assert_dict 'HBL_COMMAND'
-}
-
-@test 'hbl::command::init() assigns an empty command name' {
-	hbl::command::init
-	assert_equal "${HBL_COMMAND[name]}" ''
-}
-
-@test 'hbl::command::init() creates the HBL_PARAMS associative array' {
-	hbl::command::init
-	assert_dict 'HBL_PARAMS'
+	assert_dict '__hbl_params'
 }
 
 @test 'hbl::command::init() sets verbose to 0' {
 	hbl::command::init
-	assert_equal ${HBL_PARAMS[verbose]} 0
+	assert_equal ${__hbl_params[verbose]} 0
 }
 
 @test 'hbl::command::init() sets showhelp to 0' {
 	hbl::command::init
-	assert_equal ${HBL_PARAMS[showhelp]} 0
+	assert_equal ${__hbl_params[showhelp]} 0
 }
 
-@test 'hbl::command::init() creates the HBL_COMMANDS array' {
+@test 'hbl::command::init() creates the __hbl_commands array' {
 	hbl::command::init
-	assert_array 'HBL_COMMANDS'
+	assert_array '__hbl_commands'
 }
 
 @test 'hbl::command::init() succeeds' {

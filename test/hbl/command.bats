@@ -5,12 +5,6 @@ setup() {
 	hbl::init
 	hbl::command::init
 
-	declare -Ag TEST_COMMAND
-	TEST_COMMAND=([name]='test-command' [entrypoint]='test_command::run')
-
-	declare -Ag TEST_COMMAND_OPTION
-	TEST_COMMAND_OPTION=()
-
 	declare -a option_create_args
 	option_create_args=()
 	option_create_invoked=0
@@ -18,11 +12,10 @@ setup() {
 		option_create_invoked=1
 		option_create_args=("$@")
 		local -n option_id__ref="$3"
-		option_id__ref='TEST_COMMAND_OPTION'
+		option_id__ref='__test_command_option'
 		return 0
 	}
 
-	HBL_COMMANDS=(TEST_COMMAND)
 	hbl_test::stub_command_create
 
 	function ensure_command() {
@@ -39,7 +32,7 @@ setup() {
 	assert_failure $HBL_ERR_INVOCATION
 
 	# too many arguments
-	run hbl::command::add_example 'TEST_COMMAND' 'example' 'extra'
+	run hbl::command::add_example '__test_command' 'example' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
 
 	# empty command id
@@ -47,19 +40,20 @@ setup() {
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty example
-	run hbl::command::add_example 'TEST_COMMAND' ''
+	run hbl::command::add_example '__test_command' ''
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# invalid command
 	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::add_example 'TEST_COMMAND' 'example'
+	run hbl::command::add_example '__test_command' 'example'
 	unset hbl::command::ensure_command
 	assert_failure
 }
 
 @test 'hbl::command::add_example() assigns the example to the command' {
-	hbl::command::add_example 'TEST_COMMAND' 'example'
-	hbl::array::contains 'TEST_COMMAND_EXAMPLES' 'example'
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_example '__test_command' 'example'
+	hbl::array::contains '__test_command__examples' 'example'
 }
 
 #
@@ -71,7 +65,7 @@ setup() {
 	assert_failure $HBL_ERR_INVOCATION
 
 	# too many arguments
-	run hbl::command::add_option 'TEST_COMMAND' 'test_option' 'option_id' 'extra'
+	run hbl::command::add_option '__test_command' 'test_option' 'option_id' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
 
 	# empty command id
@@ -79,41 +73,45 @@ setup() {
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty option name
-	run hbl::command::add_option 'TEST_COMMAND' '' 'option_id'
+	run hbl::command::add_option '__test_command' '' 'option_id'
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty option id variable
-	run hbl::command::add_option 'TEST_COMMAND' 'test_option' ''
+	run hbl::command::add_option '__test_command' 'test_option' ''
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# invaid command
 	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::add_option 'TEST_COMMAND' 'test_option' 'option_id'
+	run hbl::command::add_option '__test_command' 'test_option' 'option_id'
 	assert_failure
 	unset hbl::command::ensure_command
 }
 
 @test 'hbl::command::add_option() creates the option' {
-	hbl::command::add_option 'TEST_COMMAND' 'test_option' 'option_id'
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_option '__test_command' 'test_option' 'option_id'
 	assert_equal $option_create_invoked 1
 }
 
 @test 'hbl::command::add_option() passes the proper arguments to option::create()' {
-	hbl::command::add_option 'TEST_COMMAND' 'test_option' 'option_id'
-	assert_equal ${option_create_args[0]} 'TEST_COMMAND'
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_option '__test_command' 'test_option' 'option_id'
+	assert_equal ${option_create_args[0]} '__test_command'
 	assert_equal ${option_create_args[1]} 'test_option'
 	assert_equal ${option_create_args[2]} 'option_id'
 }
 
 @test "hbl::command::add_option() assigns the option to the command" {
-	hbl::command::add_option 'TEST_COMMAND' 'test_option' 'option_id'
-	hbl::dict::get 'TEST_COMMAND_OPTIONS' 'test_option' 'opt'
-	assert_equal "${opt}" 'TEST_COMMAND_OPTION'
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_option '__test_command' 'test_option' 'option_id'
+	hbl::dict::get '__test_command__options' 'test_option' 'opt'
+	assert_equal "${opt}" '__test_command_option'
 }
 
 @test 'hbl::command::add_option() returns the option id' {
-	hbl::command::add_option 'TEST_COMMAND' 'test_option' 'option_id'
-	assert_equal "$option_id" 'TEST_COMMAND_OPTION'
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_option '__test_command' 'test_option' 'option_id'
+	assert_equal "$option_id" '__test_command_option'
 }
 
 #
@@ -125,7 +123,7 @@ setup() {
 	assert_failure $HBL_ERR_INVOCATION
 
 	# too many arguments
-	run hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' \
+	run hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'subcommand_id' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
 
@@ -135,30 +133,31 @@ setup() {
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty subcommand name
-	run hbl::command::add_subcommand 'TEST_COMMAND' '' 'subcommand_run' \
+	run hbl::command::add_subcommand '__test_command' '' 'subcommand_run' \
 		'subcommand_id'
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty entrypoint
-	run hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' '' \
+	run hbl::command::add_subcommand '__test_command' 'subcommand' '' \
 		'sucommand_id'
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty subcommand id var
-	run hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' \
+	run hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' ''
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# invalid parent
 	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::add_subcommand 'UNDEFINED_COMMAND' 'subcommand' \
+	run hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'command_id'
 	assert_failure
 	unset hbl::command::ensure_command
 }
 
 @test 'hbl::command::add_subcommand() creates the command' {
-	hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' \
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'subcommand_id'
 	assert_equal "$command_create_invoked" 1
 	assert_equal ${command_create_args[0]} 'subcommand'
@@ -167,23 +166,24 @@ setup() {
 }
 
 @test 'hbl::command::add_subcommand() sets the parent' {
-	hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' \
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'subcommand_id'
-	assert_equal "${STUB_COMMAND_ID[parent]}" 'TEST_COMMAND'
+	assert_equal "${__stubbed_command[parent]}" '__test_command'
 }
 
 @test "hbl::command::add_subcommand() sets the full_name" {
-	hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' \
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'command_id'
-	assert_equal "${STUB_COMMAND_ID[full_name]}" 'test-command subcommand'
+	assert_equal "${__stubbed_command[full_name]}" 'test-command subcommand'
 }
 
 @test 'hbl::command::add_subcommand() assigns the command to the parent' {
-	declare -ag TEST_COMMAND_SUBCOMMANDS
-	hbl::command::add_subcommand 'TEST_COMMAND' 'subcommand' \
+	hbl_test::mock_command '__test_command'
+	hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'command_id'
-	run hbl::array::contains 'TEST_COMMAND_SUBCOMMANDS' 'STUB_COMMAND_ID'
-	assert_success
+	assert_array_contains '__test_command__subcommands' '__stubbed_command'
 }
 
 #
@@ -195,7 +195,7 @@ setup() {
 	assert_failure $HBL_ERR_INVOCATION
 
 	# too many arguments
-	run hbl::command::set_description 'TEST_COMMAND' 'test description' 'extra'
+	run hbl::command::set_description '__test_command' 'test description' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
 
 	# empty command id
@@ -203,19 +203,20 @@ setup() {
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# empty description
-	run hbl::command::set_description 'TEST_COMMAND' ''
+	run hbl::command::set_description '__test_command' ''
 	assert_failure $HBL_ERR_ARGUMENT
 
 	# invalid command
 	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::set_description 'TEST_COMMAND' 'test description'
+	run hbl::command::set_description '__test_command' 'test description'
 	assert_failure
 	unset hbl::command::ensure_command
 }
 
 @test 'hbl::command::set_description() sets the description' {
-	hbl::command::set_description 'TEST_COMMAND' 'test description'
-	assert_equal "${TEST_COMMAND[desc]}" 'test description'
+	hbl_test::mock_command '__test_command'
+	hbl::command::set_description '__test_command' 'test description'
+	assert_equal "${__test_command[desc]}" 'test description'
 }
 
 #
@@ -227,7 +228,7 @@ setup() {
 	assert_failure $HBL_ERR_INVOCATION
 
 	# too many arguments
-	run ensure_command 'command' 'extra'
+	run ensure_command '__test_command' 'extra'
 	assert_failure $HBL_ERR_INVOCATION
 
 	# empty command id
@@ -236,19 +237,19 @@ setup() {
 }
 
 @test 'hbl::command::ensure_command() with an undefined variable returns HBL_ERR_UNDEFINED' {
-	run hbl::command::ensure_command 'INVALID_COMMAND'
+	run hbl::command::ensure_command '__test_command'
 	assert_failure $HBL_ERR_UNDEFINED
 }
 
 @test 'hbl::command::ensure_command() with a non-dict returns HBL_ERR_UNDEFINED' {
-	declare -a __command
-	run ensure_command '__command'
+	declare -a __test_command
+	run ensure_command '__test_command'
 	assert_failure $HBL_ERR_INVALID_COMMAND
 }
 
 @test 'hbl::command::ensure_command() with a valid dict succeeds' {
-	declare -A __command
-	run ensure_command '__command'
+	hbl_test::mock_command '__test_command'
+	run ensure_command '__test_command'
 	assert_success
 	refute_output
 }

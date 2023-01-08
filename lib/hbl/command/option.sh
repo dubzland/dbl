@@ -17,10 +17,11 @@ function hbl::command::option::create() {
 	local option_index=0
 
 	local -n option_id__ref=$3
-	option_id__ref="${command_id}_OPTION_${option_index}"
+	option_id__ref="${command_id}__option_${option_index}"
 
 	declare -Ag "${option_id__ref}"
-	hbl::dict::set "${option_id__ref}" name "$option_name"
+	hbl::dict::set "${option_id__ref}" 'name' "$option_name"
+	hbl::dict::set "${option_id__ref}" 'id' "$option_id__ref"
 
 	return 0
 }

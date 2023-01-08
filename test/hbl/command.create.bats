@@ -38,44 +38,42 @@ setup() {
 
 @test 'hbl::command::create() creates the global command dict' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_dict 'HBL_COMMAND_0'
+	assert_dict '__hbl_command_0'
 }
 
 @test 'hbl::command::create() returns the id to caller' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${command_id}" 'HBL_COMMAND_0'
+	assert_equal "${command_id}" '__hbl_command_0'
 }
 
 @test 'hbl::command::create() sets the proper id' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${HBL_COMMAND_0[id]}" 'HBL_COMMAND_0'
+	assert_equal "${__hbl_command_0[id]}" '__hbl_command_0'
 }
 
 @test 'hbl::command::create() sets an empty parent' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${HBL_COMMAND_0[parent]}" ''
+	assert_equal "${__hbl_command_0[parent]}" ''
 }
 
 @test 'hbl::command::create() sets the name' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${HBL_COMMAND_0[name]}" 'test-command'
+	assert_equal "${__hbl_command_0[name]}" 'test-command'
 }
 
 @test 'hbl::command::create() sets the entrypoint' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	run hbl::dict::has_key 'HBL_COMMAND_0' 'entrypoint'
-	assert_success
-	assert_equal "${HBL_COMMAND_0[entrypoint]}" 'test_command_run'
+	assert_equal "${__hbl_command_0[entrypoint]}" 'test_command_run'
 }
 
-@test 'hbl::command::create() assigns to the global HBL_COMMANDS array' {
-	declare -a HBL_COMMANDS
+@test 'hbl::command::create() assigns to the global __hbl_commands array' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_array_contains HBL_COMMANDS 'HBL_COMMAND_0'
+	assert_array_contains __hbl_commands '__hbl_command_0'
 }
 
 @test 'hbl::command::create() with an existing command sets the proper id' {
-	HBL_COMMANDS+=('HBL_COMMAND_0')
+	hbl_test::mock_command '__test_command'
+	__hbl_commands+=('__test_command')
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "$command_id" 'HBL_COMMAND_1'
+	assert_equal "$command_id" '__hbl_command_1'
 }
