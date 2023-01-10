@@ -35,6 +35,9 @@ all: $(PKG) $(SIG)
 test:
 	./test/bats/bin/bats -r test/hbl.*.bats test/hbl
 
+lint:
+	git ls-files --exclude='*.sh' --ignored -c -z | xargs -0r shellcheck
+
 tag:
 	git tag v$(VERSION)
 	git push --tags
