@@ -169,7 +169,7 @@ setup() {
 	hbl_test::mock_command '__test_command'
 	hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'subcommand_id'
-	assert_equal "${__stubbed_command[parent]}" '__test_command'
+	assert_equal "${__stubbed_command[_parent]}" '__test_command'
 }
 
 @test 'hbl::command::add_subcommand() assigns the command to the parent' {
@@ -177,6 +177,36 @@ setup() {
 	hbl::command::add_subcommand '__test_command' 'subcommand' \
 		'subcommand_run' 'command_id'
 	assert_array_contains '__test_command__subcommands' '__stubbed_command'
+}
+
+#
+# hbl::command::get_description()
+#
+@test 'hbl::command::get_description() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::get_description
+	assert_failure $HBL_ERR_INVOCATION
+
+	# too many arguments
+	run hbl::command::get_description '__test_command' 'description' 'extra'
+	assert_failure $HBL_ERR_INVOCATION
+
+	# empty command id
+	run hbl::command::get_description '' 'description'
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid command
+	function hbl::command::ensure_command() { return 1; }
+	run hbl::command::get_description '__test_command' 'description'
+	assert_failure
+	unset hbl::command::ensure_command
+}
+
+@test 'hbl::command::get_description() gets the description' {
+	hbl_test::mock_command '__test_command'
+	hbl::command::set_description '__test_command' 'Test description'
+	hbl::command::get_description '__test_command' 'description'
+	assert_equal "$description" 'Test description'
 }
 
 #
@@ -195,10 +225,6 @@ setup() {
 	run hbl::command::set_description '' 'test description'
 	assert_failure $HBL_ERR_ARGUMENT
 
-	# empty description
-	run hbl::command::set_description '__test_command' ''
-	assert_failure $HBL_ERR_ARGUMENT
-
 	# invalid command
 	function hbl::command::ensure_command() { return 1; }
 	run hbl::command::set_description '__test_command' 'test description'
@@ -209,7 +235,7 @@ setup() {
 @test 'hbl::command::set_description() sets the description' {
 	hbl_test::mock_command '__test_command'
 	hbl::command::set_description '__test_command' 'test description'
-	assert_equal "${__test_command[desc]}" 'test description'
+	assert_equal "${__test_command[_description]}" 'test description'
 }
 
 #

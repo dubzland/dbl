@@ -13,10 +13,12 @@ function hbl::command::create() {
 	command_id__ref="__hbl_command_${command_index}"
 	declare -Ag "${command_id__ref}"
 
-	hbl::dict::set "$command_id__ref" 'id'         "$command_id__ref"
-	hbl::dict::set "$command_id__ref" 'parent'     ''
-	hbl::dict::set "$command_id__ref" 'name'       "$1"
-	hbl::dict::set "$command_id__ref" 'entrypoint' "$2"
+	hbl::dict::set "$command_id__ref" '_id'         "$command_id__ref"
+	hbl::dict::set "$command_id__ref" '_parent'     ''
+	hbl::dict::set "$command_id__ref" '_name'       "$1"
+	hbl::dict::set "$command_id__ref" '_entrypoint' "$2"
+
+	declare -ag "${command_id__ref}__examples"
 
 	hbl::array::append '__hbl_commands' "$command_id__ref"
 
@@ -39,7 +41,6 @@ function hbl::command::add_example() {
 
 	hbl::command::ensure_command "$1" || exit
 
-	hbl::util::is_array "${1}__examples" || declare -ag "${1}__examples"
 	hbl::array::append "${1}__examples" "$2" || return
 
 	return $HBL_SUCCESS
@@ -78,7 +79,7 @@ function hbl::command::add_subcommand() {
 	subcommand_id__ref=""
 
 	hbl::command::create "$2" "$3" "${!subcommand_id__ref}" || return
-	hbl::dict::set "$subcommand_id__ref" 'parent' "$1" || return
+	hbl::dict::set "$subcommand_id__ref" '_parent' "$1" || return
 	hbl::util::is_array "${1}__subcommands" || declare -ag "${1}__subcommands"
 	hbl::array::append "${1}__subcommands" "$subcommand_id__ref" || return
 
@@ -88,11 +89,10 @@ function hbl::command::add_subcommand() {
 function hbl::command::set_description() {
 	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]]  || hbl::error::argument "command_id" "$1" || exit
-	[[ -n "$2" ]]  || hbl::error::argument "description" "$1" || exit
 
 	hbl::command::ensure_command "$1" || return
 
-	hbl::dict::set "$1" 'desc' "$2" || return
+	hbl::dict::set "$1" '_description' "$2" || return
 
 	return 0
 }

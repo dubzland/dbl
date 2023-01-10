@@ -51,19 +51,55 @@ setup() {
 @test 'hbl::command::option::create() assigns the option id' {
 	hbl_test::mock_command '__test_command'
 	hbl::command::option::create '__test_command' 'test_option' 'option_id'
-	assert_equal "${__test_command__option_0[id]}" '__test_command__option_0'
+	assert_equal "${__test_command__option_0[_id]}" '__test_command__option_0'
 }
 
 @test 'hbl::command::option::create() assigns the option name' {
 	hbl_test::mock_command '__test_command'
 	hbl::command::option::create '__test_command' 'test_option' 'option_id'
-	assert_equal "${__test_command__option_0[name]}" 'test_option'
+	assert_equal "${__test_command__option_0[_name]}" 'test_option'
 }
 
 @test 'hbl::command::option::create() assigns the command id' {
 	hbl_test::mock_command '__test_command'
 	hbl::command::option::create '__test_command' 'test_option' 'option_id'
-	assert_equal "${__test_command__option_0[command_id]}" '__test_command'
+	assert_equal "${__test_command__option_0[_command_id]}" '__test_command'
+}
+
+@test 'hbl::command::option::create() wraps set_type()' {
+	local option_id
+	hbl_test::mock_command '__test_command'
+	hbl::command::option::create '__test_command' 'test_option' 'option_id'
+	local -n option=$option_id
+	run ${option[set_type]}
+	assert_output "set_type: [$option_id]"
+}
+
+@test 'hbl::command::option::create() wraps set_short_flag()' {
+	local option_id
+	hbl_test::mock_command '__test_command'
+	hbl::command::option::create '__test_command' 'test_option' 'option_id'
+	local -n option=$option_id
+	run ${option[set_short_flag]}
+	assert_output "set_short_flag: [$option_id]"
+}
+
+@test 'hbl::command::option::create() wraps set_long_flag()' {
+	local option_id
+	hbl_test::mock_command '__test_command'
+	hbl::command::option::create '__test_command' 'test_option' 'option_id'
+	local -n option=$option_id
+	run ${option[set_long_flag]}
+	assert_output "set_long_flag: [$option_id]"
+}
+
+@test 'hbl::command::option::create() wraps set_description()' {
+	local option_id
+	hbl_test::mock_command '__test_command'
+	hbl::command::option::create '__test_command' 'test_option' 'option_id'
+	local -n option=$option_id
+	run ${option[set_description]}
+	assert_output "set_description: [$option_id]"
 }
 
 @test 'hbl::command::option::create() assigns the option id to the result var' {

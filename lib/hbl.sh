@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-HBL_LIB="$(dirname "$(readlink -f "${BASH_SOURCE:-$0}")")"
+HBL_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")"
 # shellcheck source=lib/hbl/array.sh
 source "${HBL_LIB}/hbl/array.sh"
 # shellcheck source=lib/hbl/command.sh
@@ -18,12 +18,14 @@ source "${HBL_LIB}/hbl/string.sh"
 # shellcheck source=lib/hbl/util.sh
 source "${HBL_LIB}/hbl/util.sh"
 
+declare -A __hbl
+
+__hbl=()
+
 function hbl::init() {
 	local script
 	script="$(basename "$1")"
 
-	declare -Ag __hbl
-	__hbl=()
 	__hbl[program]="$1"
 	__hbl[script]="${script}"
 }

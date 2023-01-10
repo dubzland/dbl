@@ -7,11 +7,6 @@ setup() {
 #
 # hbl::init()
 #
-@test 'hbl::init() creates the __hbl dict' {
-	hbl::init '/my/executable'
-	[ -v __hbl[@] ]
-}
-
 @test 'hbl::init() assigns the program to the __hbl dict' {
 	hbl::init '/my/executable'
 	assert_equal "${__hbl[program]}" "/my/executable"

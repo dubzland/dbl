@@ -48,22 +48,22 @@ setup() {
 
 @test 'hbl::command::create() sets the proper id' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${__hbl_command_0[id]}" '__hbl_command_0'
+	assert_equal "${__hbl_command_0[_id]}" '__hbl_command_0'
 }
 
 @test 'hbl::command::create() sets an empty parent' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${__hbl_command_0[parent]}" ''
+	assert_equal "${__hbl_command_0[_parent]}" ''
 }
 
 @test 'hbl::command::create() sets the name' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${__hbl_command_0[name]}" 'test-command'
+	assert_equal "${__hbl_command_0[_name]}" 'test-command'
 }
 
 @test 'hbl::command::create() sets the entrypoint' {
 	hbl::command::create 'test-command' 'test_command_run' 'command_id'
-	assert_equal "${__hbl_command_0[entrypoint]}" 'test_command_run'
+	assert_equal "${__hbl_command_0[_entrypoint]}" 'test_command_run'
 }
 
 @test 'hbl::command::create() assigns to the global __hbl_commands array' {

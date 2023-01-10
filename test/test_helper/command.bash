@@ -5,7 +5,20 @@ function hbl_test::mock_command() {
 	command_id="$1"
 	declare -Ag "$command_id"
 	local -n command__ref="$command_id"
-	command__ref[name]='test-command'
+	command__ref[_name]='test-command'
+}
+
+function hbl_test::dummy_run() {
+	printf "Dummy command run.\n"
+	exit 0
+}
+
+function hbl_test::generate_command() {
+	hbl::command::create "$1" 'hbl_test::dummy_run' "$2"
+	return 0
+	# local command_id__ref
+	# command_id__ref="$2"
+	# declare -Ag "$command_id"
 }
 
 function hbl_test::mock_option() {

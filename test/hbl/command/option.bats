@@ -97,6 +97,84 @@ setup() {
 }
 
 #
+# hbl::command::option::set_long_flag()
+#
+@test 'hbl::command::option::set_long_flag() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::option::set_long_flag
+	assert_failure $HBL_ERR_INVOCATION
+
+	# too many arguments
+	run hbl::command::option::set_long_flag '__test_option' 'abcd' 'extra'
+	assert_failure $HBL_ERR_INVOCATION
+
+	# empty option id
+	run hbl::command::option::set_long_flag '' 'abcd'
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# empty flag
+	run hbl::command::option::set_long_flag '__test_option' ''
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid option
+	function hbl::command::option::ensure_option() { return 1; }
+	run hbl::command::option::set_long_flag '__test_option' 'abcd'
+	assert_failure $HBL_INVALID_ARGS
+	unset hbl::command::option::ensure_option
+}
+
+@test 'hbl::command::option::set_long_flag() succeeds' {
+	hbl_test::mock_option '__test_option'
+	run hbl::command::option::set_long_flag '__test_option' 'abcd'
+	assert_success
+}
+
+@test 'hbl::command::option::set_long_flag() assigns the flag to the option' {
+	hbl_test::mock_option '__test_option'
+	hbl::command::option::set_long_flag '__test_option' 'abcd'
+	assert_equal "${__test_option[long_flag]}" 'abcd'
+}
+
+#
+# hbl::command::option::set_description()
+#
+@test 'hbl::command::option::set_description() validates its arguments' {
+	# insufficient arguments
+	run hbl::command::option::set_description
+	assert_failure $HBL_ERR_INVOCATION
+
+	# too many arguments
+	run hbl::command::option::set_description '__test_option' 'some setting' 'extra'
+	assert_failure $HBL_ERR_INVOCATION
+
+	# empty option id
+	run hbl::command::option::set_description '' 'some setting'
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# empty flag
+	run hbl::command::option::set_description '__test_option' ''
+	assert_failure $HBL_ERR_ARGUMENT
+
+	# invalid option
+	function hbl::command::option::ensure_option() { return 1; }
+	run hbl::command::option::set_description '__test_option' 'some setting'
+	assert_failure $HBL_INVALID_ARGS
+	unset hbl::command::option::ensure_option
+}
+
+@test 'hbl::command::option::set_description() succeeds' {
+	hbl_test::mock_option '__test_option'
+	run hbl::command::option::set_description '__test_option' 'some setting'
+	assert_success
+}
+
+@test 'hbl::command::option::set_description() assigns the description to the option' {
+	hbl_test::mock_option '__test_option'
+	hbl::command::option::set_description '__test_option' 'some setting'
+	assert_equal "${__test_option[desc]}" 'some setting'
+}
+
+#
 # hbl::command::option::ensure_option()
 #
 @test 'hbl::command::option::ensure_option() validates its arguments' {

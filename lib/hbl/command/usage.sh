@@ -28,23 +28,30 @@ function hbl::command::usage::examples() {
 	local command_id command_examples command_name
 	command_id="$1" command_name=""
 
-	hbl::dict::get "$command_id" 'fullname' command_name
-	[[ -z "$command_name" ]] && hbl::dict::get "$command_id" 'name' command_name
+	hbl::dict::get "$command_id" '_fullname' command_name
+	[[ -z "$command_name" ]] && hbl::dict::get "$command_id" '_name' command_name
 
 	command_examples="${command_id}__examples"
 
 	printf "Usage:\n"
 
-	if hbl::util::is_array "$command_examples"; then
-		local -n command_examples__ref="$command_examples"
+	if hbl::util::is_array "${1}__examples"; then
+		local -n command_examples__ref="${1}__examples"
 		if [[ ${#command_examples__ref[@]} -gt 0 ]]; then
 			for ex in "${command_examples__ref[@]}"; do
-				printf "%s%s %s\n" "${HBL_INDENT}" "${command_name}" "$ex"
+				local example
+				printf -v example "%s %s" "$command_name" "$ex"
+				command_examples+=("$example")
 			done
-		else
-			printf "%s%s <options>\n" "${HBL_INDENT}" "${command_name}"
 		fi
-		printf "\n"
+	fi
+
+	if [[ ${#command_examples[@]} -gt 0 ]]; then
+		for ex in "${command_examples[@]}"; do
+			printf "%s%s\n" "$HBL_INDENT" "$ex"
+		done
+	else
+		printf "%s%s <options>\n" "$HBL_INDENT" "$command_name"
 	fi
 
 	return 0
@@ -58,10 +65,10 @@ function hbl::command::usage::description() {
 
 	local desc
 
-	hbl::dict::get "$1" 'desc' desc
+	hbl::dict::get "$1" '_description' 'desc'
 
 	if [[ -n "${desc}" ]]; then
-		printf "Description\n"
+		printf "Description:\n"
 		printf "%s%s\n" "${HBL_INDENT}" "${desc}"
 		printf "\n"
 	fi

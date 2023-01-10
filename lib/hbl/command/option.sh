@@ -20,9 +20,9 @@ function hbl::command::option::create() {
 	option_id__ref="${command_id}__option_${option_index}"
 
 	declare -Ag "${option_id__ref}"
-	hbl::dict::set "${option_id__ref}" 'name' "$option_name"
-	hbl::dict::set "${option_id__ref}" 'id' "$option_id__ref"
-	hbl::dict::set "${option_id__ref}" 'command_id' "$command_id"
+	hbl::dict::set "${option_id__ref}" '_name' "$option_name"
+	hbl::dict::set "${option_id__ref}" '_id' "$option_id__ref"
+	hbl::dict::set "${option_id__ref}" '_command_id' "$command_id"
 
 	return 0
 }
@@ -50,7 +50,7 @@ function hbl::command::option::set_short_flag() {
 
 	hbl::command::option::ensure_option "$1" || exit
 
-	hbl::dict::set "$1" 'short_flag' "$2"
+	hbl::dict::set "$1" '_short_flag' "$2"
 
 	return 0
 }
