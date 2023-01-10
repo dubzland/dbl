@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
-function hbl::array::contains() {
-	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]]  || hbl::error::argument 'haystack' "$1" || exit
-
-	hbl::array::ensure_array "$1" || exit
-
+function hbl::array::_contains() {
 	local -n haystack__ref="$1"
 	for val in "${haystack__ref[@]}"; do
 		[[ "${val}" == "$2" ]] && return $HBL_SUCCESS
@@ -14,24 +9,30 @@ function hbl::array::contains() {
 	return $HBL_ERROR
 }
 
-function hbl::array::append() {
-	[[ $# -ge 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
+function hbl::array::contains() {
+	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]]  || hbl::error::argument 'haystack' "$1" || exit
 
 	hbl::array::ensure_array "$1" || exit
+	hbl::array::_contains "$1" "$@"
+}
 
+function hbl::array::_append() {
 	local -n array__ref="$1"
 	array__ref+=("${@:2}")
 
 	return $HBL_SUCCESS
 }
 
-function hbl::array::bubble_sort() {
-	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
+function hbl::array::append() {
+	[[ $# -ge 2 ]] || hbl::error::invocation "$@" || exit
 	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
 
 	hbl::array::ensure_array "$1" || exit
+	hbl::array::_append "$1" "${@:2}"
+}
 
+function hbl::array::_bubble_sort() {
 	local swapped
 	swapped=0
 
@@ -53,7 +54,15 @@ function hbl::array::bubble_sort() {
 	done
 	array__ref=("${sortable[@]}")
 
-	return 0
+	return $HBL_SUCCESS
+}
+
+function hbl::array::bubble_sort() {
+	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
+	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
+
+	hbl::array::ensure_array "$1" || exit
+	hbl::array::_bubble_sort "$1"
 }
 
 function hbl::array::ensure_array() {

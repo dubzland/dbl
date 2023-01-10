@@ -7,6 +7,12 @@ setup() {
 	}
 }
 
+function stub_private() {
+	function hbl::array::_contains() { printf "_contains: [$*]\n"; }
+	function hbl::array::_append() { printf "_append: [$*]\n"; }
+	function hbl::array::_bubble_sort() { printf "_bubble_sort: [$*]\n"; }
+}
+
 #
 # hbl::array::contains()
 #
@@ -34,16 +40,23 @@ setup() {
 	unset array
 }
 
-@test 'hbl::array::contains() when the value is not present returns ERROR' {
+@test 'hbl::array::contains() calls the private function' {
+	stub_private
 	declare -a haystack
-	run hbl::array::contains 'haystack' 'needle'
+	run hbl::array::_contains 'haystack' 'needle'
+	assert_output '_contains: [haystack needle]'
+}
+
+@test 'hbl::array::_contains() when the value is not present returns ERROR' {
+	declare -a haystack
+	run hbl::array::_contains 'haystack' 'needle'
 	assert_failure $HBL_ERROR
 }
 
-@test 'hbl::array::contains() when the value is present succeeds' {
+@test 'hbl::array::_contains() when the value is present succeeds' {
 	declare -a haystack
 	haystack=('needle')
-	run hbl::array::contains 'haystack' 'needle'
+	run hbl::array::_contains 'haystack' 'needle'
 	assert_success
 }
 
@@ -70,10 +83,17 @@ setup() {
 	unset array
 }
 
-@test 'hbl::array::append() adds to the array' {
+@test 'hbl::array::append() calls the private function' {
+	stub_private
 	declare -a myarray
-	hbl::array::append 'myarray' 'foo'
-	hbl::array::contains 'myarray' 'foo'
+	run hbl::array::append 'myarray' 'foo'
+	assert_output '_append: [myarray foo]'
+}
+
+@test 'hbl::array::_append() adds to the array' {
+	declare -a myarray
+	hbl::array::_append 'myarray' 'foo'
+	hbl::array::_contains 'myarray' 'foo'
 }
 
 #
@@ -103,9 +123,16 @@ setup() {
 	unset array
 }
 
-@test 'hbl::array::bubble_sort() properly sorts the array' {
+@test 'hbl::array::bubble_sort() calls the private function' {
+	stub_private
 	declare -a myarray=('orange' 'apple' 'lemon' 'banana')
-	hbl::array::bubble_sort 'myarray'
+	run hbl::array::bubble_sort 'myarray'
+	assert_output '_bubble_sort: [myarray]'
+}
+
+@test 'hbl::array::_bubble_sort() properly sorts the array' {
+	declare -a myarray=('orange' 'apple' 'lemon' 'banana')
+	hbl::array::_bubble_sort 'myarray'
 	assert_equal "${myarray[*]}" 'apple banana lemon orange'
 }
 
