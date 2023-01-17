@@ -1,38 +1,38 @@
-declare -Ag __Class__vtbl
-__Class__vtbl=(
-	[define]=_class_define
-	[new]=class_new
-	[method]=_instance_method
-	[static_method]=_class_method
-	[__next]=__Object__vtbl
+declare -Ag __hbl__Class__vtbl
+__hbl__Class__vtbl=(
+	[define]=hbl__class__define
+	[new]=hbl__class__new
+	[method]=hbl__class__instance_method
+	[static_method]=hbl__class__static_method
+	[__next]=__hbl__Object__vtbl
 )
-readonly __Class__vtbl
+readonly __hbl__Class__vtbl
 
-declare -Ag __Class__pvtbl
-__Class__pvtbl=(
-	[__ctor]=_class_init
-	[__next]=__Object__pvtbl
+declare -Ag __hbl__Class__pvtbl
+__hbl__Class__pvtbl=(
+	[__ctor]=hbl__class__init
+	[__next]=__hbl__Object__pvtbl
 )
-readonly __Class__pvtbl
+readonly __hbl__Class__pvtbl
 
-declare -Ag __Class__pattrs
-__Class__pattrs=()
-readonly __Class__pattrs
+declare -Ag __hbl__Class__pattrs
+__hbl__Class__pattrs=()
+readonly __hbl__Class__pattrs
 
-declare -Ag __Class
-__Class=(
+declare -Ag __hbl__Class
+__hbl__Class=(
 	[__name]="Class"
 	[__ancestor]=""
-	[__vtbl]=__Class__vtbl
-	[__pvtbl]=__Class__pvtbl
-	[__pattrs]=__Class__pattrs
+	[__vtbl]=__hbl__Class__vtbl
+	[__pvtbl]=__hbl__Class__pvtbl
+	[__pattrs]=__hbl__Class__pattrs
 )
 
 declare -g Class
-Class="_object_dispatch __Class__vtbl __Class__vtbl __Class '' "
+Class="hbl__object__dispatch_ __hbl__Class__vtbl __hbl__Class__vtbl __hbl__Class '' "
 readonly Class
 
-function _class_define() {
+function hbl__class__define() {
 	local pcls pcls_vtbl pcls_pvtbl ncls ncls_name ncls_ctor
 	pcls="$1" ncls_name="$2" ncls_ctor="$3"
 
@@ -72,11 +72,11 @@ function _class_define() {
 	ncls_pattrs__ref=()
 
 	local -n ncls_dispatch__ref=$ncls_name
-	ncls_dispatch__ref="_object_dispatch ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
+	ncls_dispatch__ref="hbl__object__dispatch_ ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
 }
 
-function _instance_method() {
-	# printf "*** _instance_method() ***\n"
+function hbl__class__instance_method() {
+	# printf "*** hbl__class__instance_method() ***\n"
 	# printf "args: %s\n" "$@"
 	local cls cls_pvtbl meth_func meth_name
 	cls="$1" meth_name="$2" meth_func="$3"
@@ -87,8 +87,8 @@ function _instance_method() {
 	cls_pvtbl__ref[$meth_name]="$meth_func"
 }
 
-function _static_method() {
-	# printf "*** _static_method() ***\n"
+function hbl__class__static_method() {
+	# printf "*** hbl__class__static_method() ***\n"
 	# printf "args: %s\n" "$@"
 	local cls cls_vtbl meth_func meth_name
 	cls="$1" meth_name="$2" meth_func="$3"
@@ -99,12 +99,8 @@ function _static_method() {
 	cls_vtbl__ref[$meth_name]="$meth_func"
 }
 
-function _private_attribute() {
-	local class
-}
-
-function class_new() {
-	# printf "*** class_new() ***\n" >&3
+function hbl__class__new() {
+	# printf "*** hbl__class__new() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
 	local cls
 	cls=$1
@@ -114,7 +110,7 @@ function class_new() {
 	$obj:__ctor "$obj"
 }
 
-function _class_init() {
+function hbl__class__init() {
 	# printf "*** _class_init() ***\n"
 	# printf "args: %s\n" "$@" >&3
 	local obj

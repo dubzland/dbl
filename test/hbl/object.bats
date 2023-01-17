@@ -13,7 +13,7 @@ setup() {
 	local object object_id
 	$Object:new object
 	$object.__id object_id
-	assert_equal $object_id __Object_0
+	assert_equal $object_id __hbl__Object_0
 }
 
 @test 'objects have a class' {
@@ -27,7 +27,7 @@ setup() {
 	local object vtbl
 	$Object:new object
 	$object.__vtbl vtbl
-	assert_equal $vtbl __Object__pvtbl
+	assert_equal $vtbl __hbl__Object__pvtbl
 }
 
 @test 'objects allow setting attributes' {
@@ -72,7 +72,7 @@ setup() {
 	$Object:new object
 	run $object:inspect
 	assert_success
-	assert_output '<__Object_0>'
+	assert_output '<__hbl__Object_0>'
 }
 
 @test 'object inspection includes available attributes' {
@@ -83,5 +83,5 @@ setup() {
 	$object.color= 'blue'
 	run $object:inspect
 	assert_success
-	assert_output "<__Object_0 color='blue' foo='bar' size='107'>"
+	assert_output "<__hbl__Object_0 color='blue' foo='bar' size='107'>"
 }

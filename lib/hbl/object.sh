@@ -1,39 +1,39 @@
 #!/usr/bin/env bash
 
-declare -a __objects
-__objects=()
+declare -a __hbl__objects
+__hbl__objects=()
 
-declare -Ag __Object__vtbl
-__Object__vtbl=(
-	[new]=_object_new
+declare -Ag __hbl__Object__vtbl
+__hbl__Object__vtbl=(
+	[new]=hbl__object__new
 )
-readonly __Object__vtbl
+readonly __hbl__Object__vtbl
 
-declare -Ag __Object__pvtbl
-__Object__pvtbl=(
-	[inspect]=_object_inspect
+declare -Ag __hbl__Object__pvtbl
+__hbl__Object__pvtbl=(
+	[inspect]=hbl__object__inspect
 )
-readonly __Object__pvtbl
+readonly __hbl__Object__pvtbl
 
-declare -Ag __Object__pattrs
-__Object__pattrs=()
-readonly __Object__pattrs
+declare -Ag __hbl__Object__pattrs
+__hbl__Object__pattrs=()
+readonly __hbl__Object__pattrs
 
-declare -Ag __Object
-__Object=(
+declare -Ag __hbl__Object
+__hbl__Object=(
 	[__name]="Object"
-	[__cls]="__Object"
-	[__vtbl]=__Object__vtbl
-	[__pvtbl]=__Object__pvtbl
-	[__pattrs]=__Object__pattrs
+	[__cls]="__hbl__Object"
+	[__vtbl]=__hbl__Object__vtbl
+	[__pvtbl]=__hbl__Object__pvtbl
+	[__pattrs]=__hbl__Object__pattrs
 )
-readonly __Object
+readonly __hbl__Object
 
 declare -g Object
-Object="_object_dispatch __Object__vtbl __Object__vtbl __Object '' "
+Object="hbl__object__dispatch_ __hbl__Object__vtbl __hbl__Object__vtbl __hbl__Object '' "
 readonly Object
 
-function _object_inspect() {
+function hbl__object__inspect() {
 	local attrs obj obj_id
 	obj=$1
 	$obj.__id obj_id
@@ -47,8 +47,8 @@ function _object_inspect() {
 	printf ">\n"
 }
 
-function _object_find_method() {
-	# printf "*** _object_find_method() ***\n"
+function hbl__object__find_method_() {
+	# printf "*** hbl__object__find_method_() ***\n"
 	# printf "args: %s\n" "$@"
 	local vtbl meth_name meth_vtbl_var
 	vtbl=$1 meth_name=$2 meth_vtbl_var="$3"
@@ -72,8 +72,8 @@ function _object_find_method() {
 	[[ -n "$meth_vtbl__ref" ]]
 }
 
-function _object_process_attribute() {
-	# printf "*** _object_process_attribute() ***\n" >&3
+function hbl__object__process_attribute_() {
+	# printf "*** hbl__object__process_attribute_() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
 	local tgt attr
 	tgt=$3 attr="${5#.}"
@@ -109,7 +109,7 @@ function _object_process_attribute() {
 	fi
 }
 
-function _object_process_method() {
+function hbl__object__process_method_() {
 	# printf "*** _object_process_method() ***\n"
 	# printf "args: %s\n" "$@"
 	local tgt_vtbl sup_vtbl tgt curr_meth meth meth_vtbl
@@ -127,37 +127,33 @@ function _object_process_method() {
 	fi
 	dispatch_args=("${@:6}")
 
-	if _object_find_method $meth_vtbl $meth meth_vtbl; then
+	if hbl__object__find_method_ $meth_vtbl $meth meth_vtbl; then
 		local -n meth_vtbl__ref=$meth_vtbl
 		${meth_vtbl__ref[$meth]} \
-			"_object_dispatch $tgt_vtbl $meth_vtbl $tgt $meth " \
+			"hbl__object__dispatch_ $tgt_vtbl $meth_vtbl $tgt $meth " \
 			"${dispatch_args[@]}"
 	else
 		hbl__error__undefined_method_ 3 "$meth" || return
 	fi
 }
 
-function _object_dispatch() {
-	# printf "*** _object_dispatch() ***\n" >&3
+function hbl__object__dispatch_() {
+	# printf "*** hbl__object__dispatch_() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
 	local selector
 	selector="$5"
 
 	if [[ "$selector" =~ ^\. ]]; then
-		_object_process_attribute "$@"
+		hbl__object__process_attribute_ "$@"
 	elif [[ "$selector" =~ ^\: ]]; then
-		_object_process_method "$@"
+		hbl__object__process_method_ "$@"
 	else
 		printf "bad selector: %s\n" "$selector" >&2 && return 1
 	fi
 }
 
-function _object_declare_associative_array() {
-	return 0
-}
-
-function _object_new() {
-	# printf "*** _object_new() ***\n" >&3
+function hbl__object__new() {
+	# printf "*** _object__new() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
 	[[ $# -ge 2 ]] || hbl__error__invocation_ 3 "$@" || return
 	[[ -n "$1" ]] || hbl__error__argument_ 3 base_name "$1" || return
@@ -171,7 +167,7 @@ function _object_new() {
 	$cls.__pvtbl cls_pvtbl
 
 	# build a unique object_id based on class and object count
-	nobj_id="__${cls_name}_${#__objects[@]}"
+	nobj_id="__hbl__${cls_name}_${#__objects[@]}"
 
 	# declare and initialize the global object
 	declare -Ag $nobj_id
@@ -190,7 +186,7 @@ function _object_new() {
 
 	# setup the dispatch command
 	local -n nobj_dispatch__ref=$nobj_dispatch
-	nobj_dispatch__ref="_object_dispatch ${nobj[__vtbl]} ${nobj[__vtbl]} $nobj_id '' "
+	nobj_dispatch__ref="hbl__object__dispatch_ ${nobj[__vtbl]} ${nobj[__vtbl]} $nobj_id '' "
 
 	# store the object in the global array
 	__objects+=($nobj_id)
