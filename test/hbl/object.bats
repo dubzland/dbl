@@ -24,10 +24,10 @@ setup() {
 }
 
 @test 'objects have a vtable' {
-	local object vtable
+	local object vtbl
 	$Object:new object
-	$object.__vtable vtable
-	assert_equal $vtable __Object__prototype
+	$object.__vtbl vtbl
+	assert_equal $vtbl __Object__pvtbl
 }
 
 @test 'objects allow setting attributes' {

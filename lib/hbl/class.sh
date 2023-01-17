@@ -1,97 +1,124 @@
-declare -Ag Class__vtable
-Class__vtable=(
+declare -Ag __Class__vtbl
+__Class__vtbl=(
 	[define]=_class_define
 	[new]=class_new
 	[method]=_instance_method
 	[static_method]=_class_method
-	[__next]=Object__vtable
+	[__next]=__Object__vtbl
 )
+readonly __Class__vtbl
 
-declare -Ag Class__prototype
-Class__prototype=(
+declare -Ag __Class__pvtbl
+__Class__pvtbl=(
 	[__ctor]=_class_init
-	[__next]=Object__prototype
+	[__next]=__Object__pvtbl
 )
+readonly __Class__pvtbl
 
-declare -Ag _Class
-_Class=(
+declare -Ag __Class__pattrs
+__Class__pattrs=()
+readonly __Class__pattrs
+
+declare -Ag __Class
+__Class=(
 	[__name]="Class"
 	[__ancestor]=""
-	[__vtable]=Class__vtable
-	[__prototype]=Class__prototype
+	[__vtbl]=__Class__vtbl
+	[__pvtbl]=__Class__pvtbl
+	[__pattrs]=__Class__pattrs
 )
 
 declare -g Class
-Class="_dispatch Class__vtable Class__vtable _Class '' "
+Class="_object_dispatch __Class__vtbl __Class__vtbl __Class '' "
 readonly Class
 
 function _class_define() {
-	local parent_class parent_vtable parent_prototype define_class_name define_class_new define_class
-	local class_vtable_name class_prototype_name
-	parent_class="$1" define_class_name="$2" define_class_new="$3" define_class_dispatch="$4"
-
-	# create the class vtable
-	$parent_class._vtable parent_vtable
-	$parent_class._prototype parent_prototype
-	class_vtable_name="_Class_${define_class_name}__vtable"
-	declare -Ag $class_vtable_name
-	local -n class_vtable__ref=$class_vtable_name
-	# printf "setting __next vtable to %s\n" "$parent_vtable"
-	class_vtable__ref=(
-		[__next]=$parent_vtable
-	)
-
-	# create the class prototype
-	class_prototype_name="_Class_${define_class_name}__prototype"
-	declare -Ag $class_prototype_name
-	local -n class_prototype__ref=$class_prototype_name
-	# printf "setting __next prototype for %s to %s\n" "$define_class_name" "$parent_prototype"
-	class_prototype__ref=(
-		[__ctor]=$define_class_new
-		[__next]=$parent_prototype
-	)
+	local pcls pcls_vtbl pcls_pvtbl ncls ncls_name ncls_ctor
+	pcls="$1" ncls_name="$2" ncls_ctor="$3"
 
 	# create the class
-	define_class="_Class_$define_class_name"
-	declare -Ag $define_class
-	local -n class__ref=$define_class
-	class__ref=(
-		[__name]=$define_class_name
-		[__ancestor]="Object"
-		[__vtable]=$class_vtable_name
-		[__prototype]=$class_prototype_name
+	ncls="_Class_$ncls_name"
+	declare -Ag $ncls
+	local -n ncls__ref=$ncls
+	ncls__ref=(
+		[__name]=$ncls_name
+		[__ancestor]='Object'
+		[__vtbl]="__Class_${ncls_name}__vtbl"
+		[__pvtbl]="__Class_${ncls_pvtbl}__pvtbl"
+		[__pattrs]="__Class_${ncls_name}__pattrs"
 	)
-	declare -g "$define_class_name"
-	local -n class_dispatch__ref=$define_class_name
-	class_dispatch__ref="_dispatch $class_vtable_name $class_vtable_name ${define_class} '' "
+	declare -g "$ncls_name"
+
+	# create the class vtable
+	$pcls.__vtbl pcls_vtbl
+	declare -Ag ${ncls__ref[__vtbl]}
+	local -n ncls_vtbl__ref=${ncls__ref[__vtbl]}
+	ncls_vtbl__ref=(
+		[__next]=$pcls_vtbl
+	)
+
+	# create the class prototype vtable
+	$pcls.__pvtbl pcls_pvtbl
+	declare -Ag ${ncls__ref[__pvtbl]}
+	local -n ncls_pvtbl__ref=${ncls__ref[__pvtbl]}
+	ncls_pvtbl__ref=(
+		[__next]=$pcls_pvtbl
+	)
+	[[ -n "$cls_ctor" ]] && ncls_pvtbl__ref[__ctor]=$cls_ctor
+
+	# create the class prototype_attributes
+	declare -Ag ${ncls__ref[__pattrs]}
+	local -n ncls_pattrs__ref=${ncls__ref[__pattrs]}
+	ncls_pattrs__ref=()
+
+	local -n ncls_dispatch__ref=$ncls_name
+	ncls_dispatch__ref="_object_dispatch ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
 }
 
 function _instance_method() {
 	# printf "*** _instance_method() ***\n"
 	# printf "args: %s\n" "$@"
-	local class_prototype class method_name method_function class_id
-	local class="$1" method_name="$2" method_function="$3"
+	local cls cls_pvtbl meth_func meth_name
+	cls="$1" meth_name="$2" meth_func="$3"
 
-	$class._prototype class_prototype
+	$cls.__pvtbl cls_pvtbl
 
-	local -n class_prototype__ref=$class_prototype
-	class_prototype__ref[$method_name]="$method_function"
+	local -n cls_pvtbl__ref=$cls_pvtbl
+	cls_pvtbl__ref[$meth_name]="$meth_func"
+}
+
+function _static_method() {
+	# printf "*** _static_method() ***\n"
+	# printf "args: %s\n" "$@"
+	local cls cls_vtbl meth_func meth_name
+	cls="$1" meth_name="$2" meth_func="$3"
+
+	$cls._vtbl cls_vtbl
+
+	local -n cls_vtbl__ref=$cls_vtbl
+	cls_vtbl__ref[$meth_name]="$meth_func"
+}
+
+function _private_attribute() {
+	local class
 }
 
 function class_new() {
-	local class
-	class=$1
+	# printf "*** class_new() ***\n" >&3
+	# printf "args: %s\n" "$@" >&3
+	local cls
+	cls=$1
 
-	$class:super $2
-	local -n object="$2"
-
-	$object:__ctor "$object"
+	$cls:super $2
+	local -n obj="$2"
+	$obj:__ctor "$obj"
 }
 
 function _class_init() {
-	printf "*** _class_init() ***\n"
-	local object
-	object=$1
-	$object._base_id= 8675309
+	# printf "*** _class_init() ***\n"
+	# printf "args: %s\n" "$@" >&3
+	local obj
+	obj=$1
+	$obj._base_id= 8675309
 	return 0
 }
