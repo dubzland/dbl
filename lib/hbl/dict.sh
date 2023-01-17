@@ -1,70 +1,58 @@
-#!/usr/bin/env bash
+##!/usr/bin/env bash
 
-function hbl::dict::_set() {
-	local -n __ref=$1
-	__ref[$2]="${@:3}"
+function hbl__dict__init_() {
+	local this="$1"
+
+	$this:super
+}
+
+function hbl__dict__set() {
+	[[ $# -eq 3 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+	local this="$1"
+	local dict key value
+	key="$2" val="$3"
+
+	$this._raw dict
+	local -n dict__ref="$dict"
+	dict__ref[$key]="$val"
 
 	return $HBL_SUCCESS
 }
-function hbl::dict::set() {
-	[[ $# -eq 3 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'dict' "$1" || exit
-	[[ -n "$2" ]] || hbl::error::argument 'key' "$2" || exit
 
-	hbl::dict::ensure_dict "$1" || exit
-	hbl::dict::_set "$1" "$2" "${@:3}"
+function hbl__dict__get() {
+	[[ $# -eq 3 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+	[[ -n "$2" ]] || hbl__error__argument_ 1 key "$2" || return
+
+	local this="$1"
+	local dict key val_var
+	key="$2" val_var="$3"
+
+	$this._raw dict
+	local -n dict__ref="$dict"
+	local -n val_var__ref="$val_var"
+	val_var__ref="${dict__ref[$key]}"
+
+	return $HBL_SUCCESS
 }
 
-function hbl::dict::_has_key() {
-	local -n __ref=$1
-	for key in "${!__ref[@]}"; do
-		[[ "${key}" == "$2" ]] && return $HBL_SUCCESS
-	done
+function hbl__dict__has_key() {
+	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+	[[ -n "$2" ]] || hbl__error__argument_ 1 key "$2" || return
 
-	return $HBL_ERROR
-}
-
-function hbl::dict::has_key() {
-	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'dict' "$1" || exit
-	[[ -n "$2" ]] || hbl::error::argument 'key' "$2" || exit
-
-	hbl::dict::ensure_dict "$1" || exit
-	hbl::dict::_has_key "$@"
-}
-
-function hbl::dict::_get() {
-	local key
+	local this="$1"
+	local dict key val_var
 	key="$2"
 
-	local -n value_var__ref=$3
-	local -n dict__ref=$1
-	if hbl::dict::_has_key "${!dict__ref}" "$key"; then
-		value_var__ref="${dict__ref[$key]}"
-		return $HBL_SUCCESS
-	fi
+	$this._raw dict
+	local -n dict__ref="$dict"
 
-	return $HBL_ERROR
+	[[ -v dict__ref[$key] ]]
 }
 
-function hbl::dict::get() {
-	[[ $# -eq 3 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'dict' "$1" || exit
-	[[ -n "$2" ]] || hbl::error::argument 'key' "$2" || exit
-	[[ -n "$3" ]] || hbl::error::argument 'value_var' "$3" || exit
+$Class:define Dict    hbl__dict__init_
 
-	hbl::dict::ensure_dict "$1" || exit
-	hbl::dict::_get "$@"
-}
+$Dict:method  set     hbl__dict__set
+$Dict:method  get     hbl__dict__get
+$Dict:method  has_key hbl__dict__has_key
 
-function hbl::dict::ensure_dict() {
-	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'dict' "$@" || exit
-
-	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined 2 "$1" || return
-	hbl::util::is_dict "$1" \
-		|| hbl::error::_invalid_dict 2 "$1" || return
-
-	return $HBL_SUCCESS
-}
+$Dict:attr    _raw    $HBL_ASSOCIATIVE_ARRAY

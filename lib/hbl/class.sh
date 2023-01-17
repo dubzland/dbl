@@ -1,7 +1,19 @@
+#!/usr/bin/env bash
+
+declare -g HBL_STRING=1
+declare -g HBL_NUMBER=2
+declare -g HBL_ARRAY=3
+declare -g HBL_ASSOCIATIVE_ARRAY=4
+readonly HBL_STRING
+readonly HBL_NUMBER
+readonly HBL_ARRAY
+readonly HBL_ASSOCIATIVE_ARRAY
+
 declare -Ag __hbl__Class__vtbl
 __hbl__Class__vtbl=(
 	[define]=hbl__class__define
 	[new]=hbl__class__new
+	[attr]=hbl__class__attribute
 	[method]=hbl__class__instance_method
 	[static_method]=hbl__class__static_method
 	[__next]=__hbl__Object__vtbl
@@ -33,19 +45,21 @@ Class="hbl__object__dispatch_ __hbl__Class__vtbl __hbl__Class__vtbl __hbl__Class
 readonly Class
 
 function hbl__class__define() {
+	# printf "*** hbl__class__define() ***\n" >&3
+	# printf "args: %s\n" "$@" >&3
 	local pcls pcls_vtbl pcls_pvtbl ncls ncls_name ncls_ctor
 	pcls="$1" ncls_name="$2" ncls_ctor="$3"
 
 	# create the class
-	ncls="_Class_$ncls_name"
+	ncls="__hbl__Class_$ncls_name"
 	declare -Ag $ncls
 	local -n ncls__ref=$ncls
 	ncls__ref=(
 		[__name]=$ncls_name
 		[__ancestor]='Object'
-		[__vtbl]="__Class_${ncls_name}__vtbl"
-		[__pvtbl]="__Class_${ncls_pvtbl}__pvtbl"
-		[__pattrs]="__Class_${ncls_name}__pattrs"
+		[__vtbl]="${ncls}__vtbl"
+		[__pvtbl]="${ncls}__pvtbl"
+		[__pattrs]="${ncls}__pattrs"
 	)
 	declare -g "$ncls_name"
 
@@ -73,6 +87,27 @@ function hbl__class__define() {
 
 	local -n ncls_dispatch__ref=$ncls_name
 	ncls_dispatch__ref="hbl__object__dispatch_ ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
+}
+
+function hbl__class__attribute() {
+	local cls cls_pattrs attr attr_type
+	cls="$1" attr="$2" attr_type="$3"
+
+	# printf "adding attribute\n" >&3
+	# printf "name: %s\n" "$attr" >&3
+	# printf "type: %s\n" "$attr_type" >&3
+
+	case $attr_type in
+		$HBL_STRING|$HBL_NUMBER|$HBL_ARRAY|$HBL_ASSOCIATIVE_ARRAY)
+			$cls.__pattrs cls_pattrs
+			local -n cls_pattrs__ref=$cls_pattrs
+			cls_pattrs__ref[$attr]="$attr_type"
+			;;
+		*)
+			printf "Unsupported attribute type: %s\n" "$attr_type" && return 1
+			;;
+	esac
+
 }
 
 function hbl__class__instance_method() {
@@ -113,8 +148,5 @@ function hbl__class__new() {
 function hbl__class__init() {
 	# printf "*** _class_init() ***\n"
 	# printf "args: %s\n" "$@" >&3
-	local obj
-	obj=$1
-	$obj._base_id= 8675309
 	return 0
 }

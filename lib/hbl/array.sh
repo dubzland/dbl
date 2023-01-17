@@ -1,78 +1,95 @@
 #!/usr/bin/env bash
 
-function hbl::array::_contains() {
-	local -n haystack__ref="$1"
-	for val in "${haystack__ref[@]}"; do
-		[[ "${val}" == "$2" ]] && return $HBL_SUCCESS
-	done
+# @file hbl__array
+# @brief A library for interacting with Bash arrays.
+###############################################################################
 
-	return $HBL_ERROR
+function hbl__array__init_() {
+	local this="$1"
+
+	$this:super
 }
 
-function hbl::array::contains() {
-	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]]  || hbl::error::argument 'haystack' "$1" || exit
+function hbl__array__append() {
+	[[ $# -ge 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
-	hbl::array::ensure_array "$1" || exit
-	hbl::array::_contains "$1" "$2"
-}
+	local this="$1"
+	local _arr
 
-function hbl::array::_append() {
-	local -n array__ref="$1"
-	array__ref+=("${@:2}")
+	$this._raw _arr
+	local -n _arr__ref=$_arr
+	_arr__ref+=("${@:2}")
 
 	return $HBL_SUCCESS
 }
 
-function hbl::array::append() {
-	[[ $# -ge 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
+function hbl__array__bubble_sort() {
+	[[ $# -eq 1 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
-	hbl::array::ensure_array "$1" || exit
-	hbl::array::_append "$1" "${@:2}"
-}
+	local this="$1"
 
-function hbl::array::_bubble_sort() {
-	local swapped
+	local arr swapped
 	swapped=0
+
+	$this._raw arr
 
 	declare -a sortable
 
-	local -n array__ref="$1"
-	sortable=("${array__ref[@]}")
+	local -n arr__ref="$arr"
+	sortable=("${arr__ref[@]}")
 
 	for ((i = 0; i < ${#sortable[@]}; i++)); do
 		for(( j = 0; j < ${#sortable[@]}-i-1; j++)); do
 			if [[ "${sortable[j]}" > "${sortable[$((j+1))]}" ]]; then
-				array__ref=${sortable[j]}
+				arr__ref=${sortable[j]}
 				sortable[$j]=${sortable[$((j+1))]}
-				sortable[$((j+1))]=$array__ref
+				sortable[$((j+1))]=$arr__ref
 				swapped=1
 			fi
 		done
 		[[ $swapped -eq 0 ]] && break
 	done
-	array__ref=("${sortable[@]}")
+	arr__ref=("${sortable[@]}")
 
 	return $HBL_SUCCESS
 }
 
-function hbl::array::bubble_sort() {
-	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]]  || hbl::error::argument 'array' "$1" || exit
+function hbl__array__contains() {
+	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
-	hbl::array::ensure_array "$1" || exit
-	hbl::array::_bubble_sort "$1"
+	local this="$1"
+	local haystack
+
+	$this._raw haystack
+	local -n haystack__ref="$haystack"
+	for val in "${haystack__ref[@]}"; do
+		[[ "$val" = "$2" ]] && return $HBL_SUCCESS
+	done
+
+	return $HBL_ERROR
 }
 
-function hbl::array::ensure_array() {
-	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'array' "$@" || exit
+function hbl__array__to_array() {
+	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
-	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined 2 "$1" || return
-	hbl::util::is_array "$1" \
-		|| hbl::error::_invalid_array 2 "$1" || return
+	local this src tgt
+	this="$1" tgt="$2"
+
+	$this._raw src
+
+	local -n src__ref="$src"
+	local -n tgt__ref="$tgt"
+	tgt__ref=("${src__ref[@]}")
 
 	return $HBL_SUCCESS
 }
+
+$Class:define Array       hbl__array__init_
+
+$Array:method append      hbl__array__append
+$Array:method bubble_sort hbl__array__bubble_sort
+$Array:method sort        hbl__array__bubble_sort
+$Array:method contains    hbl__array__contains
+$Array:method to_array    hbl__array__to_array
+
+$Array:attr   _raw        $HBL_ARRAY

@@ -86,6 +86,7 @@ function hbl__object__process_attribute_() {
 		local -n attrs__ref=${tgt__ref[__attrs]}
 		# set an attribute value
 		[[ $# -ge 6 ]] || printf "Missing attribute ref\n" >&2 || return 1
+		[[ -v attrs__ref[${attr%=}] ]] || printf "invalid attribute: %s\n" "${attr%=}" || return 1
 		attrs__ref[${attr%=}]="$6"
 	else
 		# get an attribute value
@@ -159,12 +160,13 @@ function hbl__object__new() {
 	[[ -n "$1" ]] || hbl__error__argument_ 3 base_name "$1" || return
 	[[ -n "$2" ]] || hbl__error__argument_ 3 dispatch_var "$2" || return
 
-	local cls cls_name nobj_dispatch nobj_id
+	local cls cls_name cls_pattrs nobj_dispatch nobj_id
 	cls="$1" nobj_dispatch="$2"
 
 	# get the base class name and prototype
 	$cls.__name cls_name
 	$cls.__pvtbl cls_pvtbl
+	$cls.__pattrs cls_pattrs
 
 	# build a unique object_id based on class and object count
 	nobj_id="__hbl__${cls_name}_${#__objects[@]}"
@@ -183,6 +185,27 @@ function hbl__object__new() {
 	declare -Ag ${nobj[__attrs]}
 	local -n nobj_attrs__ref=${nobj[__attrs]}
 	nobj_attrs__ref=()
+	local -n cls_pattrs__ref="$cls_pattrs"
+	for key in "${!cls_pattrs__ref[@]}"; do
+		case "${cls_pattrs__ref[$key]}" in
+			$HBL_STRING) nobj_attrs__ref[$key]="" ;;
+			$HBL_ARRAY|$HBL_ASSOCIATIVE_ARRAY)
+				local attr_id="${nobj_id}__attrs__$key"
+				if [[ ${cls_pattrs__ref[$key]} -eq $HBL_ARRAY ]]; then
+					declare -ag $attr_id
+				else
+					declare -Ag $attr_id
+				fi
+				local -n attr__ref=$attr_id
+				attr__ref=()
+				nobj_attrs__ref[$key]=$attr_id
+				;;
+			*)
+				printf "unknown attribute type: %s - %s\n" "$key" "${cls_pattrs__ref[$key]}" && return 1
+				;;
+		esac
+	done
+
 
 	# setup the dispatch command
 	local -n nobj_dispatch__ref=$nobj_dispatch
