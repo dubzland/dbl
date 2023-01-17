@@ -8,6 +8,12 @@ setup() {
 	}
 }
 
+function stub_private() {
+	function hbl::dict::_set() { printf "_set: [$*]\n"; }
+	function hbl::dict::_has_key() { printf "_has_key: [$*]\n"; }
+	function hbl::dict::_get() { printf "_get: [$*]\n"; }
+}
+
 #
 # hbl::dict::set()
 #
@@ -35,21 +41,28 @@ setup() {
 	assert_failure
 }
 
-@test 'hbl::dict::set() succeeds' {
+@test 'hbl::dict::set() calls the private function' {
+	stub_private
 	declare -A dict
 	run hbl::dict::set "dict" "key" "myval"
+	assert_output '_set: [dict key myval]'
+}
+
+@test 'hbl::dict::_set() succeeds' {
+	declare -A dict
+	run hbl::dict::_set "dict" "key" "myval"
 	assert_success
 }
 
-@test 'hbl::dict::set() assigns a value to the dict (by reference)' {
+@test 'hbl::dict::_set() assigns a value to the dict (by reference)' {
 	declare -A dict
-	hbl::dict::set 'dict' 'key' 'myval'
+	hbl::dict::_set 'dict' 'key' 'myval'
 	assert_equal "${dict[key]}" 'myval'
 }
 
-@test 'hbl::dict::set() supports values with spaces' {
+@test 'hbl::dict::_set() supports values with spaces' {
 	declare -A dict
-	hbl::dict::set 'dict' 'key' 'myval with space'
+	hbl::dict::_set 'dict' 'key' 'myval with space'
 	assert_equal "${dict[key]}" 'myval with space'
 }
 
@@ -80,16 +93,23 @@ setup() {
 	assert_failure
 }
 
-@test 'hbl::dict::has_key() with a non-existent key fails' {
+@test 'hbl::dict::has_key() calls the private function' {
+	stub_private
 	declare -Ag dict
 	run hbl::dict::has_key 'dict' 'key'
+	assert_output '_has_key: [dict key]'
+}
+
+@test 'hbl::dict::_has_key() with a non-existent key fails' {
+	declare -Ag dict
+	run hbl::dict::_has_key 'dict' 'key'
 	assert_failure $HBL_ERROR
 }
 
-@test 'hbl::dict::has_key() with a valid key succeeds' {
+@test 'hbl::dict::_has_key() with a valid key succeeds' {
 	declare -Ag dict
 	dict[key]='value'
-	run hbl::dict::has_key 'dict' 'key'
+	run hbl::dict::_has_key 'dict' 'key'
 	assert_success
 }
 
@@ -120,19 +140,29 @@ setup() {
 	assert_failure
 }
 
-@test 'hbl::dict::get() succeeds' {
+@test 'hbl::dict::get() calls the private function' {
+	stub_private
 	declare -A dict
 	local value_var
 	dict=([key]='value')
 	run hbl::dict::get 'dict' 'key' 'value_var'
 	assert_success
+	assert_output '_get: [dict key value_var]'
 }
 
-@test 'hbl::dict::get() assigns the value by reference' {
+@test 'hbl::dict::_get() succeeds' {
+	declare -A dict
+	local value_var
+	dict=([key]='value')
+	run hbl::dict::_get 'dict' 'key' 'value_var'
+	assert_success
+}
+
+@test 'hbl::dict::_get() assigns the value by reference' {
 	declare -A dict
 	dict=([key]='value')
 	local value_var
-	hbl::dict::get 'dict' 'key' 'value_var'
+	hbl::dict::_get 'dict' 'key' 'value_var'
 	assert_equal "$value_var" "value"
 }
 

@@ -14,7 +14,7 @@ function hbl::array::contains() {
 	[[ -n "$1" ]]  || hbl::error::argument 'haystack' "$1" || exit
 
 	hbl::array::ensure_array "$1" || exit
-	hbl::array::_contains "$1" "$@"
+	hbl::array::_contains "$1" "$2"
 }
 
 function hbl::array::_append() {
