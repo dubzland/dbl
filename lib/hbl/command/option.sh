@@ -4,65 +4,22 @@ declare -ag HBL_OPTION_TYPES
 HBL_OPTION_TYPES=(string number flag dir)
 readonly HBL_OPTION_TYPES
 
-function hbl::command::option::create() {
-	[[ $# -eq 3 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'command_id' "$1" || exit
-	[[ -n "$2" ]] || hbl::error::argument 'option_name' "$2" || exit
-	[[ -n "$3" ]] || hbl::error::argument 'option_id_var' "$3" || exit
+function hbl__command__option__init_() {
+	[[ $# -eq 2 ]] || hbl__error__invocation "${@:2}" || exit
+	[[ -n "$2" ]] || hbl__error__argument 'option_name' "$2" || exit
 
-	hbl::command::ensure_command "$1" || exit
+	local this="$1"
 
-	local command_id option_name
-	command_id="$1" option_name="$2"
-	local option_index=0
-
-	local -n option_id__ref=$3
-	option_id__ref="${command_id}__option_${option_index}"
-
-	declare -Ag "${option_id__ref}"
-	hbl::dict::set "${option_id__ref}" '_name' "$option_name"
-	hbl::dict::set "${option_id__ref}" '_id' "$option_id__ref"
-	hbl::dict::set "${option_id__ref}" '_command_id' "$command_id"
-
-	return 0
-}
-
-function hbl::command::option::set_type() {
-	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'option_id' "$1" || exit
-	[[ -n "$2" ]] || hbl::error::argument 'option_type' "$2" || exit
-
-	hbl::array::contains HBL_OPTION_TYPES "$2" \
-		|| hbl::error::argument 'type' "$2" || exit
-
-	hbl::command::option::ensure_option "$1" || exit
-
-	hbl::dict::set "$1" 'type' "$2"
-
-	return 0
-}
-
-function hbl::command::option::set_short_flag() {
-	[[ $# -eq 2 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'option_id' "$1" || exit
-	[[ -n "$2" ]] || hbl::error::argument 'option_short_flag' "$2" || exit
-	[[ ${#2} -eq 1 ]] || hbl::error::argument 'option_short_flag' "$2" || exit
-
-	hbl::command::option::ensure_option "$1" || exit
-
-	hbl::dict::set "$1" '_short_flag' "$2"
-
-	return 0
-}
-
-function hbl::command::option::ensure_option() {
-	[[ $# -eq 1 ]] || hbl::error::invocation "$@" || exit
-	[[ -n "$1" ]] || hbl::error::argument 'option_id' "$@" || exit
-
-	hbl::util::is_defined "$1" \
-		|| hbl::error::_undefined 2 "$1" || return
-	hbl::util::is_dict "$1" \
-		|| hbl::error::_invalid_option 2 "$1" || return
+	$this:super
+	$this.name= "$2"
 
 	return $HBL_SUCCESS
 }
+
+$Class:define Option hbl__command__option__init_
+
+$Option:attr name $HBL_STRING
+$Option:attr type $HBL_STRING
+$Option:attr short_flag $HBL_STRING
+$Option:attr long_flag $HBL_STRING
+$Option:attr description $HBL_STRING

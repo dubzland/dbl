@@ -49,10 +49,29 @@ function hbl__dict__has_key() {
 	[[ -v dict__ref[$key] ]]
 }
 
+function hbl__dict__to_dict() {
+	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+	[[ -n "$2" ]] || hbl__error__argument_ 1 target "$2" || return
+
+	local this src tgt
+	this="$1" tgt="$2"
+
+	$this._raw src
+
+	local -n src__ref="$src"
+	local -n tgt__ref="$tgt"
+	for key in "${!src__ref[@]}"; do
+		tgt__ref[$key]="${src__ref[$key]}"
+	done
+
+	return $HBL_SUCCESS
+}
+
 $Class:define Dict    hbl__dict__init_
 
 $Dict:method  set     hbl__dict__set
 $Dict:method  get     hbl__dict__get
 $Dict:method  has_key hbl__dict__has_key
+$Dict:method  to_dict hbl__dict__to_dict
 
 $Dict:attr    _raw    $HBL_ASSOCIATIVE_ARRAY

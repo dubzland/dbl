@@ -188,7 +188,7 @@ function hbl__object__new() {
 	local -n cls_pattrs__ref="$cls_pattrs"
 	for key in "${!cls_pattrs__ref[@]}"; do
 		case "${cls_pattrs__ref[$key]}" in
-			$HBL_STRING) nobj_attrs__ref[$key]="" ;;
+			$HBL_STRING) nobj_attrs__ref[$key]='' ;;
 			$HBL_ARRAY|$HBL_ASSOCIATIVE_ARRAY)
 				local attr_id="${nobj_id}__attrs__$key"
 				if [[ ${cls_pattrs__ref[$key]} -eq $HBL_ARRAY ]]; then
@@ -201,7 +201,22 @@ function hbl__object__new() {
 				nobj_attrs__ref[$key]=$attr_id
 				;;
 			*)
-				printf "unknown attribute type: %s - %s\n" "$key" "${cls_pattrs__ref[$key]}" && return 1
+				local -i found=0
+				for hbl_cls in "${__hbl__classes[@]}"; do
+					# just set it to empty string for now.
+					# TODO: figure out how to delay initialization to allow
+					# classes to initialize their children
+					if [[ "${cls_pattrs__ref[$key]}" = "$hbl_cls" ]]; then
+						nobj_attrs__ref[$key]=''
+						found=1
+						break
+					fi
+				done
+				[[ $found -eq 1 ]] ||
+					printf "unknown attribute type: %s - %s\n" \
+						"$key" \
+						"${cls_pattrs__ref[$key]}" ||
+					return 1
 				;;
 		esac
 	done
@@ -213,4 +228,6 @@ function hbl__object__new() {
 
 	# store the object in the global array
 	__objects+=($nobj_id)
+
+	return $HBL_SUCCESS
 }

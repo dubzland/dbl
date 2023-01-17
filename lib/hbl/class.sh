@@ -44,6 +44,9 @@ declare -g Class
 Class="hbl__object__dispatch_ __hbl__Class__vtbl __hbl__Class__vtbl __hbl__Class '' "
 readonly Class
 
+declare -ag __hbl__classes
+__hbl__classes=()
+
 function hbl__class__define() {
 	# printf "*** hbl__class__define() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
@@ -78,7 +81,7 @@ function hbl__class__define() {
 	ncls_pvtbl__ref=(
 		[__next]=$pcls_pvtbl
 	)
-	[[ -n "$cls_ctor" ]] && ncls_pvtbl__ref[__ctor]=$cls_ctor
+	[[ -n "$ncls_ctor" ]] && ncls_pvtbl__ref[__ctor]=$ncls_ctor
 
 	# create the class prototype_attributes
 	declare -Ag ${ncls__ref[__pattrs]}
@@ -87,6 +90,8 @@ function hbl__class__define() {
 
 	local -n ncls_dispatch__ref=$ncls_name
 	ncls_dispatch__ref="hbl__object__dispatch_ ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
+
+	__hbl__classes+=("$ncls_name")
 }
 
 function hbl__class__attribute() {
@@ -104,10 +109,19 @@ function hbl__class__attribute() {
 			cls_pattrs__ref[$attr]="$attr_type"
 			;;
 		*)
-			printf "Unsupported attribute type: %s\n" "$attr_type" && return 1
+			for hbl_cls in "${__hbl__classes[@]}"; do
+				if [[ "$attr_type" = "$hbl_cls" ]]; then
+					$cls.__pattrs cls_pattrs
+					local -n cls_pattrs__ref=$cls_pattrs
+					cls_pattrs__ref[$attr]="$attr_type"
+					return $HBL_SUCCESS
+				fi
+			done
+			printf "Unsupported attribute type: %s\n" "$attr_type" && return $HBL_ERROR
 			;;
 	esac
 
+	return $HBL_SUCCESS
 }
 
 function hbl__class__instance_method() {
@@ -140,13 +154,14 @@ function hbl__class__new() {
 	local cls
 	cls=$1
 
-	$cls:super $2
-	local -n obj="$2"
-	$obj:__ctor "$obj"
+	if $cls:super $2; then
+		local -n obj="$2"
+		$obj:__ctor "${@:3}"
+	fi
 }
 
 function hbl__class__init() {
-	# printf "*** _class_init() ***\n"
+	# printf "*** _class_init() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
 	return 0
 }

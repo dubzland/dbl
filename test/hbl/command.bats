@@ -1,274 +1,105 @@
 setup() {
 	load '../test_helper/common'
-	load '../test_helper/command'
+	# load '../test_helper/command'
 	common_setup
-	hbl::init
-	hbl::command::init
+	# hbl__init
 
-	declare -a option_create_args
-	option_create_args=()
-	option_create_invoked=0
-	function hbl::command::option::create() {
-		option_create_invoked=1
-		option_create_args=("$@")
-		local -n option_id__ref="$3"
-		option_id__ref='__test_command_option'
-		return 0
-	}
+	# declare -a option_create_args
+	# option_create_args=()
+	# option_create_invoked=0
+	# function hbl__command__option__create() {
+	# 	option_create_invoked=1
+	# 	option_create_args=("$@")
+	# 	local -n option_id__ref="$3"
+	# 	option_id__ref="${1}_option"
+	# 	return 0
+	# }
 
-	hbl_test::stub_command_create
+# 	hbl_test__stub_command_create
 
-	function ensure_command() {
-		hbl::command::ensure_command "$@"
-	}
+# 	function ensure_command() {
+# 		hbl__command__ensure_command "$@"
+# 	}
+
+# 	function stub_private() {
+# 		function hbl__command__add_example_() { printf "add_example_: [$*]\n"; }
+# 		function hbl__command__add_option_() { printf "add_option_: [$*]\n"; }
+# 		function hbl__command__add_subcommand_() { printf "add_subcommand_: [$*]\n"; }
+# 		function hbl__command__get_description_() { printf "get_description_: [$*]\n"; }
+# 		function hbl__command__set_description_() { printf "set_description_: [$*]\n"; }
+# 	}
 }
 
-#
-# hbl::command::add_example()
-#
-@test 'hbl::command::add_example() validates its arguments' {
-	# insufficient arguments
-	run hbl::command::add_example
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::command::add_example '__test_command' 'example' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty command id
-	run hbl::command::add_example '' 'example'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# empty example
-	run hbl::command::add_example '__test_command' ''
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# invalid command
-	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::add_example '__test_command' 'example'
-	unset hbl::command::ensure_command
-	assert_failure
-}
-
-@test 'hbl::command::add_example() assigns the example to the command' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_example '__test_command' 'example'
-	hbl::array::contains '__test_command__examples' 'example'
-}
-
-#
-# hbl::command::add_option()
-#
-@test 'hbl::command::add_option() validates its arguments' {
-	#insufficient arguments
-	run hbl::command::add_option
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::command::add_option '__test_command' 'test_option' 'option_id' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty command id
-	run hbl::command::add_option '' 'test_option' 'option_id'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# empty option name
-	run hbl::command::add_option '__test_command' '' 'option_id'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# empty option id variable
-	run hbl::command::add_option '__test_command' 'test_option' ''
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# invaid command
-	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::add_option '__test_command' 'test_option' 'option_id'
-	assert_failure
-	unset hbl::command::ensure_command
-}
-
-@test 'hbl::command::add_option() creates the option' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_option '__test_command' 'test_option' 'option_id'
-	assert_equal $option_create_invoked 1
-}
-
-@test 'hbl::command::add_option() passes the proper arguments to option::create()' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_option '__test_command' 'test_option' 'option_id'
-	assert_equal ${option_create_args[0]} '__test_command'
-	assert_equal ${option_create_args[1]} 'test_option'
-	assert_equal ${option_create_args[2]} 'option_id'
-}
-
-@test "hbl::command::add_option() assigns the option to the command" {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_option '__test_command' 'test_option' 'option_id'
-	hbl::dict::get '__test_command__options' 'test_option' 'opt'
-	assert_equal "${opt}" '__test_command_option'
-}
-
-@test 'hbl::command::add_option() returns the option id' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_option '__test_command' 'test_option' 'option_id'
-	assert_equal "$option_id" '__test_command_option'
-}
-
-#
-# hbl::command::add_subcommand()
-#
-@test 'hbl::command::add_subcommand() validates its arguments' {
-	# insufficient arguments
-	run hbl::command::add_subcommand
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' 'subcommand_id' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty parent id
-	run hbl::command::add_subcommand '' 'subcommand' 'subcommand_run' \
-		'subcommand_id'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# empty subcommand name
-	run hbl::command::add_subcommand '__test_command' '' 'subcommand_run' \
-		'subcommand_id'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# empty entrypoint
-	run hbl::command::add_subcommand '__test_command' 'subcommand' '' \
-		'sucommand_id'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# empty subcommand id var
-	run hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' ''
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# invalid parent
-	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' 'command_id'
-	assert_failure
-	unset hbl::command::ensure_command
-}
-
-@test 'hbl::command::add_subcommand() creates the command' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' 'subcommand_id'
-	assert_equal "$command_create_invoked" 1
-	assert_equal ${command_create_args[0]} 'subcommand'
-	assert_equal ${command_create_args[1]} 'subcommand_run'
-	assert_equal ${command_create_args[2]} 'subcommand_id'
-}
-
-@test 'hbl::command::add_subcommand() sets the parent' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' 'subcommand_id'
-	assert_equal "${__stubbed_command[_parent]}" '__test_command'
-}
-
-@test 'hbl::command::add_subcommand() assigns the command to the parent' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::add_subcommand '__test_command' 'subcommand' \
-		'subcommand_run' 'command_id'
-	assert_array_contains '__test_command__subcommands' '__stubbed_command'
-}
-
-#
-# hbl::command::get_description()
-#
-@test 'hbl::command::get_description() validates its arguments' {
-	# insufficient arguments
-	run hbl::command::get_description
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::command::get_description '__test_command' 'description' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty command id
-	run hbl::command::get_description '' 'description'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# invalid command
-	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::get_description '__test_command' 'description'
-	assert_failure
-	unset hbl::command::ensure_command
-}
-
-@test 'hbl::command::get_description() gets the description' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::set_description '__test_command' 'Test description'
-	hbl::command::get_description '__test_command' 'description'
-	assert_equal "$description" 'Test description'
-}
-
-#
-# hbl::command::set_description()
-#
-@test 'hbl::command::set_description() validates its arguments' {
-	# insufficient arguments
-	run hbl::command::set_description
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::command::set_description '__test_command' 'test description' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty command id
-	run hbl::command::set_description '' 'test description'
-	assert_failure $HBL_ERR_ARGUMENT
-
-	# invalid command
-	function hbl::command::ensure_command() { return 1; }
-	run hbl::command::set_description '__test_command' 'test description'
-	assert_failure
-	unset hbl::command::ensure_command
-}
-
-@test 'hbl::command::set_description() sets the description' {
-	hbl_test::mock_command '__test_command'
-	hbl::command::set_description '__test_command' 'test description'
-	assert_equal "${__test_command[_description]}" 'test description'
-}
-
-#
-# hbl::command::ensure_command()
-#
-@test 'hbl::command::ensure_command() validates its arguments' {
-	# insufficient arguments
-	run ensure_command
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run ensure_command '__test_command' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty command id
-	run ensure_command ''
-	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'hbl::command::ensure_command() with an undefined variable returns HBL_ERR_UNDEFINED' {
-	run hbl::command::ensure_command '__test_command'
-	assert_failure $HBL_ERR_UNDEFINED
-}
-
-@test 'hbl::command::ensure_command() with a non-dict returns HBL_ERR_UNDEFINED' {
-	declare -a __test_command
-	run ensure_command '__test_command'
-	assert_failure $HBL_ERR_INVALID_COMMAND
-}
-
-@test 'hbl::command::ensure_command() with a valid dict succeeds' {
-	hbl_test::mock_command '__test_command'
-	run ensure_command '__test_command'
+@test 'Command:new succeeds' {
+	local cmd
+	run $Command:new cmd foo bar
 	assert_success
 	refute_output
+}
+
+@test 'commands can have descriptions' {
+	local cmd actual expected
+	expected='A simple command'
+	$Command:new cmd foo bar
+	$cmd.description= "$expected"
+	run $cmd.description actual
+	assert_success
+	refute_output
+
+	$cmd.description actual
+	assert_equal "$actual" "$expected"
+}
+
+@test 'commands can have examples' {
+	local cmd examples
+	local -a examples_arr
+
+	$Command:new cmd foo bar
+	run $cmd:add_example 'foo -h'
+	assert_success
+	refute_output
+
+	$cmd:add_example 'foo -h'
+	$cmd.examples examples
+	$examples:to_array examples_arr
+	assert_equal ${#examples_arr[@]} 1
+	assert_equal "${examples_arr[0]}" 'foo -h'
+}
+
+@test 'commands allow options to be added' {
+	local cmd opt options
+	local -A options_dict
+
+	$Option:new opt verbose
+
+	$Command:new cmd foo bar
+	run $cmd:add_option "$opt"
+	assert_success
+	refute_output
+
+	$cmd:add_option "$opt"
+	$cmd.options options
+	$options:to_dict options_dict
+
+	assert_equal ${#options_dict[@]} 1
+	assert_equal "${options_dict[verbose]}" "$opt"
+}
+
+@test 'commands allow subcommands to be added' {
+	local cmd sub subcommands
+	local -a subcommands_arr
+
+	$Command:new sub 'sub-command' command_exec
+
+	$Command:new cmd foo bar
+	run $cmd:add_subcommand "$sub"
+	assert_success
+	refute_output
+
+	$cmd:add_subcommand "$sub"
+	$cmd.subcommands subcommands
+	$subcommands:to_array subcommands_arr
+
+	assert_equal ${#subcommands_arr[@]} 1
+	assert_equal "${subcommands_arr[0]}" "$sub"
 }
