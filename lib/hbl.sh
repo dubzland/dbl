@@ -7,17 +7,17 @@ source "${HBL_LIB}/hbl/object.sh"
 source "${HBL_LIB}/hbl/class.sh"
 # shellcheck source=lib/hbl/error.sh
 source "${HBL_LIB}/hbl/error.sh"
-
 # shellcheck source=lib/hbl/array.sh
 source "${HBL_LIB}/hbl/array.sh"
+# shellcheck source=lib/hbl/dict.sh
+source "${HBL_LIB}/hbl/dict.sh"
+
 # shellcheck source=lib/hbl/command.sh
 source "${HBL_LIB}/hbl/command.sh"
 # shellcheck source=lib/hbl/command/option.sh
 source "${HBL_LIB}/hbl/command/option.sh"
 # shellcheck source=lib/hbl/command/usage.sh
 source "${HBL_LIB}/hbl/command/usage.sh"
-# shellcheck source=lib/hbl/dict.sh
-source "${HBL_LIB}/hbl/dict.sh"
 # shellcheck source=lib/hbl/string.sh
 source "${HBL_LIB}/hbl/string.sh"
 # shellcheck source=lib/hbl/util.sh
@@ -26,14 +26,6 @@ source "${HBL_LIB}/hbl/util.sh"
 declare -A __hbl
 
 __hbl=()
-
-function hbl__init() {
-	local script
-	script="$(basename "$1")"
-
-	__hbl[program]="$1"
-	__hbl[script]="${script}"
-}
 
 function hbl__add_command() {
 	[[ $# -eq 3 ]] || hbl__error__invocation "$@" || exit

@@ -48,8 +48,6 @@ declare -ag __hbl__classes
 __hbl__classes=()
 
 function hbl__class__define() {
-	# printf "*** hbl__class__define() ***\n" >&3
-	# printf "args: %s\n" "$@" >&3
 	local pcls pcls_vtbl pcls_pvtbl ncls ncls_name ncls_ctor
 	pcls="$1" ncls_name="$2" ncls_ctor="$3"
 
@@ -98,10 +96,6 @@ function hbl__class__attribute() {
 	local cls cls_pattrs attr attr_type
 	cls="$1" attr="$2" attr_type="$3"
 
-	# printf "adding attribute\n" >&3
-	# printf "name: %s\n" "$attr" >&3
-	# printf "type: %s\n" "$attr_type" >&3
-
 	case $attr_type in
 		$HBL_STRING|$HBL_NUMBER|$HBL_ARRAY|$HBL_ASSOCIATIVE_ARRAY)
 			$cls.__pattrs cls_pattrs
@@ -125,8 +119,6 @@ function hbl__class__attribute() {
 }
 
 function hbl__class__instance_method() {
-	# printf "*** hbl__class__instance_method() ***\n"
-	# printf "args: %s\n" "$@"
 	local cls cls_pvtbl meth_func meth_name
 	cls="$1" meth_name="$2" meth_func="$3"
 
@@ -137,8 +129,6 @@ function hbl__class__instance_method() {
 }
 
 function hbl__class__static_method() {
-	# printf "*** hbl__class__static_method() ***\n"
-	# printf "args: %s\n" "$@"
 	local cls cls_vtbl meth_func meth_name
 	cls="$1" meth_name="$2" meth_func="$3"
 
@@ -149,8 +139,6 @@ function hbl__class__static_method() {
 }
 
 function hbl__class__new() {
-	# printf "*** hbl__class__new() ***\n" >&3
-	# printf "args: %s\n" "$@" >&3
 	local cls
 	cls=$1
 
@@ -161,7 +149,5 @@ function hbl__class__new() {
 }
 
 function hbl__class__init() {
-	# printf "*** _class_init() ***\n" >&3
-	# printf "args: %s\n" "$@" >&3
 	return 0
 }
