@@ -10,7 +10,7 @@ setup() {
 	refute_output
 }
 
-@test 'commands can have descriptions' {
+@test 'command.description= sets the description on the command' {
 	local cmd actual expected
 	expected='A simple command'
 	$Command:new cmd foo bar
