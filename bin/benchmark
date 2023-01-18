@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+
+trap "exit" INT TERM ERR
+trap "kill 0" EXIT
+
+PS4='+ ${EPOCHREALTIME}\011${BASH_SOURCE}\011${LINENO}\011 '
+
+# File containing trace information
+declare trace_output_file
+trace_output_file="/tmp/benchmark.$$.trace.log"
+
+# Raw trace records read from file
+declare -a raw_trace_records
+raw_trace_records=()
+
+# Total time for a command
+declare -A trace_total_time
+trace_total_time=()
+
+# Number of times command was called
+declare -A trace_call_count
+trace_call_count=()
+
+# Average call time for command
+declare -A trace_average_time
+trace_average_time=()
+
+# File command was executed in
+declare -A trace_file
+trace_file=()
+
+# Line number where command was executed
+declare -A trace_line
+trace_line=()
+
+# Command being executed
+declare -A trace_cmd
+trace_cmd=()
+
+# trace record keys, sorted by criteria
+declare -a sorted_trace_keys
+sorted_trace_keys=()
+
+# cache of command -> md5 hashes
+declare -A trace_key_cache
+trace_key_cache=()
+
+function load_trace_records() {
+	mapfile -tn 0 raw_trace_records < "$trace_output_file"
+	printf "Loaded %d trace records.\n" ${#raw_trace_records[@]}
+}
+
+function trace_key() {
+	local file line cmd key_var hash
+	file="$1" line="$2" cmd="$3" key_var="$4"
+
+	local -n key_var__ref="$key_var"
+
+	printf -v hash "%s:%s:%s" "$file" "$line" "$cmd"
+
+	if [[ -v trace_key_cache[${hash}] ]]; then
+		key_var__ref="${trace_key_cache[$hash]}"
+	fi
+
+	key_var__ref="$(printf '%s' "$hash" | md5sum | cut -d ' ' -f 1)"
+	trace_key_cache[${hash}]="$key_var__ref"
+}
+
+function progress_bar() {
+	local current total done left fill empty progress
+	current=$1 total=$2
+
+	progress=$(((current*100/total*100)/100))
+	done=$(((progress*4)/10))
+	left=$((40-done))
+	printf -v fill "%${done}s"
+	printf -v empty "%${left}s"
+	printf "\rProgress : [%s%s] %s%%" "${fill// /\#}" "${empty// /-}" "${progress}"
+	printf " %8s/%s" "$current" "$total"
+
+	[[ $progress -eq 100 ]] && printf "\n"
+	return 0
+}
+
+function spinner() {
+	local heading i spin_max
+	local -a spin
+
+	heading="$1" i=0
+	spin='-\|/' spin_max=${#spin}
+
+	# printf "heading: [%s]\n" "$heading"
+	printf "%s... " "$heading"
+	while true; do
+		# printf "current: [%s]" "
+		printf '\b%s' "${spin:i++%spin_max:1}"
+		sleep .2
+	done
+}
+
+function injest_timing() {
+	local record record_arr ctime cfile ccmd
+	local ptime pfile pcmd pkey total
+	local -i cline pline
+	# local total_timings total_time elapsed last_time
+	# local last_file last_num last_cmd current_key
+	# total_time=0
+
+	printf "Gathering timing data...\n"
+
+	for ((i = 0; i < ${#raw_trace_records[@]}; i++)); do
+	# for record in "${raw_trace_records[@]}"; do
+		# printf "record: %s\n" "${raw_trace_records[i]}"
+		record_arr=(${raw_trace_records[i]})
+		ctime="${record_arr[1]}" cfile="${record_arr[2]}"
+		cline=${record_arr[3]} ccmd="${record_arr[@]:4}"
+		[[ $i -eq 0 ]] && printf "ctime: %s\n" "$ctime"
+
+		[[ $(((i+1)%100)) -eq 0 ]] && progress_bar $((i+1)) ${#raw_trace_records[@]}
+
+		if [[ -n "$ptime" ]]; then
+			trace_key "$pfile" $pline "$pcmd" pkey
+
+			elapsed=$((${ctime//.}-10#0$ptime))
+			total=$((total+elapsed))
+
+			if [[ -v trace_file[$pkey] ]]; then
+				trace_total_time[$pkey]=$((${trace_total_time[$pkey]}+elapsed))
+				trace_call_count[$pkey]=$((${trace_call_count[$pkey]}+1))
+				trace_average_time[$pkey]=$((${trace_average_time[$pkey]}/${trace_call_count[$pkey]}))
+				# local -n trec__ref=${trace_records[$pkey]}
+				# trec__ref[total_time]=$((${trec__ref[total]}+$elapsed))
+				# trec__ref[call_count]=$((${trec__ref[call_count]}+1))
+				# trec__ref[average]=$((${trec__ref[total_time]}/${trec__ref[call_count]}))
+			else
+				trace_file[$pkey]="$pfile"
+				trace_line[$pkey]=$pline
+				trace_cmd[$pkey]="$pcmd"
+				trace_total_time[$pkey]="$elapsed"
+				trace_call_count[$pkey]=1
+				trace_average_time[$pkey]="$elapsed"
+				# trace_records[$pkey]="__trace__${pkey}"
+				# declare -Ag "${trace_records[$pkey]}"
+				# local -n trec__ref=${trace_records[$pkey]}
+				# trec__ref[total_time]="$elapsed"
+				# trec__ref[call_count]=1
+				# trec__ref[average]="$elapsed"
+				# trec__ref[file]="$pfile"
+				# trec__ref[line]="$pline"
+				# trec__ref[cmd]="$pcmd"
+				# printf "trec__ref!: %s\n" "${trec__ref[@]}"
+			fi
+		fi
+		ptime=${ctime//.}
+		pfile="$cfile"
+		pline=$cline
+		pcmd="$ccmd"
+	done
+	progress_bar ${#raw_trace_records[@]} ${#raw_trace_records[@]}
+
+	printf "total timings: %d\n" ${#trace_total_time[@]}
+	# printf "total execution time: %d\n" ${#trace_total_time[@]}
+}
+
+function sort_timings() {
+	local keyA keyB swapped spinpid
+
+	sorted_trace_keys=(${!trace_total_time[@]})
+	swapped=0
+
+	printf "number of entries to sort: %d\n" ${#sorted_trace_keys[@]}
+
+	spinner "sorting" & spinpid=$!
+
+	for ((i = 0; i < ${#sorted_trace_keys[@]}; i++)); do
+		for ((j = 0; j < ${#sorted_trace_keys[@]}-i-1; j++)); do
+			keyA="${sorted_trace_keys[j]}"
+			keyB="${sorted_trace_keys[$((j+1))]}"
+
+			if [[ ${trace_average_time[$keyA]} -gt ${trace_average_time[$keyB]} ]]; then
+				sorted_trace_keys[$j]=$keyB
+				sorted_trace_keys[$((j+1))]=$keyA
+				swapped=1
+			fi
+		done
+		[[ $swapped -eq 0 ]] && break
+	done
+	kill $spinpid
+	wait
+	printf "\bdone\n"
+}
+
+function print_timing_data() {
+	local  summary_index summary_key shortened_file prefix
+	prefix="/home/jdubz/code/gitlab/holodekk/hbl/"
+
+	printf "%-10s %-10s %-10s %-30s %s\n" \
+		"AVERAGE" "TOTAL" "COUNT" "FILE" "CMD"
+	for ((i = 0; i < ${#sorted_trace_keys[@]}; i++)); do
+		summary_key="${sorted_trace_keys[((${#sorted_trace_keys[@]}-i-1))]}"
+		printf "%-10d %-10d %-10d %-30s %s\n" \
+			${trace_average_time[$summary_key]} \
+			${trace_total_time[$summary_key]} \
+			${trace_call_count[$summary_key]} \
+			"${trace_file[$summary_key]/$prefix/}:${trace_line[$summary_key]}" \
+			"${trace_cmd[$summary_key]}"
+		[[ $i -gt 20 ]] && break
+	done
+}
+
+printf "Writing timing data to ${trace_output_file}.\n"
+
+exec 3>&2 2>"$trace_output_file"
+set -x
+
+source ./timing_test.sh
+
+set +x
+exec 2>&3 3>&-
+
+printf "Execution complete.  Starting the number crunching.\n"
+
+load_trace_records
+injest_timing
+sort_timings
+print_timing_data

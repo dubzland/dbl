@@ -1,51 +1,11 @@
 #!/usr/bin/env bash
 
-declare -a __hbl__objects
-__hbl__objects=()
-
-declare -Ag __hbl__Object__vtbl
-__hbl__Object__vtbl=(
-	[new]=hbl__object__new
-)
-readonly __hbl__Object__vtbl
-
-declare -Ag __hbl__Object__pvtbl
-__hbl__Object__pvtbl=(
-	[inspect]=hbl__object__inspect
-)
-readonly __hbl__Object__pvtbl
-
-declare -Ag __hbl__Object__pattrs
-__hbl__Object__pattrs=()
-readonly __hbl__Object__pattrs
-
-declare -Ag __hbl__Object__prefs
-__hbl__Object__prefs=()
-readonly __hbl__Object__prefs
-
-declare -Ag __hbl__Object
-__hbl__Object=(
-	[__name]="Object"
-	[__cls]="__hbl__Object"
-	[__vtbl]=__hbl__Object__vtbl
-	[__pvtbl]=__hbl__Object__pvtbl
-	[__pattrs]=__hbl__Object__pattrs
-)
-readonly __hbl__Object
-
-declare -g Object
-Object="hbl__object__dispatch_ __hbl__Object__vtbl __hbl__Object__vtbl __hbl__Object '' "
-readonly Object
-
-declare -Ag __hbl__dispatch_cache
-__hbl__dispatch_cache=()
-
 function hbl__object__inspect() {
 	local attrs obj obj_id
 	obj=$1
 	$obj.__id obj_id
 	printf "<%s" "$obj_id"
-	$object.__attrs attrs
+	$obj.__attrs attrs
 	local -n attrs__ref=$attrs
 	for key in "${!attrs__ref[@]}"; do
 		printf " %s='%s'" "$key" "${attrs__ref[$key]}"
@@ -302,3 +262,46 @@ function hbl__object__new() {
 
 	return $HBL_SUCCESS
 }
+
+################################################################################
+# Object
+################################################################################
+declare -a __hbl__objects
+__hbl__objects=()
+
+declare -Ag __hbl__Object__vtbl
+__hbl__Object__vtbl=(
+	[new]=hbl__object__new
+)
+readonly __hbl__Object__vtbl
+
+declare -Ag __hbl__Object__pvtbl
+__hbl__Object__pvtbl=(
+	[inspect]=hbl__object__inspect
+)
+readonly __hbl__Object__pvtbl
+
+declare -Ag __hbl__Object__pattrs
+__hbl__Object__pattrs=()
+readonly __hbl__Object__pattrs
+
+declare -Ag __hbl__Object__prefs
+__hbl__Object__prefs=()
+readonly __hbl__Object__prefs
+
+declare -Ag __hbl__Object
+__hbl__Object=(
+	[__name]="Object"
+	[__cls]="__hbl__Object"
+	[__vtbl]=__hbl__Object__vtbl
+	[__pvtbl]=__hbl__Object__pvtbl
+	[__pattrs]=__hbl__Object__pattrs
+	[__prefs]=__hbl__Object__prefs
+)
+readonly __hbl__Object
+
+declare -g Object
+Object="hbl__object__dispatch_ __hbl__Object__vtbl __hbl__Object__vtbl __hbl__Object '' "
+readonly Object
+
+__hbl__classes+=('Object')

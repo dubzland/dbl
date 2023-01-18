@@ -1,58 +1,5 @@
 #!/usr/bin/env bash
 
-declare -g HBL_STRING=1
-declare -g HBL_NUMBER=2
-declare -g HBL_ARRAY=3
-declare -g HBL_ASSOCIATIVE_ARRAY=4
-readonly HBL_STRING
-readonly HBL_NUMBER
-readonly HBL_ARRAY
-readonly HBL_ASSOCIATIVE_ARRAY
-
-declare -Ag __hbl__Class__vtbl
-__hbl__Class__vtbl=(
-	[define]=hbl__class__define
-	[new]=hbl__class__new
-	[attr]=hbl__class__attribute
-	[ref]=hbl__class__reference
-	[method]=hbl__class__instance_method
-	[static_method]=hbl__class__static_method
-	[__next]=__hbl__Object__vtbl
-)
-readonly __hbl__Class__vtbl
-
-declare -Ag __hbl__Class__pvtbl
-__hbl__Class__pvtbl=(
-	[__ctor]=hbl__class__init
-	[__next]=__hbl__Object__pvtbl
-)
-readonly __hbl__Class__pvtbl
-
-declare -Ag __hbl__Class__pattrs
-__hbl__Class__pattrs=()
-readonly __hbl__Class__pattrs
-
-declare -Ag __hbl__Class__prefs
-__hbl__Class__prefs=()
-readonly __hbl__Class__prefs
-
-declare -Ag __hbl__Class
-__hbl__Class=(
-	[__name]="Class"
-	[__ancestor]=""
-	[__vtbl]=__hbl__Class__vtbl
-	[__pvtbl]=__hbl__Class__pvtbl
-	[__pattrs]=__hbl__Class__pattrs
-	[__prefs]=__hbl__Class__prefs
-)
-
-declare -g Class
-Class="hbl__object__dispatch_ __hbl__Class__vtbl __hbl__Class__vtbl __hbl__Class '' "
-readonly Class
-
-declare -ag __hbl__classes
-__hbl__classes=()
-
 function hbl__class__define() {
 	# printf "*** hbl__class__define() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
@@ -60,7 +7,7 @@ function hbl__class__define() {
 	pcls="$1" ncls_name="$2" ncls_ctor="$3"
 
 	# create the class
-	ncls="__hbl__Class_$ncls_name"
+	ncls="__hbl__Class__$ncls_name"
 	declare -Ag $ncls
 	local -n ncls__ref=$ncls
 	ncls__ref=(
@@ -179,3 +126,49 @@ function hbl__class__new() {
 function hbl__class__init() {
 	return 0
 }
+
+################################################################################
+# Class
+################################################################################
+declare -Ag __hbl__Class__vtbl
+__hbl__Class__vtbl=(
+	[define]=hbl__class__define
+	[new]=hbl__class__new
+	[attr]=hbl__class__attribute
+	[ref]=hbl__class__reference
+	[method]=hbl__class__instance_method
+	[static_method]=hbl__class__static_method
+	[__next]=__hbl__Object__vtbl
+)
+readonly __hbl__Class__vtbl
+
+declare -Ag __hbl__Class__pvtbl
+__hbl__Class__pvtbl=(
+	[__ctor]=hbl__class__init
+	[__next]=__hbl__Object__pvtbl
+)
+readonly __hbl__Class__pvtbl
+
+declare -Ag __hbl__Class__pattrs
+__hbl__Class__pattrs=()
+readonly __hbl__Class__pattrs
+
+declare -Ag __hbl__Class__prefs
+__hbl__Class__prefs=()
+readonly __hbl__Class__prefs
+
+declare -Ag __hbl__Class
+__hbl__Class=(
+	[__name]="Class"
+	[__ancestor]="Object"
+	[__vtbl]=__hbl__Class__vtbl
+	[__pvtbl]=__hbl__Class__pvtbl
+	[__pattrs]=__hbl__Class__pattrs
+	[__prefs]=__hbl__Class__prefs
+)
+
+declare -g Class
+Class="hbl__object__dispatch_ __hbl__Class__vtbl __hbl__Class__vtbl __hbl__Class '' "
+readonly Class
+
+__hbl__classes+=('Class')

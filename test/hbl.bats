@@ -5,14 +5,14 @@ setup() {
 }
 
 #
-# hbl::init()
+# hbl__init()
 #
-@test 'hbl::init() assigns the program to the __hbl dict' {
-	hbl::init '/my/executable'
+@test 'hbl__init() assigns the program to the __hbl dict' {
+	hbl__init '/my/executable'
 	assert_equal "${__hbl[program]}" "/my/executable"
 }
 
 @test ".init() assigns the script to the __hbl dict" {
-	hbl::init '/my/executable'
+	hbl__init '/my/executable'
 	assert_equal "${__hbl[script]}" "executable"
 }

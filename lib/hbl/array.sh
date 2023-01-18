@@ -70,6 +70,8 @@ function hbl__array__contains() {
 }
 
 function hbl__array__to_array() {
+
+	puts "here\n" >&3
 	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
 	local this src tgt
@@ -84,12 +86,49 @@ function hbl__array__to_array() {
 	return $HBL_SUCCESS
 }
 
-$Class:define Array       hbl__array__init_
+################################################################################
+# Array
+################################################################################
+declare -Ag __hbl__Array__vtbl
+__hbl__Array__vtbl=(
+	[__next]=__hbl__Class__vtbl
+)
+readonly __hbl__Array__vtbl
 
-$Array:method append      hbl__array__append
-$Array:method bubble_sort hbl__array__bubble_sort
-$Array:method sort        hbl__array__bubble_sort
-$Array:method contains    hbl__array__contains
-$Array:method to_array    hbl__array__to_array
+declare -Ag __hbl__Array__pvtbl
+__hbl__Array__pvtbl=(
+	[__ctor]=hbl__array__init_
+	[append]=hbl__array__append
+	[bubble_sort]=hbl__array__bubble_sort
+	[sort]=hbl__array__bubble_sort
+	[contains]=hbl__array__contains
+	[to_array]=hbl__array__to_array
+	[__next]=__hbl__Class__pvtbl
+)
+readonly __hbl__Array__pvtbl
 
-$Array:attr   _raw        $HBL_ARRAY
+declare -Ag __hbl__Array__pattrs
+__hbl__Array__pattrs=(
+	[_raw]="$HBL_ARRAY"
+)
+readonly __hbl__Array__pattrs
+
+declare -Ag __hbl__Array__prefs
+__hbl__Array__prefs=()
+readonly __hbl__Array__prefs
+
+declare -Ag __hbl__Array
+__hbl__Array=(
+	[__name]="Array"
+	[__ancestor]="Class"
+	[__vtbl]=__hbl__Array__vtbl
+	[__pvtbl]=__hbl__Array__pvtbl
+	[__pattrs]=__hbl__Array__pattrs
+	[__prefs]=__hbl__Array__prefs
+)
+
+declare -g Array
+Array="hbl__object__dispatch_ __hbl__Array__vtbl __hbl__Array__vtbl __hbl__Array '' "
+readonly Array
+
+__hbl__classes+=('Array')

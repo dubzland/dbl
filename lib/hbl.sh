@@ -1,6 +1,70 @@
 #!/usr/bin/env bash
 
-HBL_LIB="$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")"
+# Error codes
+HBL_SUCCESS=0
+HBL_ERROR=1
+HBL_ERR_UNDEFINED=2
+HBL_ERR_INVOCATION=101
+HBL_ERR_ARGUMENT=102
+HBL_ERR_INVALID_COMMAND=103
+HBL_ERR_INVALID_ARRAY=104
+HBL_ERR_INVALID_DICT=105
+HBL_ERR_INVALID_OPTION=106
+HBL_ERR_ALREADY_DEFINED=107
+HBL_ERR_UNDEFINED_METHOD=108
+
+readonly HBL_SUCCESS
+readonly HBL_ERROR
+readonly HBL_ERR_UNDEFINED
+readonly HBL_ERR_INVOCATION
+readonly HBL_ERR_ARGUMENT
+readonly HBL_ERR_INVALID_COMMAND
+readonly HBL_ERR_INVALID_ARRAY
+readonly HBL_ERR_INVALID_DICT
+readonly HBL_ERR_INVALID_OPTION
+readonly HBL_ERR_ALREADY_DEFINED
+readonly HBL_ERR_UNDEFINED_METHOD
+
+# ATTRIBUTE TYPES
+HBL_STRING=1
+HBL_NUMBER=2
+HBL_ARRAY=3
+HBL_ASSOCIATIVE_ARRAY=4
+readonly HBL_STRING
+readonly HBL_NUMBER
+readonly HBL_ARRAY
+readonly HBL_ASSOCIATIVE_ARRAY
+
+# OPTION TYPES
+HBL_OPTION_TYPES=(string number flag dir)
+readonly HBL_OPTION_TYPES
+
+declare -A __hbl
+__hbl=()
+
+declare -ag __hbl__classes
+__hbl__classes=()
+
+declare -Ag __hbl__dispatch_cache
+__hbl__dispatch_cache=()
+
+declare HBL_LIB
+
+function _dirname() {
+	local tmp
+	tmp=${1:-.}
+	local -n dirname__ref="$2"
+
+	[[ $tmp != *[!/]* ]] && dirname__ref='/' && return
+	tmp=${tmp%%"${tmp##*[!/]}"}
+	[[ $tmp != */* ]] && dirname__ref='.' && return
+	tmp=${tmp%/*}
+	tmp=${tmp%%"${tmp##*[!/]}"}
+	dirname__ref="${tmp:-/}"
+}
+
+_dirname "${BASH_SOURCE[0]:-$0}" HBL_LIB
+
 # shellcheck source=lib/hbl/object.sh
 source "${HBL_LIB}/hbl/object.sh"
 # shellcheck source=lib/hbl/class.sh
@@ -14,24 +78,9 @@ source "${HBL_LIB}/hbl/dict.sh"
 
 # shellcheck source=lib/hbl/command.sh
 source "${HBL_LIB}/hbl/command.sh"
-# shellcheck source=lib/hbl/command/option.sh
-source "${HBL_LIB}/hbl/command/option.sh"
-# shellcheck source=lib/hbl/command/usage.sh
-source "${HBL_LIB}/hbl/command/usage.sh"
-# shellcheck source=lib/hbl/string.sh
-source "${HBL_LIB}/hbl/string.sh"
-# shellcheck source=lib/hbl/util.sh
+# shellcheck source=lib/hbl/option.sh
+source "${HBL_LIB}/hbl/option.sh"
+# # shellcheck source=lib/hbl/command/usage.sh
+# source "${HBL_LIB}/hbl/command/usage.sh"
+# # shellcheck source=lib/hbl/util.sh
 source "${HBL_LIB}/hbl/util.sh"
-
-declare -A __hbl
-
-__hbl=()
-
-function hbl__add_command() {
-	[[ $# -eq 3 ]] || hbl__error__invocation "$@" || exit
-	[[ -n "$1" ]] || hbl__error__argument "name" "$1"|| exit
-	[[ -n "$2" ]] || hbl__error__argument "entrypoint" "$2" || exit
-	[[ -n "$3" ]] || hbl__error__argument "command_id_var" "$3" || exit
-
-	hbl__command__create "$1" "$2" "$3"
-}

@@ -67,11 +67,48 @@ function hbl__dict__to_dict() {
 	return $HBL_SUCCESS
 }
 
-$Class:define Dict    hbl__dict__init_
+################################################################################
+# Dict
+################################################################################
+declare -Ag __hbl__Dict__vtbl
+__hbl__Dict__vtbl=(
+	[__next]=__hbl__Class__vtbl
+)
+readonly __hbl__Dict__vtbl
 
-$Dict:method  set     hbl__dict__set
-$Dict:method  get     hbl__dict__get
-$Dict:method  has_key hbl__dict__has_key
-$Dict:method  to_dict hbl__dict__to_dict
+declare -Ag __hbl__Dict__pvtbl
+__hbl__Dict__pvtbl=(
+	[__ctor]=hbl__dict__init_
+	[set]=hbl__dict__set
+	[get]=hbl__dict__get
+	[has_key]=hbl__dict__has_key
+	[to_dict]=hbl__dict__to_dict
+	[__next]=__hbl__Class__pvtbl
+)
+readonly __hbl__Dict__pvtbl
 
-$Dict:attr    _raw    $HBL_ASSOCIATIVE_ARRAY
+declare -Ag __hbl__Dict__pattrs
+__hbl__Dict__pattrs=(
+	[_raw]="$HBL_ASSOCIATIVE_ARRAY"
+)
+readonly __hbl__Dict__pattrs
+
+declare -Ag __hbl__Dict__prefs
+__hbl__Dict__prefs=()
+readonly __hbl__Dict__prefs
+
+declare -Ag __hbl__Dict
+__hbl__Dict=(
+	[__name]="Dict"
+	[__ancestor]="Class"
+	[__vtbl]=__hbl__Dict__vtbl
+	[__pvtbl]=__hbl__Dict__pvtbl
+	[__pattrs]=__hbl__Dict__pattrs
+	[__prefs]=__hbl__Dict__prefs
+)
+
+declare -g Dict
+Dict="hbl__object__dispatch_ __hbl__Dict__vtbl __hbl__Dict__vtbl __hbl__Dict '' "
+readonly Dict
+
+__hbl__classes+=('Dict')

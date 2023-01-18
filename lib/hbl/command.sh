@@ -56,17 +56,54 @@ function hbl__command__add_subcommand() {
 	return $HBL_SUCCESS
 }
 
-$Class:define   Command        hbl__command__init_
+################################################################################
+# Command
+################################################################################
+declare -Ag __hbl__Command__vtbl
+__hbl__Command__vtbl=(
+	[__next]=__hbl__Class__vtbl
+)
+readonly __hbl__Command__vtbl
 
-$Command:attr   name           $HBL_STRING
-$Command:attr   entrypoint     $HBL_STRING
-$Command:attr   description    $HBL_STRING
+declare -Ag __hbl__Command__pvtbl
+__hbl__Command__pvtbl=(
+	[__ctor]=hbl__command__init_
+	[add_example]=hbl__command__add_example
+	[add_option]=hbl__command__add_option
+	[add_subcommand]=hbl__command__add_subcommand
+	[__next]=__hbl__Class__pvtbl
+)
+readonly __hbl__Command__pvtbl
 
-$Command:ref    parent         Command
-$Command:ref    examples       Array
-$Command:ref    options        Dict
-$Command:ref    subcommands    Array
+declare -Ag __hbl__Command__pattrs
+__hbl__Command__pattrs=(
+	[name]=$HBL_STRING
+	[entrypoint]=$HBL_STRING
+	[description]=$HBL_STRING
+)
+readonly __hbl__Command__pattrs
 
-$Command:method add_example    hbl__command__add_example
-$Command:method add_option     hbl__command__add_option
-$Command:method add_subcommand hbl__command__add_subcommand
+declare -Ag __hbl__Command__prefs
+__hbl__Command__prefs=(
+	[parent]='Command'
+	[examples]='Array'
+	[options]='Dict'
+	[subcommands]='Array'
+)
+readonly __hbl__Command__prefs
+
+declare -Ag __hbl__Command
+__hbl__Command=(
+	[__name]="Command"
+	[__ancestor]="Class"
+	[__vtbl]=__hbl__Command__vtbl
+	[__pvtbl]=__hbl__Command__pvtbl
+	[__pattrs]=__hbl__Command__pattrs
+	[__prefs]=__hbl__Command__prefs
+)
+
+declare -g Command
+Command="hbl__object__dispatch_ __hbl__Command__vtbl __hbl__Command__vtbl __hbl__Command '' "
+readonly Command
+
+__hbl__classes+=('Command')

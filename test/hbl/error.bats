@@ -1,7 +1,6 @@
 setup() {
 	load '../test_helper/common'
 	common_setup
-	hbl__init
 
 	function error_invocation() {
 		hbl__error__invocation "foo"

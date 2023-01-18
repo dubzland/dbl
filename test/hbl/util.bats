@@ -4,153 +4,100 @@ setup() {
 }
 
 #
-# hbl::util::is_defined()
+# Util:is_defined()
 #
-@test 'hbl::util::is_defined() validates its arguments' {
-	# insufficient arguments
-	run hbl::util::is_defined
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::util::is_defined 'var' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty variable name
-	run hbl::util::is_defined ''
-	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'hbl::util::is_defined() with an undefined variable fails' {
-	run hbl::util::is_defined 'UNDEFINED'
+@test 'Util:is_defined() with an undefined variable fails' {
+	run $Util:is_defined undefined
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_defined() with a defined variable succeeds' {
-	declare DEFINED
-	run hbl::util::is_defined 'DEFINED'
+@test 'Util:is_defined() with a defined variable succeeds' {
+	local defined
+	run $Util:is_defined defined
 	assert_success
 	refute_output
 }
 
 #
-# hbl::util::is_function()
+# Util:is_function()
 #
-@test 'hbl::util::is_function() validates its arguments' {
-	# insufficient arguments
-	run hbl::util::is_function
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::util::is_function 'func' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty function name
-	run hbl::util::is_function ''
-	assert_failure $HBL_ERR_ARGUMENT
+@test 'Util:is_function() with an undefined variable fails' {
+	run $Util:is_function undefined
+	assert_failure $HBL_ERROR
+	refute_output
 }
 
-@test 'hbl::util::is_function() with an undefined variable fails' {
-	run hbl::util::is_function "nonexistent"
-	assert_failure
+@test 'Util:is_function() with a non-function variable fails' {
+	local defined
+	run $Util:is_function defined
+	assert_failure $HBL_ERROR
+	refute_output
 }
 
-@test 'hbl::util::is_function() with a non-function fails' {
-	declare -a FUNCTION
-	run hbl::util::is_function 'FUNCTION'
-	assert_failure
-}
-
-@test 'hbl::util::is_function() with an existing function succeeds' {
-	function existent() { return 0; }
-	run hbl::util::is_function "existent"
+@test 'Util:is_function() with a function succeeds' {
+	function defined() { return 0; }
+	run $Util:is_function defined
 	assert_success
+	refute_output
 }
 
 #
-# hbl::util::is_array()
+# Util:is_array()
 #
-@test 'hbl::util::is_array() validates its arguments' {
-	# insufficient arguments
-	run hbl::util::is_array
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::util::is_array 'array' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty array name
-	run hbl::util::is_array ''
-	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'hbl::util::is_array() with an undefined variable fails' {
-	run hbl::util::is_array 'UNDEFINED'
+@test 'Util:is_array() with an undefined variable fails' {
+	run $Util:is_array 'UNDEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_array() with a normal variable fails' {
+@test 'Util:is_array() with a normal variable fails' {
 	declare DEFINED
-	run hbl::util::is_array 'DEFINED'
+	run $Util:is_array 'DEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_array() with an associative array fails' {
+@test 'Util:is_array() with an associative array fails' {
 	declare -A DEFINED
-	run hbl::util::is_array 'DEFINED'
+	run $Util:is_array 'DEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_array() with a normal array succeeds' {
+@test 'Util:is_array() with a normal array succeeds' {
 	declare -a DEFINED
-	run hbl::util::is_array 'DEFINED'
+	run $Util:is_array 'DEFINED'
 	assert_success
 	refute_output
 }
 
 #
-# hbl::util::is_dict()
+# Util:is_dict()
 #
-@test 'hbl::util::is_dict() validates its arguments' {
-	# insufficient arguments
-	run hbl::util::is_dict
-	assert_failure $HBL_ERR_INVOCATION
-
-	# too many arguments
-	run hbl::util::is_dict 'dict' 'extra'
-	assert_failure $HBL_ERR_INVOCATION
-
-	# empty dict name
-	run hbl::util::is_dict ''
-	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'hbl::util::is_dict() with an undefined variable fails' {
-	run hbl::util::is_dict 'UNDEFINED'
+@test 'Util:is_dict() with an undefined variable fails' {
+	run $Util:is_dict 'UNDEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_dict() with a normal variable fails' {
+@test 'Util:is_dict() with a normal variable fails' {
 	declare DEFINED
-	run hbl::util::is_dict 'DEFINED'
+	run $Util:is_dict 'DEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_dict() with a normal array fails' {
+@test 'Util:is_dict() with a normal array fails' {
 	declare -a DEFINED
-	run hbl::util::is_dict DEFINED
+	run $Util:is_dict DEFINED
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'hbl::util::is_dict() with an associative array succeeds' {
+@test 'Util:is_dict() with an associative array succeeds' {
 	declare -A DEFINED
-	run hbl::util::is_dict 'DEFINED'
+	run $Util:is_dict 'DEFINED'
 	assert_success
 	refute_output
 }
