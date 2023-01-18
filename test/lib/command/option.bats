@@ -1,6 +1,5 @@
 setup() {
 	load '../../test_helper/common'
-	load '../../test_helper/command'
 	common_setup
 }
 
