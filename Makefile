@@ -33,7 +33,7 @@ clean:
 all: $(PKG) $(SIG)
 
 test:
-	./test/bats/bin/bats -r test/hbl.*.bats test/hbl
+	./test/bats/bin/bats -r test/lib
 
 lint:
 	git ls-files --exclude='*.sh' --ignored -c -z | xargs -0r shellcheck
