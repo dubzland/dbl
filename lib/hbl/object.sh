@@ -19,6 +19,10 @@ declare -Ag __hbl__Object__pattrs
 __hbl__Object__pattrs=()
 readonly __hbl__Object__pattrs
 
+declare -Ag __hbl__Object__prefs
+__hbl__Object__prefs=()
+readonly __hbl__Object__prefs
+
 declare -Ag __hbl__Object
 __hbl__Object=(
 	[__name]="Object"
@@ -32,6 +36,9 @@ readonly __hbl__Object
 declare -g Object
 Object="hbl__object__dispatch_ __hbl__Object__vtbl __hbl__Object__vtbl __hbl__Object '' "
 readonly Object
+
+declare -Ag __hbl__dispatch_cache
+__hbl__dispatch_cache=()
 
 function hbl__object__inspect() {
 	local attrs obj obj_id
@@ -72,23 +79,82 @@ function hbl__object__find_method_() {
 	[[ -n "$meth_vtbl__ref" ]]
 }
 
-function hbl__object__process_attribute_() {
-	# printf "*** hbl__object__process_attribute_() ***\n" >&3
+function hbl__object__set_reference_() {
+	return 0
+}
+
+function hbl__object__get_reference_() {
+	return 0
+}
+
+function hbl__object__set_attribute_() {
+	return 0
+}
+
+function hbl__object__get_attribute_() {
+	return 0
+}
+
+function hbl__object__exec_function_() {
+	return 0
+}
+
+function hbl__object__process_accessor_() {
+	# printf "*** hbl__object__process_accessor_() ***\n" >&3
 	# printf "args: %s\n" "$@" >&3
 	local tgt attr
 	tgt=$3 attr="${5#.}"
 
+	# grab everything up to : or .
+	local head="${attr%%[.:]*}"
+	local tail="${attr#${head}}"
+
 	local -n tgt__ref=$tgt
+
+	if [[ -v tgt__ref[__refs] ]]; then
+		local -n refs__ref=${tgt__ref[__refs]}
+		local key="${head%=}"
+		# printf "looking for accessor %s on %s\n" "$key" "$tgt" >&3
+		if [[ -v refs__ref[$key] ]]; then
+			# printf "accessor found for %s on %s\n" "$key" "$tgt" >&3
+			if [[ "$head" =~ \=$ ]]; then
+				# printf "assigning [%s] to refs__ref[%s]\n" "$6" "$key" >&3
+				refs__ref[$key]="$6"
+				return
+			else
+				# grab the reference and pass the rest of the attr
+				local ref="${refs__ref[$key]}"
+				$ref$tail "${@:6}"
+				return
+			fi
+		fi
+	fi
+
+	hbl__object__process_attribute_ "$@"
+}
+
+function hbl__object__process_attribute_() {
+	# printf "*** _object_process_attribute_() ***\n"
+	# printf "args: %s\n" "$@"
+	local tgt attr
+	tgt=$3 attr="${5#.}"
+
+	local -n tgt__ref=$tgt
+
 	if [[ "$attr" =~ \=$ ]]; then
 		if [[ "$attr" =~ ^__ ]]; then
 			printf "setting system attributes is not allowed.\n" && return 1
 		fi
 		local -n attrs__ref=${tgt__ref[__attrs]}
 		# set an attribute value
-		[[ $# -ge 6 ]] || printf "Missing attribute ref\n" >&2 || return 1
+		if [[ $# -lt 6 ]]; then
+			printf "Missing attribute ref for attr %s\n" "$attr" >&2
+			exit 1
+		fi
 		[[ -v attrs__ref[${attr%=}] ]] || printf "invalid attribute: %s\n" "${attr%=}" || return 1
 		attrs__ref[${attr%=}]="$6"
 	else
+		[[ -z "$tail" ]] || return "illegal nesting call: %s\n" "$attr" >&2 || return 1
 		# get an attribute value
 		local -n attr__ref="$6"
 		if [[ "$attr" =~ ^__ ]]; then
@@ -110,6 +176,11 @@ function hbl__object__process_attribute_() {
 	fi
 }
 
+function hbl__object__dispatch_cache_key_() {
+	local -n cache_key__ref="$1"
+	printf -v cache_key__ref "%s**%s**%s**%s**%s" "$1" "$2" "$3" "$4" "$5"
+}
+
 function hbl__object__process_method_() {
 	# printf "*** _object_process_method() ***\n"
 	# printf "args: %s\n" "$@"
@@ -128,6 +199,9 @@ function hbl__object__process_method_() {
 	fi
 	dispatch_args=("${@:6}")
 
+	local cache_key
+	hbl__object__dispatch_cache_key_ cache_key
+
 	if hbl__object__find_method_ $meth_vtbl $meth meth_vtbl; then
 		local -n meth_vtbl__ref=$meth_vtbl
 		${meth_vtbl__ref[$meth]} \
@@ -145,9 +219,9 @@ function hbl__object__dispatch_() {
 	selector="$5"
 
 	if [[ "$selector" =~ ^\. ]]; then
-		hbl__object__process_attribute_ "$@"
+		hbl__object__process_accessor_ "$@" || exit
 	elif [[ "$selector" =~ ^\: ]]; then
-		hbl__object__process_method_ "$@"
+		hbl__object__process_method_ "$@" || exit
 	else
 		printf "bad selector: %s\n" "$selector" >&2 && return 1
 	fi
@@ -160,13 +234,14 @@ function hbl__object__new() {
 	[[ -n "$1" ]] || hbl__error__argument_ 3 base_name "$1" || return
 	[[ -n "$2" ]] || hbl__error__argument_ 3 dispatch_var "$2" || return
 
-	local cls cls_name cls_pattrs nobj_dispatch nobj_id
+	local cls cls_name cls_pvtbl cls_pattrs cls_prefs nobj_dispatch nobj_id
 	cls="$1" nobj_dispatch="$2"
 
 	# get the base class name and prototype
 	$cls.__name cls_name
 	$cls.__pvtbl cls_pvtbl
 	$cls.__pattrs cls_pattrs
+	$cls.__prefs cls_prefs
 
 	# build a unique object_id based on class and object count
 	nobj_id="__hbl__${cls_name}_${#__objects[@]}"
@@ -179,6 +254,7 @@ function hbl__object__new() {
 		[__class]=$cls_name
 		[__attrs]="${nobj_id}__attrs"
 		[__vtbl]=$cls_pvtbl
+		[__refs]="${nobj_id}__refs"
 	)
 
 	# create the object attributes
@@ -201,26 +277,21 @@ function hbl__object__new() {
 				nobj_attrs__ref[$key]=$attr_id
 				;;
 			*)
-				local -i found=0
-				for hbl_cls in "${__hbl__classes[@]}"; do
-					# just set it to empty string for now.
-					# TODO: figure out how to delay initialization to allow
-					# classes to initialize their children
-					if [[ "${cls_pattrs__ref[$key]}" = "$hbl_cls" ]]; then
-						nobj_attrs__ref[$key]=''
-						found=1
-						break
-					fi
-				done
-				[[ $found -eq 1 ]] ||
-					printf "unknown attribute type: %s - %s\n" \
-						"$key" \
+				printf "unknown attribute type: %s - %s\n" "$key" \
 						"${cls_pattrs__ref[$key]}" ||
 					return 1
 				;;
 		esac
 	done
 
+	# create the references
+	declare -Ag ${nobj[__refs]}
+	local -n nobj_refs__ref=${nobj[__refs]}
+	nobj_refs__ref=()
+	local -n cls_prefs__ref="$cls_prefs"
+	for key in "${!cls_prefs__ref[@]}"; do
+		nobj_refs__ref[$key]=""
+	done
 
 	# setup the dispatch command
 	local -n nobj_dispatch__ref=$nobj_dispatch

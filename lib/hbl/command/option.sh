@@ -23,3 +23,5 @@ $Option:attr type $HBL_STRING
 $Option:attr short_flag $HBL_STRING
 $Option:attr long_flag $HBL_STRING
 $Option:attr description $HBL_STRING
+
+$Option:ref  command     Command

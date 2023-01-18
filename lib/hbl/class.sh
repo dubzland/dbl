@@ -14,6 +14,7 @@ __hbl__Class__vtbl=(
 	[define]=hbl__class__define
 	[new]=hbl__class__new
 	[attr]=hbl__class__attribute
+	[ref]=hbl__class__reference
 	[method]=hbl__class__instance_method
 	[static_method]=hbl__class__static_method
 	[__next]=__hbl__Object__vtbl
@@ -31,6 +32,10 @@ declare -Ag __hbl__Class__pattrs
 __hbl__Class__pattrs=()
 readonly __hbl__Class__pattrs
 
+declare -Ag __hbl__Class__prefs
+__hbl__Class__prefs=()
+readonly __hbl__Class__prefs
+
 declare -Ag __hbl__Class
 __hbl__Class=(
 	[__name]="Class"
@@ -38,6 +43,7 @@ __hbl__Class=(
 	[__vtbl]=__hbl__Class__vtbl
 	[__pvtbl]=__hbl__Class__pvtbl
 	[__pattrs]=__hbl__Class__pattrs
+	[__prefs]=__hbl__Class__prefs
 )
 
 declare -g Class
@@ -48,6 +54,8 @@ declare -ag __hbl__classes
 __hbl__classes=()
 
 function hbl__class__define() {
+	# printf "*** hbl__class__define() ***\n" >&3
+	# printf "args: %s\n" "$@" >&3
 	local pcls pcls_vtbl pcls_pvtbl ncls ncls_name ncls_ctor
 	pcls="$1" ncls_name="$2" ncls_ctor="$3"
 
@@ -61,6 +69,7 @@ function hbl__class__define() {
 		[__vtbl]="${ncls}__vtbl"
 		[__pvtbl]="${ncls}__pvtbl"
 		[__pattrs]="${ncls}__pattrs"
+		[__prefs]="${ncls}__prefs"
 	)
 	declare -g "$ncls_name"
 
@@ -86,6 +95,11 @@ function hbl__class__define() {
 	local -n ncls_pattrs__ref=${ncls__ref[__pattrs]}
 	ncls_pattrs__ref=()
 
+	# create the class prototype reference objects
+	declare -Ag ${ncls__ref[__prefs]}
+	local -n ncls_prefs__ref=${ncls__ref[__prefs]}
+	ncls_prefs__ref=()
+
 	local -n ncls_dispatch__ref=$ncls_name
 	ncls_dispatch__ref="hbl__object__dispatch_ ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
 
@@ -105,10 +119,8 @@ function hbl__class__attribute() {
 		*)
 			for hbl_cls in "${__hbl__classes[@]}"; do
 				if [[ "$attr_type" = "$hbl_cls" ]]; then
-					$cls.__pattrs cls_pattrs
-					local -n cls_pattrs__ref=$cls_pattrs
-					cls_pattrs__ref[$attr]="$attr_type"
-					return $HBL_SUCCESS
+					printf "Unsupported type for attribute: [%s].  Did you mean ':reference'?\n" \
+						"$attr_type" >&2 || return $HBL_ERROR
 				fi
 			done
 			printf "Unsupported attribute type: %s\n" "$attr_type" && return $HBL_ERROR
@@ -116,6 +128,22 @@ function hbl__class__attribute() {
 	esac
 
 	return $HBL_SUCCESS
+}
+
+function hbl__class__reference() {
+	local cls cls_prefs attr attr_type
+	cls="$1" attr="$2" attr_type="$3"
+
+	for hbl_cls in "${__hbl__classes[@]}"; do
+		if [[ "$attr_type" = "$hbl_cls" ]]; then
+			$cls.__prefs cls_prefs
+			local -n cls_prefs__ref=$cls_prefs
+			cls_prefs__ref[$attr]="$attr_type"
+			return $HBL_SUCCESS
+		fi
+	done
+
+	return $HBL_ERROR
 }
 
 function hbl__class__instance_method() {

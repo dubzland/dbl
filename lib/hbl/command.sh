@@ -11,8 +11,7 @@ function hbl__command__init_() {
 	$this:super
 	$this.name=        "$2"
 	$this.entrypoint=  "$3"
-	$this.parent=      ''
-	$this.description= ''
+	$this.description=  ""
 
 	$Array:new         examples
 	$Dict:new          options
@@ -27,11 +26,11 @@ function hbl__command__init_() {
 
 function hbl__command__add_example() {
 	local this="$1"
-	local examples
+	# local examples
 
-	$this.examples examples
+	$this.examples:append "$2"
 
-	$examples:append "$2"
+# 	$examples:append "$2"
 
 	return $HBL_SUCCESS
 }
@@ -40,10 +39,10 @@ function hbl__command__add_option() {
 	local this opt opt_name options
 	this="$1" opt="$2"
 
-	$this.options options
+	$opt.command= "$this"
 	$opt.name opt_name
 
-	$options:set "$opt_name" "$opt"
+	$this.options:set "$opt_name" "$opt"
 
 	return $HBL_SUCCESS
 }
@@ -52,22 +51,21 @@ function hbl__command__add_subcommand() {
 	local this sub subcommands
 	this="$1" sub="$2"
 
-	$this.subcommands subcommands
-
-	$subcommands:append "$sub"
+	$this.subcommands:append "$sub"
 
 	return $HBL_SUCCESS
 }
 
 $Class:define   Command        hbl__command__init_
 
-$Command:attr   parent         Command
 $Command:attr   name           $HBL_STRING
 $Command:attr   entrypoint     $HBL_STRING
 $Command:attr   description    $HBL_STRING
-$Command:attr   examples       Array
-$Command:attr   options        Dict
-$Command:attr   subcommands    Array
+
+$Command:ref    parent         Command
+$Command:ref    examples       Array
+$Command:ref    options        Dict
+$Command:ref    subcommands    Array
 
 $Command:method add_example    hbl__command__add_example
 $Command:method add_option     hbl__command__add_option
