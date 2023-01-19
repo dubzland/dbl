@@ -3,231 +3,152 @@ setup() {
 	common_setup
 
 	function error_invocation() {
-		hbl__error__invocation "foo"
+		$Error.invocation 'method' "foo"
 	}
 
 	function error_argument() {
-		hbl__error__argument "foo" "bar"
+		$Error.argument 'method' 'foo' 'bar'
 	}
 
 	function error_undefined() {
-		hbl__error__undefined "foo"
-	}
-
-	function error_invalid_command() {
-		hbl__error__invalid_command "foo"
-	}
-
-	function error_invalid_array() {
-		hbl__error__invalid_array "foo"
-	}
-
-	function error_invalid_dict() {
-		hbl__error__invalid_dict "foo"
-	}
-
-	function error_invalid_option() {
-		hbl__error__invalid_option "foo"
+		$Error.undefined 'foo'
 	}
 
 	function error_already_defined() {
-		hbl__error__already_defined "foo"
+		$Error.already_defined 'foo'
 	}
 
 	function error_undefined_method() {
-		hbl__error__undefined_method "foo"
+		$Error.undefined_method 'Object' 'foo'
 	}
 
 	function error_illegal_instruction() {
-		hbl__error__illegal_instruction 'Object.__name=' 'system values cannot be set'
+		$Error.illegal_instruction 'Object.__name=' 'system values cannot be set'
 	}
 }
 
 #
-# hbl__error__invocation()
+# Error.invocation()
 #
-@test 'hbl__error__invocation() returns ERR_INVOCATION' {
+@test 'Error.invocation() returns ERR_INVOCATION' {
 	run error_invocation
 	assert_failure $HBL_ERR_INVOCATION
 }
 
-@test 'hbl__error__invocation() with TRACE disabled prints a basic error' {
+@test 'Error.invocation() with TRACE disabled prints a basic error' {
 	TRACE=0
 	run error_invocation
-	assert_output "error_invocation: invalid arguments -- ['foo']"
+	assert_output -p "invalid arguments to 'method' -- ['foo']"
 }
 
-@test 'hbl__error__invocation() with TRACE enabled prints a backtrace' {
+@test 'Error.invocation() with TRACE enabled prints a backtrace' {
 	TRACE=1
 	run error_invocation
 	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_invocation': invalid arguments -- ['foo'] (HBL_ERR_INVOCATION)"
+	assert_line --index -1 -p "invalid arguments to 'method' -- ['foo'] (HBL_ERR_INVOCATION)"
 }
 
 #
-# hbl__error__argument()
+# Error.argument()
 #
-@test 'hbl__error__argument() returns ERR_ARGUMENT' {
+@test 'Error.argument() returns ERR_ARGUMENT' {
 	run error_argument
 	assert_failure $HBL_ERR_ARGUMENT
 }
 
-@test 'hbl__error__argument() with TRACE disabled prints a basic error' {
+@test 'Error.argument() with TRACE disabled prints a basic error' {
 	TRACE=0
 	run error_argument
-	assert_output "error_argument: invalid argument for 'foo' -- 'bar'"
+	assert_output -p "invalid argument to 'method' for 'foo' -- 'bar'"
 }
 
-@test 'hbl__error__argument() with TRACE enabled prints a backtrace' {
+@test 'Error.argument() with TRACE enabled prints a backtrace' {
 	TRACE=1
 	run error_argument
 	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_argument': invalid argument for 'foo' -- 'bar' (HBL_ERR_ARGUMENT)"
+	assert_line --index -1 -p "invalid argument to 'method' for 'foo' -- 'bar' (HBL_ERR_ARGUMENT)"
 }
 
 #
-# hbl__error__undefined()
+# Error.undefined()
 #
-@test 'hbl__error__undefined() returns ERR_UNDEFINED' {
+@test 'Error.undefined() returns ERR_UNDEFINED' {
 	run error_undefined
 	assert_failure $HBL_ERR_UNDEFINED
 }
 
-@test 'hbl__error__undefined() with TRACE disabled prints a basic error' {
+@test 'Error.undefined() with TRACE disabled prints a basic error' {
 	TRACE=0
 	run error_undefined
-	assert_output "error_undefined: variable is undefined -- 'foo'"
+	assert_output -p "variable is undefined -- 'foo'"
 }
 
-@test 'hbl__error__undefined() with TRACE enabled prints a backtrace' {
+@test 'Error.undefined() with TRACE enabled prints a backtrace' {
 	TRACE=1
 	run error_undefined
 	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_undefined': variable is undefined -- 'foo' (HBL_ERR_UNDEFINED)"
+	assert_line --index -1 -p ": variable is undefined -- 'foo' (HBL_ERR_UNDEFINED)"
 }
 
 #
-# hbl__error__invalid_array()
+# Error.already_defined()
 #
-@test "hbl__error__invalid_array() returns ERR_INVALID_ARRAY" {
-	run error_invalid_array
-	assert_failure $HBL_ERR_INVALID_ARRAY
-}
-
-@test 'hbl__error__invalid_array() with TRACE disabled prints a basic error' {
-	TRACE=0
-	run error_invalid_array
-	assert_output "error_invalid_array: not an array -- 'foo'"
-}
-
-@test 'hbl__error__invalid_array() with TRACE enabled prints a backtrace' {
-	TRACE=1
-	run error_invalid_array
-	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_invalid_array': not an array -- 'foo' (HBL_ERR_INVALID_ARRAY)"
-}
-
-#
-# hbl__error__invalid_dict()
-#
-@test 'hbl__error__invalid_dict() returns ERR_INVALID_DICT' {
-	run error_invalid_dict
-	assert_failure $HBL_ERR_INVALID_DICT
-}
-
-@test 'hbl__error__invalid_dict() with TRACE disabled prints a basic error' {
-	TRACE=0
-	run error_invalid_dict
-	assert_output "error_invalid_dict: not a dictionary -- 'foo'"
-}
-
-@test 'hbl__error__invalid_dict() with TRACE enabled prints a backtrace' {
-	TRACE=1
-	run error_invalid_dict
-	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_invalid_dict': not a dictionary -- 'foo' (HBL_ERR_INVALID_DICT)"
-}
-
-#
-# hbl__error__invalid_option()
-#
-@test 'hbl__error__invalid_option() returns ERR_INVALID_OPTION' {
-	run error_invalid_option
-	assert_failure $HBL_ERR_INVALID_OPTION
-}
-
-@test 'hbl__error__invalid_option() with TRACE disabled prints a basic error' {
-	TRACE=0
-	run error_invalid_option
-	assert_output "error_invalid_option: invalid option id -- 'foo'"
-}
-
-@test 'hbl__error__invalid_option() with TRACE enabled prints a backtrace' {
-	TRACE=1
-	run error_invalid_option
-	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_invalid_option': invalid option id -- 'foo' (HBL_ERR_INVALID_OPTION)"
-}
-
-#
-# hbl__error__already_defined()
-#
-@test 'hbl__error__already_defined() returns ERR_ALREADY_DEFINED' {
+@test 'Error.already_defined() returns ERR_ALREADY_DEFINED' {
 	run error_already_defined
 	assert_failure $HBL_ERR_ALREADY_DEFINED
 }
 
-@test 'hbl__error__already_defined() with TRACE disabled prints a basic error' {
+@test 'Error.already_defined() with TRACE disabled prints a basic error' {
 	TRACE=0
 	run error_already_defined
-	assert_output "error_already_defined: variable is already defined -- 'foo'"
+	assert_output -p ": variable is already defined -- 'foo'"
 }
 
-@test 'hbl__error__already_defined() with TRACE enabled prints a backtrace' {
+@test 'Error.already_defined() with TRACE enabled prints a backtrace' {
 	TRACE=1
 	run error_already_defined
 	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_already_defined': variable is already defined -- 'foo' (HBL_ERR_ALREADY_DEFINED)"
+	assert_line --index -1 -p ": variable is already defined -- 'foo' (HBL_ERR_ALREADY_DEFINED)"
 }
 
 #
-# hbl__error__undefined_method()
+# Error.undefined_method()
 #
-@test 'hbl__error__undefined_method() returns ERR_UNDEFINED_METHOD' {
+@test 'Error.undefined_method() returns ERR_UNDEFINED_METHOD' {
 	run error_undefined_method
 	assert_failure $HBL_ERR_UNDEFINED_METHOD
 }
 
-@test 'hbl__error__undefined_method() with TRACE disabled prints a basic error' {
+@test 'Error.undefined_method() with TRACE disabled prints a basic error' {
 	TRACE=0
 	run error_undefined_method
-	assert_output "error_undefined_method: object does not respond to method -- 'foo'"
+	assert_output -p ": Object does not respond to method -- 'foo'"
 }
 
-@test 'hbl__error__undefined_method() with TRACE enabled prints a backtrace' {
+@test 'Error.undefined_method() with TRACE enabled prints a backtrace' {
 	TRACE=1
 	run error_undefined_method
 	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_undefined_method': object does not respond to method -- 'foo' (HBL_ERR_UNDEFINED_METHOD)"
+	assert_line --index -1 -p ": Object does not respond to method -- 'foo' (HBL_ERR_UNDEFINED_METHOD)"
 }
 
 #
-# hbl__error__illegal_instruction()
+# Error.illegal_instruction()
 #
-@test 'hbl__error__illegal_instruction() returns ERR_ILLEGAL_INSTRUCTION' {
+@test 'Error.illegal_instruction() returns ERR_ILLEGAL_INSTRUCTION' {
 	run error_illegal_instruction
 	assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
 }
 
-@test 'hbl__error__illegal_instruction() with TRACE disabled prints a basic error' {
+@test 'Error.illegal_instruction() with TRACE disabled prints a basic error' {
 	TRACE=0
 	run error_illegal_instruction
-	assert_output "error_illegal_instruction: illegal instruction (Object.__name=) -- 'system values cannot be set'"
+	assert_output -p ": illegal instruction (Object.__name=) -- 'system values cannot be set'"
 }
 
-@test 'hbl__error__illegal_instruction() with TRACE enabled prints a backtrace' {
+@test 'Error.illegal_instruction() with TRACE enabled prints a backtrace' {
 	TRACE=1
 	run error_illegal_instruction
 	assert_line --index 0 'Backtrace (most recent call last):'
-	assert_line --index -1 -p "in 'error_illegal_instruction': illegal instruction (Object.__name=) -- 'system values cannot be set' (HBL_ERR_ILLEGAL_INSTRUCTION)"
+	assert_line --index -1 -p ": illegal instruction (Object.__name=) -- 'system values cannot be set' (HBL_ERR_ILLEGAL_INSTRUCTION)"
 }

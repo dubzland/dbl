@@ -1,146 +1,76 @@
 #!/usr/bin/env bash
 
-function hbl__error__invocation_() {
-	[[ $# -ge 1 ]] || exit 99
+function Error__static__invocation() {
+	[[ $# -ge 2 && "$1" = 'Error' ]] || exit 99
 
-	local arg_string
-	arg_string=''
-	[[ $# -gt 1 ]] && printf -v arg_string "'%s'," "${@:2}"
+	local -n klass="$1"
+	local method arg_string
+	method="$2" arg_string=''
 
-	hbl__error__display_ $1 HBL_ERR_INVOCATION \
-		"invalid arguments -- [${arg_string%,}]"
+	[[ $# -gt 2 ]] && printf -v arg_string "'%s'," "${@:3}"
+
+	$klass._display 2 HBL_ERR_INVOCATION \
+		"invalid arguments to '${method}' -- [${arg_string%,}]"
 
 	return $HBL_ERR_INVOCATION
 }
 
-function hbl__error__argument_() {
-	[[ $# -eq 3 ]] || exit 99
+function Error__static__argument() {
+	[[ $# -eq 4 && "$1" = 'Error' && -n "$2" && -n "$3" ]] || exit 99
+	local -n klass="$1"
 
-	hbl__error__display_ $1 HBL_ERR_ARGUMENT \
-		"invalid argument for '$2' -- '$3'"
+	$Error._display 2 HBL_ERR_ARGUMENT \
+		"invalid argument to '$2' for '$3' -- '$4'"
 
 	return $HBL_ERR_ARGUMENT
 }
 
-function hbl__error__undefined_() {
-	[[ $# -ne 2 ]] && exit 99
+function Error__static__undefined() {
+	[[ $# -eq 2 && "$1" = 'Error' && -n "$2" ]] || exit 99
+	local -n klass="$1"
 
-	hbl__error__display_ $1 HBL_ERR_UNDEFINED \
+	$klass._display 2 HBL_ERR_UNDEFINED \
 		"variable is undefined -- '$2'"
 
 	return $HBL_ERR_UNDEFINED
 }
 
-function hbl__error__invalid_command_() {
-	[[ $# -eq 2 ]] || exit 99
+function Error__static__already_defined() {
+	[[ $# -eq 2 && "$1" = 'Error' && -n "$2" ]] || exit 99
+	local -n klass="$1"
 
-	hbl__error__display_ $1 HBL_ERR_INVALID_COMMAND \
-		"invalid command id -- '$2'"
-
-	return $HBL_ERR_INVALID_COMMAND
-}
-
-function hbl__error__invalid_array_() {
-	[[ $# -eq 2 ]] || exit 99
-
-	hbl__error__display_ $1 HBL_ERR_INVALID_ARRAY \
-		"not an array -- '$2'"
-
-	return $HBL_ERR_INVALID_ARRAY
-}
-
-function hbl__error__invalid_dict_() {
-	[[ $# -eq 2 ]] || exit 99
-
-	hbl__error__display_ $1 HBL_ERR_INVALID_DICT \
-		"not a dictionary -- '$2'"
-
-	return $HBL_ERR_INVALID_DICT
-}
-
-function hbl__error__invalid_option_() {
-	[[ $# -eq 2 ]] || exit 99
-
-	hbl__error__display_ $1 HBL_ERR_INVALID_OPTION \
-		"invalid option id -- '$2'"
-
-	return $HBL_ERR_INVALID_OPTION
-}
-
-function hbl__error__already_defined_() {
-	[[ $# -eq 2 ]] || exit 99
-
-	hbl__error__display_ $1 HBL_ERR_ALREADY_DEFINED \
+	$klass._display 2 HBL_ERR_ALREADY_DEFINED \
 		"variable is already defined -- '$2'"
 
 	return $HBL_ERR_ALREADY_DEFINED
 }
 
-function hbl__error__undefined_method_() {
-	[[ $# -eq 2 ]] || exit 99
+function Error__static__undefined_method() {
+	[[ $# -eq 3 && "$1" = 'Error' && -n "$2" && -n "$3" ]] || exit 99
+	local -n klass="$1"
 
-	hbl__error__display_ $1 HBL_ERR_UNDEFINED_METHOD \
-		"object does not respond to method -- '$2'"
+	$klass._display 2 HBL_ERR_UNDEFINED_METHOD \
+		"$2 does not respond to method -- '$3'"
 
 	return $HBL_ERR_UNDEFINED_METHOD
 }
 
-function hbl__error__illegal_instruction_() {
-	[[ $# -eq 3 ]] || exit 99
+function Error__static__illegal_instruction() {
+	[[ $# -eq 3 && "$1" = 'Error' && -n "$2" && -n "$3" ]] || exit 99
+	local -n klass="$1"
 
-	hbl__error__display_ $1 HBL_ERR_ILLEGAL_INSTRUCTION \
+	$klass._display 2 HBL_ERR_ILLEGAL_INSTRUCTION \
 		"illegal instruction ($2) -- '$3'"
 
 	return $HBL_ERR_ILLEGAL_INSTRUCTION
 }
 
-function hbl__error__invocation() {
-	hbl__error__invocation_ 2 "$@"
-}
-
-function hbl__error__argument() {
-	hbl__error__argument_ 2 "$@"
-}
-
-function hbl__error__undefined() {
-	hbl__error__undefined_ 2 "$@"
-}
-
-function hbl__error__invalid_command() {
-	hbl__error__invalid_command_ 2 "$@"
-}
-
-function hbl__error__invalid_array() {
-	hbl__error__invalid_array_ 2 "$@"
-}
-
-function hbl__error__invalid_dict() {
-	hbl__error__invalid_dict_ 2 "$@"
-}
-
-function hbl__error__invalid_option() {
-	hbl__error__invalid_option_ 2 "$@"
-}
-
-function hbl__error__already_defined() {
-	hbl__error__already_defined_ 2 "$@"
-}
-
-function hbl__error__undefined_method() {
-	hbl__error__undefined_method_ 2 "$@"
-}
-
-function hbl__error__illegal_instruction() {
-	hbl__error__illegal_instruction_ 2 "$@"
-}
-
-function hbl__error__display_() {
+function Error__static__display_() {
+	[[ $# -eq 4 && "$1" = 'Error' ]] || exit 99
+	local -n klass="$1"
 	local -i offset
-	local message code_string
-
-	offset=$1
-	code_string=$2
-	message="$3"
+	local code_string message
+	offset=$2 code_string="$3" message="$4"
 
 	if [[ $TRACE -gt 0 ]]; then
 
@@ -164,3 +94,28 @@ function hbl__error__display_() {
 		printf "%s: %s\n" "${FUNCNAME[$offset+1]}" "${message}" >&2
 	fi
 }
+
+################################################################################
+# Error
+################################################################################
+declare -Ag Error__vtbl
+Error__vtbl=(
+	[invocation]=Error__static__invocation
+	[argument]=Error__static__argument
+	[undefined]=Error__static__undefined
+	[already_defined]=Error__static__already_defined
+	[undefined_method]=Error__static__undefined_method
+	[illegal_instruction]=Error__static__illegal_instruction
+	[_display]=Error__static__display_
+)
+readonly Error__vtbl
+
+declare -Ag Error
+Error=(
+	[0]='Object__static__dispatch_ Error '
+	[__name]=Error
+	[__vtbl]=Error__vtbl
+)
+readonly Error
+
+__hbl__classes+=('Error')
