@@ -37,6 +37,10 @@ setup() {
 	function error_undefined_method() {
 		hbl__error__undefined_method "foo"
 	}
+
+	function error_illegal_instruction() {
+		hbl__error__illegal_instruction 'Object.__name=' 'system values cannot be set'
+	}
 }
 
 #
@@ -205,4 +209,25 @@ setup() {
 	run error_undefined_method
 	assert_line --index 0 'Backtrace (most recent call last):'
 	assert_line --index -1 -p "in 'error_undefined_method': object does not respond to method -- 'foo' (HBL_ERR_UNDEFINED_METHOD)"
+}
+
+#
+# hbl__error__illegal_instruction()
+#
+@test 'hbl__error__illegal_instruction() returns ERR_ILLEGAL_INSTRUCTION' {
+	run error_illegal_instruction
+	assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
+}
+
+@test 'hbl__error__illegal_instruction() with TRACE disabled prints a basic error' {
+	TRACE=0
+	run error_illegal_instruction
+	assert_output "error_illegal_instruction: illegal instruction (Object.__name=) -- 'system values cannot be set'"
+}
+
+@test 'hbl__error__illegal_instruction() with TRACE enabled prints a backtrace' {
+	TRACE=1
+	run error_illegal_instruction
+	assert_line --index 0 'Backtrace (most recent call last):'
+	assert_line --index -1 -p "in 'error_illegal_instruction': illegal instruction (Object.__name=) -- 'system values cannot be set' (HBL_ERR_ILLEGAL_INSTRUCTION)"
 }
