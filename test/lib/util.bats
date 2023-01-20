@@ -73,24 +73,24 @@ setup() {
 }
 
 #
-# Util:is_dict()
+# Util:is_associative_array()
 #
-@test 'Util:is_dict() with an undefined variable fails' {
-	run $Util:is_dict 'UNDEFINED'
+@test 'Util:is_associative_array() with an undefined variable fails' {
+	run $Util:is_associative_array 'UNDEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'Util:is_dict() with a normal variable fails' {
+@test 'Util:is_associative_array() with a normal variable fails' {
 	declare DEFINED
-	run $Util:is_dict 'DEFINED'
+	run $Util:is_associative_array 'DEFINED'
 	assert_failure $HBL_ERROR
 	refute_output
 }
 
-@test 'Util:is_dict() with a normal array fails' {
+@test 'Util:is_associative_array() with a normal array fails' {
 	declare -a DEFINED
-	run $Util:is_dict DEFINED
+	run $Util:is_associative_array DEFINED
 	assert_failure $HBL_ERROR
 	refute_output
 }

@@ -4,13 +4,12 @@ function Error__static__invocation() {
 	[[ $# -ge 2 && "$1" = 'Error' ]] || exit 99
 
 	local -n klass="$1"
-	local method arg_string
-	method="$2" arg_string=''
+	local arg_string=''
 
 	[[ $# -gt 2 ]] && printf -v arg_string "'%s'," "${@:3}"
 
 	$klass._display 2 HBL_ERR_INVOCATION \
-		"invalid arguments to '${method}' -- [${arg_string%,}]"
+		"invalid arguments to '$2' -- [${arg_string%,}]"
 
 	return $HBL_ERR_INVOCATION
 }
@@ -98,8 +97,8 @@ function Error__static__display_() {
 ################################################################################
 # Error
 ################################################################################
-declare -Ag Error__vtbl
-Error__vtbl=(
+declare -Ag Error__methods
+Error__methods=(
 	[invocation]=Error__static__invocation
 	[argument]=Error__static__argument
 	[undefined]=Error__static__undefined
@@ -108,13 +107,14 @@ Error__vtbl=(
 	[illegal_instruction]=Error__static__illegal_instruction
 	[_display]=Error__static__display_
 )
-readonly Error__vtbl
+readonly Error__methods
 
 declare -Ag Error
 Error=(
 	[0]='Object__static__dispatch_ Error '
 	[__name]=Error
-	[__vtbl]=Error__vtbl
+	[__base]=Object
+	[__methods]=Error__methods
 )
 readonly Error
 

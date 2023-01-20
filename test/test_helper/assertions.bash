@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+function assert_defined() {
+	declare -p "$1" >/dev/null 2>&1 || fail "variable is undefined: $1"
+}
+
 function assert_dict() {
 	if [[ "$(declare -p $1 2>/dev/null)" != "declare -A"* ]]; then
 		fail "not a valid dictionary: $1"
