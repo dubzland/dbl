@@ -111,7 +111,7 @@ readonly Error__methods
 
 declare -Ag Error
 Error=(
-	[0]='Object__static__dispatch_ Error '
+	[0]='Class__static__dispatch_ Error '
 	[__name]=Error
 	[__base]=Object
 	[__methods]=Error__methods

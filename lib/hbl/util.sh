@@ -57,9 +57,9 @@ readonly Util__methods
 
 declare -Ag Util
 Util=(
-	[0]='Object__static__dispatch_ Util '
+	[0]='Class__static__dispatch_ Util '
 	[__name]=Util
-	[__base]=Object
+	[__base]=Class
 	[__methods]=Util__methods
 )
 readonly Util

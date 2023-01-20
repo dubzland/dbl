@@ -33,14 +33,20 @@ readonly HBL_ASSOCIATIVE_ARRAY
 HBL_OPTION_TYPES=(string number flag dir)
 readonly HBL_OPTION_TYPES
 
-declare -A __hbl
+declare -Ag __hbl
 __hbl=()
 
 declare -ag __hbl__classes
 __hbl__classes=()
 
-declare -a __hbl__objects
+declare -ag __hbl__objects
 __hbl__objects=()
+
+declare -ag __hbl__stack
+__hbl__stack=()
+
+declare -Ag __hbl__dispatch_cache
+__hbl__dispatch_cache=()
 
 declare HBL_LIB
 

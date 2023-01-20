@@ -4,38 +4,39 @@
 # @brief A library for interacting with Bash arrays.
 ###############################################################################
 
-function hbl__array__init_() {
-	local this="$1"
+function Array__init() {
+	local -n this="$1"
+	$this.super || return
 
-	$this:super
+	this[_raw]="$1__raw_array"
+	declare -ag "${this[_raw]}"
+	local -n _raw="${this[_raw]}"
+	_raw=()
 }
 
-function hbl__array__append() {
-	[[ $# -ge 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+function Array__append() {
+	[[ $# -ge 2 ]] || $Error.invocation 'Array:append' "$@" || return
 
-	local this="$1"
-	local _arr
+	local -n this="$1"
+	local -n _arr__ref="${this[_raw]}"
 
-	$this._raw _arr
-	local -n _arr__ref=$_arr
 	_arr__ref+=("${@:2}")
 
 	return $HBL_SUCCESS
 }
 
-function hbl__array__bubble_sort() {
-	[[ $# -eq 1 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+function Array__bubble_sort() {
+	[[ $# -eq 1 ]] || $Error.invocation $FUNCNAME "$@" || return
 
-	local this="$1"
+	local -n this="$1"
 
-	local arr swapped
+	local swapped
 	swapped=0
-
-	$this._raw arr
 
 	declare -a sortable
 
-	local -n arr__ref="$arr"
+	local -n arr__ref="${this[_raw]}"
+
 	sortable=("${arr__ref[@]}")
 
 	for ((i = 0; i < ${#sortable[@]}; i++)); do
@@ -54,81 +55,69 @@ function hbl__array__bubble_sort() {
 	return $HBL_SUCCESS
 }
 
-function hbl__array__contains() {
-	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+function Array__contains() {
+	[[ $# -eq 2 ]] || $Error.invocation $FUNCNAME "${@:2}" || return
 
-	local this="$1"
+	local -n this="$1"
 	local haystack
 
-	$this._raw haystack
-	local -n haystack__ref="$haystack"
-	for val in "${haystack__ref[@]}"; do
+	local -n haystack="${this[_raw]}"
+	for val in "${haystack[@]}"; do
 		[[ "$val" = "$2" ]] && return $HBL_SUCCESS
 	done
 
 	return $HBL_ERROR
 }
 
-function hbl__array__to_array() {
-
-	puts "here\n" >&3
+function Array__to_array() {
 	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
-	local this src tgt
-	this="$1" tgt="$2"
+	local -n this=$1
+	local tgt="$2"
 
-	$this._raw src
-
-	local -n src__ref="$src"
+	local -n src__ref="${this[_raw]}"
 	local -n tgt__ref="$tgt"
 	tgt__ref=("${src__ref[@]}")
 
 	return $HBL_SUCCESS
 }
 
+function Array__static__is_array() {
+	[[ $# -eq 2 && "$1" = 'Array' ]] || $Error.invocation "$@" || exit
+	[[ -n "$2" ]] || $Error.argument 'array' "$2" || exit
+
+	[[ "$(declare -p "$2" 2>/dev/null)" == "declare -a"* ]] && return $HBL_SUCCESS
+
+	return $HBL_ERROR
+}
+
 ################################################################################
 # Array
 ################################################################################
-declare -Ag __hbl__Array__vtbl
-__hbl__Array__vtbl=(
-	[__next]=__hbl__Class__vtbl
+declare -Ag Array__methods
+Array__methods=(
+	[is_array]=Array__static__is_array
 )
-readonly __hbl__Array__vtbl
+readonly Array__methods
 
-declare -Ag __hbl__Array__pvtbl
-__hbl__Array__pvtbl=(
-	[__ctor]=hbl__array__init_
-	[append]=hbl__array__append
-	[bubble_sort]=hbl__array__bubble_sort
-	[sort]=hbl__array__bubble_sort
-	[contains]=hbl__array__contains
-	[to_array]=hbl__array__to_array
-	[__next]=__hbl__Class__pvtbl
+declare -Ag Array__prototype
+Array__prototype=(
+	[__init]="$HBL_SELECTOR_METHOD Array__init"
+	[append]="$HBL_SELECTOR_METHOD Array__append"
+	[bubble_sort]="$HBL_SELECTOR_METHOD Array__bubble_sort"
+	[sort]="$HBL_SELECTOR_METHOD Array__bubble_sort"
+	[contains]="$HBL_SELECTOR_METHOD Array__contains"
+	[to_array]="$HBL_SELECTOR_METHOD Array__to_array"
 )
-readonly __hbl__Array__pvtbl
+readonly Array__prototype
 
-declare -Ag __hbl__Array__pattrs
-__hbl__Array__pattrs=(
-	[_raw]="$HBL_ARRAY"
+declare -Ag Array
+Array=(
+	[0]='Class__static__dispatch_ Array '
+	[__name]=Array
+	[__base]=Class
+	[__methods]=Array__methods
+	[__prototype]=Array__prototype
 )
-readonly __hbl__Array__pattrs
-
-declare -Ag __hbl__Array__prefs
-__hbl__Array__prefs=()
-readonly __hbl__Array__prefs
-
-declare -Ag __hbl__Array
-__hbl__Array=(
-	[__name]="Array"
-	[__ancestor]="Class"
-	[__vtbl]=__hbl__Array__vtbl
-	[__pvtbl]=__hbl__Array__pvtbl
-	[__pattrs]=__hbl__Array__pattrs
-	[__prefs]=__hbl__Array__prefs
-)
-
-declare -g Array
-Array="hbl__object__dispatch_ __hbl__Array__vtbl __hbl__Array__vtbl __hbl__Array '' "
-readonly Array
 
 __hbl__classes+=('Array')

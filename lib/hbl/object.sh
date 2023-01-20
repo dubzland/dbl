@@ -32,95 +32,96 @@ function dump_object_() {
 }
 
 function dump_entry_() {
-	printf "*** %s ***\n" "$1"
-	printf "args: %s\n" "${@:2}"
+	printf "*** %s ***\n" "${FUNCNAME[1]}"
+	printf "args: %s\n" "${@}"
+	printf "**********\n"
 }
 
-function Object__static__define() {
-	[[ $# -ge 2 && "$1" = Object ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ -n "$1" ]] || $Error.argument $FUNCNAME 'parent object type' "$1" || return
-	[[ -n "$2" ]] || $Error.argument $FUNCNAME 'object name' "$2" || return
+# function Object__static__define() {
+# 	[[ $# -ge 2 && "$1" = Object ]] || $Error.invocation $FUNCNAME "$@" || return
+# 	[[ -n "$1" ]] || $Error.argument $FUNCNAME 'parent object type' "$1" || return
+# 	[[ -n "$2" ]] || $Error.argument $FUNCNAME 'object name' "$2" || return
 
-	local pcls ncls_name ncls_init
-	pcls="$1" ncls_name="$2"
-	[[ -n "$3" ]] && ncls_init="$3"
+# 	local pcls ncls_name ncls_init
+# 	pcls="$1" ncls_name="$2"
+# 	[[ -n "$3" ]] && ncls_init="$3"
 
-	# ensure a class by this name doesn't exist
-	! $Util.is_defined "$ncls_name" ||
-		$Error.already_defined "$ncls_name" || return
+# 	# ensure a class by this name doesn't exist
+# 	! $Util.is_defined "$ncls_name" ||
+# 		$Error.already_defined "$ncls_name" || return
 
-	# Create the class
-	declare -Ag "$ncls_name"
-	local -n ncls__ref="$ncls_name"
-	ncls__ref=(
-		[0]="Object__static__dispatch_ $ncls_name "
-		[__name]="$ncls_name"
-		[__base]="$pcls"
-		[__methods]="${ncls_name}__methods"
-		[__prototype]="${ncls_name}__prototype"
-	)
+# 	# Create the class
+# 	declare -Ag "$ncls_name"
+# 	local -n ncls__ref="$ncls_name"
+# 	ncls__ref=(
+# 		[0]="Object__static__dispatch_ $ncls_name "
+# 		[__name]="$ncls_name"
+# 		[__base]="$pcls"
+# 		[__methods]="${ncls_name}__methods"
+# 		[__prototype]="${ncls_name}__prototype"
+# 	)
 
-	# create the prototype object
-	declare -Ag "${ncls__ref[__prototype]}"
-	local -n ncls_prototype__ref="${ncls__ref[__prototype]}"
-	ncls_prototype__ref=()
+# 	# create the prototype object
+# 	declare -Ag "${ncls__ref[__prototype]}"
+# 	local -n ncls_prototype__ref="${ncls__ref[__prototype]}"
+# 	ncls_prototype__ref=()
 
-	# if an initialzer was pased, assign it
-	[[ -n "$ncls_init" ]] && ncls__ref[__init]="$ncls_init"
+# 	# if an initialzer was pased, assign it
+# 	[[ -n "$ncls_init" ]] && ncls__ref[__init]="$ncls_init"
 
-	# create the methods associative array
-	declare -Ag "${ncls__ref[__methods]}"
-	local -n ncls_methods__ref="${ncls__ref[__methods]}"
-	ncls_methods__ref=()
-}
+# 	# create the methods associative array
+# 	declare -Ag "${ncls__ref[__methods]}"
+# 	local -n ncls_methods__ref="${ncls__ref[__methods]}"
+# 	ncls_methods__ref=()
+# }
 
-function Object__static__method() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	[[ "$1" != Object ]] ||
-		$Error.illegal_instruction 'Object.method' \
-		'cannot alter Object' || return
+# function Object__static__method() {
+# 	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
+# 		$Error.invocation $FUNCNAME "$@" || return
+# 	[[ "$1" != Object ]] ||
+# 		$Error.illegal_instruction 'Object.method' \
+# 		'cannot alter Object' || return
 
-	# ensure we were passed an actual function
-	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
+# 	# ensure we were passed an actual function
+# 	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
 
-	# ensure we don't have an existing prototype method in the tree by this name
-	! Object__static__find_prototype_function_ "$1" "$2" _ _ _ ||
-		$Error.illegal_instruction 'Object.method' \
-		'cannot redefine existing method' || return
+# 	# ensure we don't have an existing prototype method in the tree by this name
+# 	! Object__static__find_prototype_function_ "$1" "$2" _ _ _ ||
+# 		$Error.illegal_instruction 'Object.method' \
+# 		'cannot redefine existing method' || return
 
-	local -n cls__ref="$1"
-	local -n cls_prototype__ref="${cls__ref[__prototype]}"
+# 	local -n cls__ref="$1"
+# 	local -n cls_prototype__ref="${cls__ref[__prototype]}"
 
-	cls_prototype__ref[$2]="$HBL_SELECTOR_METHOD $3"
+# 	cls_prototype__ref[$2]="$HBL_SELECTOR_METHOD $3"
 
-	return $HBL_SUCCESS
+# 	return $HBL_SUCCESS
 
-	return $HBL_SUCCESS
-}
+# 	return $HBL_SUCCESS
+# }
 
-function Object__static__static_method() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	[[ "$1" != Object ]] ||
-		$Error.illegal_instruction 'Object.static_method' \
-		'cannot alter Object' || return
+# function Object__static__static_method() {
+# 	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
+# 		$Error.invocation $FUNCNAME "$@" || return
+# 	[[ "$1" != Object ]] ||
+# 		$Error.illegal_instruction 'Object.static_method' \
+# 		'cannot alter Object' || return
 
-	# ensure we were passed an actual function
-	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
+# 	# ensure we were passed an actual function
+# 	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
 
-	# ensure we don't have an existing accessor in the tree by this name
-	! Object__static__find_static_selector_ "$1" "$2" _ _ _ ||
-		$Error.illegal_instruction 'Object.static_method' \
-		'cannot redefine existing static method' || return
+# 	# ensure we don't have an existing accessor in the tree by this name
+# 	! Object__static__find_static_selector_ "$1" "$2" _ _ _ ||
+# 		$Error.illegal_instruction 'Object.static_method' \
+# 		'cannot redefine existing static method' || return
 
-	local -n cls__ref="$1"
-	local -n cls_methods__ref="${cls__ref[__methods]}"
+# 	local -n cls__ref="$1"
+# 	local -n cls_methods__ref="${cls__ref[__methods]}"
 
-	cls_methods__ref[$2]="$3"
+# 	cls_methods__ref[$2]="$3"
 
-	return $HBL_SUCCESS
-}
+# 	return $HBL_SUCCESS
+# }
 
 function Object__static__is_object() {
 	[[ $# -ge 2 && "$1" = 'Object' && -n "$2" ]] ||
@@ -133,133 +134,133 @@ function Object__static__is_object() {
 	return $HBL_SUCCESS
 }
 
-function Object__static__find_static_selector_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" && -n "$3" && -n "$4" && -n "$5" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
+# function Object__static__find_static_selector_() {
+# 	[[ $# -ge 2 && -n "$1" && -n "$2" && -n "$3" && -n "$4" && -n "$5" ]] ||
+# 		$Error.invocation $FUNCNAME "$@" || return
 
-	local cls
-	cls="$1"
-	local -n target_obj_var__ref="$3" target_type_var__ref="$4" target_var__ref="$5"
+# 	local cls
+# 	cls="$1"
+# 	local -n target_obj_var__ref="$3" target_type_var__ref="$4" target_var__ref="$5"
 
-	while [[ -n "$cls" ]]; do
-		local -n cls__ref="$cls"
+# 	while [[ -n "$cls" ]]; do
+# 		local -n cls__ref="$cls"
 
-		# check for a method
-		if [[ -n cls__ref[__methods] ]]; then
-			local -n cls_methods__ref="${cls__ref[__methods]}"
+# 		# check for a method
+# 		if [[ -n cls__ref[__methods] ]]; then
+# 			local -n cls_methods__ref="${cls__ref[__methods]}"
 
-			if [[ -v cls_methods__ref[$2] ]]; then
-				target_obj_var__ref="$1"
-				target_type_var__ref=$HBL_SELECTOR_METHOD
-				target_var__ref="${cls_methods__ref[$2]}"
-				return $HBL_SUCCESS
-			fi
-		fi
+# 			if [[ -v cls_methods__ref[$2] ]]; then
+# 				target_obj_var__ref="$1"
+# 				target_type_var__ref=$HBL_SELECTOR_METHOD
+# 				target_var__ref="${cls_methods__ref[$2]}"
+# 				return $HBL_SUCCESS
+# 			fi
+# 		fi
 
-		# check for a getter
-		if [[ "$2" =~ ^get_* && -v cls__ref[${2#get_}] ]]; then
-			# getter
-			target_obj_var__ref="$1"
-			target_type_var__ref=$HBL_SELECTOR_GETTER
-			target_var__ref="${2#get_}"
-			return $HBL_SUCCESS
-		fi
+# 		# check for a getter
+# 		if [[ "$2" =~ ^get_* && -v cls__ref[${2#get_}] ]]; then
+# 			# getter
+# 			target_obj_var__ref="$1"
+# 			target_type_var__ref=$HBL_SELECTOR_GETTER
+# 			target_var__ref="${2#get_}"
+# 			return $HBL_SUCCESS
+# 		fi
 
-		if [[ "$2" =~ ^set_* && -v cls__ref[${2#set_}] ]]; then
-			# setter
-			target_obj_var__ref="$1"
-			target_type_var__ref=$HBL_SELECTOR_SETTER
-			target_var__ref="${2#set_}"
-			return $HBL_SUCCESS
-		fi
+# 		if [[ "$2" =~ ^set_* && -v cls__ref[${2#set_}] ]]; then
+# 			# setter
+# 			target_obj_var__ref="$1"
+# 			target_type_var__ref=$HBL_SELECTOR_SETTER
+# 			target_var__ref="${2#set_}"
+# 			return $HBL_SUCCESS
+# 		fi
 
-		# did not find a match.  walk the tree
-		if [[ -v cls__ref[__base] ]]; then
-			cls="${cls__ref[__base]}"
-			continue
-		fi
+# 		# did not find a match.  walk the tree
+# 		if [[ -v cls__ref[__base] ]]; then
+# 			cls="${cls__ref[__base]}"
+# 			continue
+# 		fi
 
-		# reached the end of the heirarchy
-		cls=""
-	done
+# 		# reached the end of the heirarchy
+# 		cls=""
+# 	done
 
-	return $HBL_ERROR
-}
+# 	return $HBL_ERROR
+# }
 
-function Object__static__find_prototype_method_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" && -n "$3" && -n "$4" && -n "$5" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
+# function Object__static__find_prototype_method_() {
+# 	[[ $# -ge 2 && -n "$1" && -n "$2" && -n "$3" && -n "$4" && -n "$5" ]] ||
+# 		$Error.invocation $FUNCNAME "$@" || return
 
-	local cls
-	cls="$1"
-	local -n target_class_var__ref="$3" target_type_var__ref="$4" target_var__ref="$5"
+# 	local cls
+# 	cls="$1"
+# 	local -n target_class_var__ref="$3" target_type_var__ref="$4" target_var__ref="$5"
 
-	while [[ -n "$cls" ]]; do
-		local -n cls__ref="$cls"
+# 	while [[ -n "$cls" ]]; do
+# 		local -n cls__ref="$cls"
 
-		if [[ -n cls__ref[__prototype] ]]; then
-			local -n cls_prototype__ref="${cls__ref[__prototype]}"
+# 		if [[ -n cls__ref[__prototype] ]]; then
+# 			local -n cls_prototype__ref="${cls__ref[__prototype]}"
 
-			if [[ -v cls_prototype__ref[$2] ]]; then
-				target_class_var__ref="$cls"
-				local -a proto_arr=(${cls_prototype__ref[$2]})
-				target_type_var__ref="${proto_arr[0]}"
-				target_var__ref="${proto_arr[1]}"
-				return $HBL_SUCCESS
-			fi
-		fi
+# 			if [[ -v cls_prototype__ref[$2] ]]; then
+# 				target_class_var__ref="$cls"
+# 				local -a proto_arr=(${cls_prototype__ref[$2]})
+# 				target_type_var__ref="${proto_arr[0]}"
+# 				target_var__ref="${proto_arr[1]}"
+# 				return $HBL_SUCCESS
+# 			fi
+# 		fi
 
-		# did not find a match.  walk the tree
-		if [[ -v cls__ref[__base] ]]; then
-			cls="${cls__ref[__base]}"
-			continue
-		fi
+# 		# did not find a match.  walk the tree
+# 		if [[ -v cls__ref[__base] ]]; then
+# 			cls="${cls__ref[__base]}"
+# 			continue
+# 		fi
 
-		# reached the end of the heirarchy
-		cls=""
-	done
+# 		# reached the end of the heirarchy
+# 		cls=""
+# 	done
 
-	return $HBL_ERROR
-}
+# 	return $HBL_ERROR
+# }
 
-function Object__static__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ "$2" =~ ^\. ]] || $Error.undefined_method "$1" "$2" || return
+# function Object__static__dispatch_() {
+# 	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.invocation $FUNCNAME "$@" || return
+# 	[[ "$2" =~ ^\. ]] || $Error.undefined_method "$1" "$2" || return
 
-	local cls selector sobj sobj_type sobj_target
-	cls="$1" selector="${2#\.}"
+# 	local cls selector sobj sobj_type sobj_target
+# 	cls="$1" selector="${2#\.}"
 
-	hbl__util__is_associative_array Util "$cls" ||
-		$Error.argument $FUNCNAME object "$1" || return
+# 	hbl__util__is_associative_array Util "$cls" ||
+# 		$Error.argument $FUNCNAME object "$1" || return
 
-	if Object__static__find_static_selector_ \
-		"$cls" "$selector" sobj sobj_type sobj_target; then
-		case "$sobj_type" in
-			"$HBL_SELECTOR_METHOD")
-				"$sobj_target" "$sobj" "${@:3}"
-				return
-				;;
-			"$HBL_SELECTOR_GETTER")
-				[[ $# -eq 3 ]] || $Error.invocation "${cls}.${selector}" "$@" || return
-				local -n sobj__ref="$sobj"
-				local -n attr_var__ref="$3"
-				attr_var__ref="${sobj__ref[$sobj_target]}"
-				return $HBL_SUCCESS
-				;;
-			"$HBL_SELECTOR_SETTER")
-				[[ $# -ge 3 ]] || $Error.invocation "${cls}.${selector}" "$@" || return
-				[[ "$sobj_target" =~ ^__* ]] &&
-					{ $Error.illegal_instruction "${cls}.${selector}" \
-						'system attributes cannot be set'; return; }
-				local -n sobj__ref="$sobj"
-				sobj__ref[$sobj_target]="$3"
-				return $HBL_SUCCESS
-				;;
-		esac
-	fi
+# 	if Object__static__find_static_selector_ \
+# 		"$cls" "$selector" sobj sobj_type sobj_target; then
+# 		case "$sobj_type" in
+# 			"$HBL_SELECTOR_METHOD")
+# 				"$sobj_target" "$sobj" "${@:3}"
+# 				return
+# 				;;
+# 			"$HBL_SELECTOR_GETTER")
+# 				[[ $# -eq 3 ]] || $Error.invocation "${cls}.${selector}" "$@" || return
+# 				local -n sobj__ref="$sobj"
+# 				local -n attr_var__ref="$3"
+# 				attr_var__ref="${sobj__ref[$sobj_target]}"
+# 				return $HBL_SUCCESS
+# 				;;
+# 			"$HBL_SELECTOR_SETTER")
+# 				[[ $# -ge 3 ]] || $Error.invocation "${cls}.${selector}" "$@" || return
+# 				[[ "$sobj_target" =~ ^__* ]] &&
+# 					{ $Error.illegal_instruction "${cls}.${selector}" \
+# 						'system attributes cannot be set'; return; }
+# 				local -n sobj__ref="$sobj"
+# 				sobj__ref[$sobj_target]="$3"
+# 				return $HBL_SUCCESS
+# 				;;
+# 		esac
+# 	fi
 
-	$Error.undefined_method "$cls" "$selector" || return
-}
+# 	$Error.undefined_method "$cls" "$selector" || return
+# }
 # function hbl__object__inspect() {
 # 	local attrs obj obj_id
 # 	obj=$1
@@ -504,14 +505,14 @@ function Object__static__dispatch_() {
 # 		esac
 # 	done
 
-# 	# create the references
-# 	declare -Ag ${nobj[__refs]}
-# 	local -n nobj_refs__ref=${nobj[__refs]}
-# 	nobj_refs__ref=()
-# 	local -n cls_prefs__ref="$cls_prefs"
-# 	for key in "${!cls_prefs__ref[@]}"; do
-# 		nobj_refs__ref[$key]=""
-# 	done
+	# create the references
+	# declare -Ag ${nobj[__refs]}
+	# local -n nobj_refs__ref=${nobj[__refs]}
+	# nobj_refs__ref=()
+	# local -n cls_prefs__ref="$cls_prefs"
+	# for key in "${!cls_prefs__ref[@]}"; do
+	# 	nobj_refs__ref[$key]=""
+	# done
 
 # 	# setup the dispatch command
 # 	local -n nobj_dispatch__ref=$nobj_dispatch
@@ -534,14 +535,14 @@ readonly Object__methods
 
 declare -Ag Object__prototype
 Object__prototype=(
-	[__ctor]=Object__init
+	[__init]=Object__init
 	[inspect]="$HBL_SELECTOR_METHOD Object__inspect"
 )
 readonly Object__prototype
 
 declare -Ag Object
 Object=(
-	[0]='Object__static__dispatch_ Object '
+	[0]='Class__static__dispatch_ Object '
 	[__methods]=Object__methods
 	[__prototype]=Object__prototype
 )

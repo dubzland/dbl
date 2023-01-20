@@ -1,65 +1,57 @@
 ##!/usr/bin/env bash
 
-function hbl__dict__init_() {
-	local this="$1"
+function Dict__init_() {
+	local -n this="$1"
+	$this.super || return
 
-	$this:super
+	this[_raw]="$1__raw_dict"
+	declare -Ag "${this[_raw]}"
+	local -n _raw="${this[_raw]}"
+	_raw=()
 }
 
-function hbl__dict__set() {
-	[[ $# -eq 3 ]] || hbl__error__invocation_ 1 "${@:2}" || return
-	local this="$1"
-	local dict key value
-	key="$2" val="$3"
+function Dict__set() {
+	[[ $# -eq 3 ]] || $Error.invocation $FUNCNAME "$@" || return
+	local -n this="$1"
 
-	$this._raw dict
-	local -n dict__ref="$dict"
-	dict__ref[$key]="$val"
+	local -n dict__ref="${this[_raw]}"
+	dict__ref[$2]="$3"
 
 	return $HBL_SUCCESS
 }
 
-function hbl__dict__get() {
-	[[ $# -eq 3 ]] || hbl__error__invocation_ 1 "${@:2}" || return
-	[[ -n "$2" ]] || hbl__error__argument_ 1 key "$2" || return
+function Dict__get() {
+	[[ $# -eq 3 ]] || $Error.invocation $FUNCNAME "$@" || return
+	[[ -n "$2" ]] || $Error.argument $FUNCNAME key "$2" || return
 
-	local this="$1"
-	local dict key val_var
-	key="$2" val_var="$3"
+	local -n this="$1"
 
-	$this._raw dict
-	local -n dict__ref="$dict"
-	local -n val_var__ref="$val_var"
-	val_var__ref="${dict__ref[$key]}"
+	local -n dict__ref="${this[_raw]}"
+	local -n val_var__ref="$3"
+	val_var__ref="${dict__ref[$2]}"
 
 	return $HBL_SUCCESS
 }
 
-function hbl__dict__has_key() {
-	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
-	[[ -n "$2" ]] || hbl__error__argument_ 1 key "$2" || return
+function Dict__has_key() {
+	[[ $# -eq 2 ]] || $Error.invocation $FUNCNAME "$@" || return
+	[[ -n "$2" ]] || $Error.argument $FUNCNAME key "$2" || return
 
-	local this="$1"
-	local dict key val_var
-	key="$2"
+	local -n this="$1"
+	local -n dict__ref="${this[_raw]}"
 
-	$this._raw dict
-	local -n dict__ref="$dict"
-
-	[[ -v dict__ref[$key] ]]
+	[[ -v dict__ref[$2] ]]
 }
 
-function hbl__dict__to_dict() {
-	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
-	[[ -n "$2" ]] || hbl__error__argument_ 1 target "$2" || return
+function Dict__to_associative_array() {
+	[[ $# -eq 2 ]] || $Error.invocation $FUNCNAME "$@" || return
+	[[ -n "$2" ]] || $Error.argument $FUNCNAME target "$2" || return
 
-	local this src tgt
-	this="$1" tgt="$2"
+	local -n this="$1"
 
-	$this._raw src
+	local -n src__ref="${this[_raw]}"
+	local -n tgt__ref="$2"
 
-	local -n src__ref="$src"
-	local -n tgt__ref="$tgt"
 	for key in "${!src__ref[@]}"; do
 		tgt__ref[$key]="${src__ref[$key]}"
 	done
@@ -70,45 +62,27 @@ function hbl__dict__to_dict() {
 ################################################################################
 # Dict
 ################################################################################
-declare -Ag __hbl__Dict__vtbl
-__hbl__Dict__vtbl=(
-	[__next]=__hbl__Class__vtbl
+declare -Ag Dict__methods
+Dict__methods=()
+readonly Dict__methods
+
+declare -Ag Dict__prototype
+Dict__prototype=(
+	[__init]="$HBL_SELECTOR_METHOD Dict__init_"
+	[set]="$HBL_SELECTOR_METHOD Dict__set"
+	[get]="$HBL_SELECTOR_METHOD Dict__get"
+	[has_key]="$HBL_SELECTOR_METHOD Dict__has_key"
+	[to_associative_array]="$HBL_SELECTOR_METHOD Dict__to_associative_array"
 )
-readonly __hbl__Dict__vtbl
+readonly Dict__prototype
 
-declare -Ag __hbl__Dict__pvtbl
-__hbl__Dict__pvtbl=(
-	[__ctor]=hbl__dict__init_
-	[set]=hbl__dict__set
-	[get]=hbl__dict__get
-	[has_key]=hbl__dict__has_key
-	[to_dict]=hbl__dict__to_dict
-	[__next]=__hbl__Class__pvtbl
+declare -Ag Dict
+Dict=(
+	[0]='Class__static__dispatch_ Dict '
+	[__name]=Dict
+	[__base]=Class
+	[__methods]=Dict__methods
+	[__prototype]=Dict__prototype
 )
-readonly __hbl__Dict__pvtbl
-
-declare -Ag __hbl__Dict__pattrs
-__hbl__Dict__pattrs=(
-	[_raw]="$HBL_ASSOCIATIVE_ARRAY"
-)
-readonly __hbl__Dict__pattrs
-
-declare -Ag __hbl__Dict__prefs
-__hbl__Dict__prefs=()
-readonly __hbl__Dict__prefs
-
-declare -Ag __hbl__Dict
-__hbl__Dict=(
-	[__name]="Dict"
-	[__ancestor]="Class"
-	[__vtbl]=__hbl__Dict__vtbl
-	[__pvtbl]=__hbl__Dict__pvtbl
-	[__pattrs]=__hbl__Dict__pattrs
-	[__prefs]=__hbl__Dict__prefs
-)
-
-declare -g Dict
-Dict="hbl__object__dispatch_ __hbl__Dict__vtbl __hbl__Dict__vtbl __hbl__Dict '' "
-readonly Dict
 
 __hbl__classes+=('Dict')

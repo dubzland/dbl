@@ -3,52 +3,81 @@ setup() {
 	common_setup
 }
 
-@test 'Dict:new succeeds' {
+@test 'Dict.new() succeeds' {
 	local dict
-	run $Dict:new dict
+	run $Dict.new dict
 	assert_success
 	refute_output
 }
 
-@test 'dicts can set a value' {
+@test 'dict.set()  succeeds' {
 	local dict
-	$Dict:new dict
-	run $dict:set 'foo' 'bar'
+	$Dict.new dict
+	run ${!dict}.set 'foo' 'bar'
 	assert_success
 	refute_output
 }
 
-@test 'dicts can retrieve a value' {
+@test 'dict.set() stores the value' {
+	local dict mydict
+	$Dict.new dict
+	${!dict}.set 'foo' 'bar'
+	${!dict}.get__raw mydict
+	assert_dict "$mydict"
+	assert_dict_has_key "$mydict" foo
+	local -n dict__ref="$mydict"
+	assert_equal "${dict__ref[foo]}" 'bar'
+}
+
+@test 'dict.get() succeeds' {
+	local dict
+	$Dict.new dict
+	${!dict}.set 'foo' 'bar'
+	run ${!dict}.get 'foo' val
+	assert_success
+	refute_output
+}
+
+@test 'dict.get() returns the value' {
 	local dict myval
-	$Dict:new dict
-	$dict:set 'foo' 'bar'
-	run $dict:get 'foo' myval
-	assert_success
-	refute_output
-
-	$dict:get 'foo' myval
+	$Dict.new dict
+	${!dict}.set 'foo' 'bar'
+	${!dict}.get 'foo' myval
 	assert_equal "$myval" 'bar'
 }
 
-@test 'dicts know whether or not a key exists' {
+@test 'dict.has_key() succeeds' {
 	local dict
-	$Dict:new dict
-	$dict:set 'foo' 'bar'
-	run $dict:has_key 'foo'
+	$Dict.new dict
+	${!dict}.set 'foo' 'bar'
+	run ${!dict}.has_key 'foo'
 	assert_success
-	refute_output
-
-	run $dict:has_key 'bar'
-	assert_failure
 	refute_output
 }
 
-@test 'can convert to a bash associative array' {
+@test 'dict.has_key() for a missing value fails' {
 	local dict
-	local -A dict_raw
+	$Dict.new dict
+	run ${!dict}.has_key 'foo'
+	assert_failure $HBL_ERROR
+	refute_output
+}
 
-	$Dict:new dict
-	$dict:set 'foo' 'bar'
-	$dict:to_dict dict_raw
-	assert_dict dict_raw
+@test 'dict.to_associative_array() succeeds' {
+	local dict
+	declare -Ag myaarr
+	$Dict.new dict
+	run ${!dict}.to_associative_array myaarr
+	assert_success
+	refute_output
+}
+
+@test 'dict.to_associative_array() populates the associative array' {
+	local dict
+	declare -Ag myaarr
+	$Dict.new dict
+	${!dict}.set 'foo' 'bar'
+	${!dict}.to_associative_array myaarr
+	assert_dict_has_key myaarr 'foo'
+	assert_equal "${myaarr[foo]}" 'bar'
 }

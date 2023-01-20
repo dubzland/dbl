@@ -57,7 +57,7 @@ setup() {
 @test 'Class.define() accepts an initializer' {
 	function Tester__init() { return 0; }
 	$Class.define Tester Tester_init
-	assert_equal "${Tester[__init]}" 'Tester_init'
+	assert_equal "${Tester__prototype[__init]}" "$HBL_SELECTOR_METHOD Tester_init"
 }
 
 @test 'Class.static_method() succeeds' {
@@ -87,77 +87,6 @@ setup() {
 	$Class.define Tester
 	run $Tester.static_method test anything
 	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'Class properly dispatches to the static method' {
-	function Tester_test() { printf "I am the Tester class.\n"; }
-	$Class.define Tester
-	$Tester.static_method test Tester_test
-	run $Tester.test
-	assert_success
-	assert_output 'I am the Tester class.'
-}
-
-@test 'retrieving system class attributes succeeds' {
-	local var
-	$Class.define Tester
-
-	for attr in "${!Tester[@]}"; do
-		[[ "$attr" =~ ^__* ]] || continue
-		run $Tester.get_$attr var
-		assert_success
-		refute_output
-
-		$Tester.get_$attr var
-		assert_equal "$var" "${Tester[$attr]}"
-	done
-}
-
-@test 'retrieving normal class attributes succeeds' {
-	local var
-	$Class.define Tester
-	Tester[myvar]='red'
-	run $Tester.get_myvar var
-	assert_success
-	refute_output
-}
-
-@test 'retrieving non_existent class attributes fails' {
-	local var
-	$Class.define Tester
-	run $Tester.get_myvar var
-	assert_failure $HBL_ERR_UNDEFINED_METHOD
-}
-
-@test 'assigning system class attributes fails' {
-	$Class.define Tester
-
-	for attr in "${!Tester[@]}"; do
-		[[ "$attr" =~ ^__* ]] || continue
-		run $Tester.set_$attr 'value'
-		assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
-	done
-}
-
-@test 'assigning non-existent class attributes fails' {
-	$Class.define Tester
-	run $Tester.set_var 'test'
-	assert_failure $HBL_ERR_UNDEFINED_METHOD
-}
-
-@test 'assigning a class attribute succeeds' {
-	$Class.define Tester
-	Tester[color]='red'
-	run $Tester.set_color 'blue'
-	assert_success
-	refute_output
-}
-
-@test 'assigning a class attribute sets the value' {
-	$Class.define Tester
-	Tester[color]='red'
-	$Tester.set_color 'blue'
-	assert_equal "${Tester[color]}" 'blue'
 }
 
 @test 'Class.method() succeeds' {
@@ -196,6 +125,19 @@ setup() {
 	refute_output
 }
 
+@test 'Class.new() calls the initializer' {
+	local tester
+	function Tester__init() {
+		printf "I am the tester initializer\n"
+		local -n this="$1"
+		$this.super
+	}
+	$Class.define Tester Tester__init
+	run $Tester.new tester
+	assert_success
+	assert_output 'I am the tester initializer'
+}
+
 @test 'Class.new() creates the global object' {
 	$Class.define Tester
 	$Tester.new obj
@@ -210,20 +152,13 @@ setup() {
 	assert_equal "${obj__ref[0]}" "Class__dispatch_ $obj "
 }
 
-@test 'Class.new() creates the stack' {
+@test 'Class.new() assigns the __id' {
 	$Class.define Tester
 	$Tester.new obj
-	assert_array Tester__stack
-	assert_dict_has_key "$obj" __stack
+	assert_dict_has_key "$obj" __id
+	local -n obj__ref="$obj"
+	assert_equal "${obj__ref[__id]}" "$obj"
 }
-
-# @test 'Class.new() assigns the __id' {
-# 	$Class.define Tester
-# 	$Tester.new obj
-# 	assert_dict_has_key "$obj" __id
-# 	local -n obj__ref="$obj"
-# 	assert_equal "${obj__ref[__id]}" "$obj"
-# }
 
 @test 'Class.new() assigns the __class' {
 	$Class.define Tester
@@ -233,12 +168,122 @@ setup() {
 	assert_equal "${obj__ref[__class]}" Tester
 }
 
+@test 'calling a static method succeeds' {
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	run $Tester.test
+	assert_success
+}
+
+@test 'calling a static method passes the proper arguments' {
+	function Tester_test() {
+		assert_equal $# 2
+		assert_equal "$1" Tester
+		assert_equal "$2" 'foo'
+	}
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	$Tester.test 'foo'
+}
+
+@test 'calling a static method returns the function return code' {
+	function Tester_test() {
+		return 123
+	}
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	run $Tester.test
+	assert_failure 123
+}
+
+@test 'retrieving system class attributes succeeds' {
+	local var
+	$Class.define Tester
+
+	for attr in "${!Tester[@]}"; do
+		[[ "$attr" =~ ^__* ]] || continue
+		run $Tester.get_$attr var
+		assert_success
+		refute_output
+
+		$Tester.get_$attr var
+		assert_equal "$var" "${Tester[$attr]}"
+	done
+}
+
+@test 'retrieving normal class attributes succeeds' {
+	local var
+	$Class.define Tester
+	Tester[myvar]='red'
+	run $Tester.get_myvar var
+	assert_success
+	refute_output
+}
+
+@test 'retrieving non existent class attributes fails' {
+	local var
+	$Class.define Tester
+	run $Tester.get_myvar var
+	assert_failure $HBL_ERR_UNDEFINED_METHOD
+}
+
+@test 'assigning system class attributes fails' {
+	$Class.define Tester
+
+	for attr in "${!Tester[@]}"; do
+		[[ "$attr" =~ ^__* ]] || continue
+		run $Tester.set_$attr 'value'
+		assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
+	done
+}
+
+@test 'assigning non-existent class attributes fails' {
+	$Class.define Tester
+	run $Tester.set_var 'test'
+	assert_failure $HBL_ERR_UNDEFINED_METHOD
+}
+
+@test 'assigning a class attribute succeeds' {
+	$Class.define Tester
+	Tester[color]='red'
+	run $Tester.set_color 'blue'
+	assert_success
+	refute_output
+}
+
+@test 'assigning a class attribute sets the value' {
+	$Class.define Tester
+	Tester[color]='red'
+	$Tester.set_color 'blue'
+	assert_equal "${Tester[color]}" 'blue'
+}
+
+@test 'calling an instance method succeeds' {
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	$Tester.method test Tester_test
+	$Tester.new obj
+	run ${!obj}.test
+	assert_success
+}
+
+@test 'calling an instance method passes the arguments' {
+	function Tester_test() {
+		assert_equal $# 2
+		assert_equal "$1" "$obj"
+		assert_equal "$2" 'foo'
+	}
+	$Class.define Tester
+	$Tester.method test Tester_test
+	$Tester.new obj
+	${!obj}.test 'foo'
+}
+
 @test 'calling an instance method adds an item to the stack' {
 	function Tester_test() {
-		local -n this="$1"
-		local -n stack="${this[__stack]}"
-		assert_equal "${#stack[@]}" 1
-		assert_equal "${stack[0]}" "Tester $1 test"
+		assert_equal "${#__hbl__stack[@]}" 1
+		assert_equal "${__hbl__stack[0]}" "$1 Tester test Tester_test"
 	}
 	$Class.define Tester
 	$Tester.method test Tester_test
@@ -254,14 +299,32 @@ setup() {
 	$Tester.new obj
 	local -n obj__ref="$obj"
 	$obj__ref.test
-	local -n stack="${obj__ref[__stack]}"
-	assert_equal "${#stack[@]}" 0
+	assert_equal "${#__hbl__stack[@]}" 0
 }
 
-# super
+@test 'calling super from an instance method succeeds' {
+	function Tester_inspect() {
+		local -n this="$1"
+		printf "Tester_inspect()\n"
+		$this.super
+		return 0
+	}
+	$Class.define Tester
+	$Tester.method inspect Tester_inspect
+	$Tester.new obj
+	local -n obj__ref="$obj"
+	obj__ref[attrA]='red'
+	obj__ref[attrB]='blue'
+	run $obj__ref.inspect
+	assert_success
+	assert_line --index 0 "Tester_inspect()"
+	assert_line --index 1 "<${obj} attrA='red' attrB='blue'>"
+}
 
-# accessing class attributes
+# accessing instance attributes
 
+
+################################################################################
 # @test 'can instantiate newly defined classes' {
 # 	local tester
 # 	$Class:define Tester
