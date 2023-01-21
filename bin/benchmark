@@ -213,7 +213,7 @@ printf "Writing timing data to ${trace_output_file}.\n"
 exec 3>&2 2>"$trace_output_file"
 set -x
 
-source ./timing_test.sh
+source "$1"
 
 set +x
 exec 2>&3 3>&-

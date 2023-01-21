@@ -118,6 +118,20 @@ setup() {
 	assert_failure $HBL_ERR_ARGUMENT
 }
 
+@test 'Class.reference() succeeds' {
+	$Class.define Tester
+	run $Tester.reference children Array
+	assert_success
+	refute_output
+}
+
+@test 'Class.reference() assigns the reference to the prototype' {
+	$Class.define Tester
+	$Tester.reference children Array
+	assert_dict_has_key Tester__prototype children
+	assert_equal "${Tester__prototype[children]}" "$HBL_SELECTOR_REFERENCE Array"
+}
+
 @test 'Class.new() succeeds' {
 	$Class.define Tester
 	run $Tester.new obj
@@ -149,7 +163,7 @@ setup() {
 	$Tester.new obj
 	assert_dict_has_key "$obj" 0
 	local -n obj__ref="$obj"
-	assert_equal "${obj__ref[0]}" "Class__dispatch_ $obj "
+	assert_equal "${obj__ref[0]}" "Object__dispatch_ $obj "
 }
 
 @test 'Class.new() assigns the __id' {
@@ -302,12 +316,23 @@ setup() {
 	assert_equal "${#__hbl__stack[@]}" 0
 }
 
-@test 'calling super from an instance method succeeds' {
+@test '.super() within an instance method succeeds' {
+	function Tester_inspect() {
+		local -n this="$1"
+		$this.super
+	}
+	$Class.define Tester
+	$Tester.method inspect Tester_inspect
+	$Tester.new obj
+	run ${!obj}.inspect
+	assert_success
+}
+
+@test '.super() within an instance method calls both methods' {
 	function Tester_inspect() {
 		local -n this="$1"
 		printf "Tester_inspect()\n"
 		$this.super
-		return 0
 	}
 	$Class.define Tester
 	$Tester.method inspect Tester_inspect
@@ -316,86 +341,110 @@ setup() {
 	obj__ref[attrA]='red'
 	obj__ref[attrB]='blue'
 	run $obj__ref.inspect
-	assert_success
 	assert_line --index 0 "Tester_inspect()"
 	assert_line --index 1 "<${obj} attrA='red' attrB='blue'>"
 }
 
-# accessing instance attributes
+@test '.get_attr() for a valid attribute succeeds' {
+	function Tester__init() {
+		local -n this="$1"
+		this[foo]='bar'
+	}
+	$Class.define Tester Tester__init
+	$Tester.new obj
+	run ${!obj}.get_foo var
+	assert_success
+}
 
+@test '.get_attr() for a valid attribute returns the value' {
+	function Tester__init() {
+		local -n this="$1"
+		this[foo]='bar'
+	}
+	$Class.define Tester Tester__init
+	$Tester.new obj
+	${!obj}.get_foo var
+	assert_equal "$var" 'bar'
+}
 
-################################################################################
-# @test 'can instantiate newly defined classes' {
-# 	local tester
-# 	$Class:define Tester
-# 	run $Tester:new tester
-# 	assert_success
-# 	refute_output
-# }
+@test '.get_attr() for an invalid attribute fails' {
+	$Class.define Tester
+	$Tester.new obj
+	run ${!obj}.get_foo var
+	assert_failure $HBL_ERR_UNDEFINED_METHOD
+}
 
-# @test 'can add scalar attributes to classes' {
-# 	$Class:define Tester
-# 	run $Tester:attr str $HBL_STRING
-# 	assert_success
-# 	refute_output
-# }
+@test '.set_attr() for a valid attribute succeeds' {
+	function Tester__init() {
+		local -n this="$1"
+		this[foo]='bar'
+	}
+	$Class.define Tester Tester__init
+	$Tester.new obj
+	run ${!obj}.set_foo 'baz'
+	assert_success
+}
 
-# @test 'can set scalar attributes on instantiated classes' {
-# 	local tester
-# 	$Class:define Tester
-# 	$Tester:attr str $HBL_STRING
-# 	$Tester:new tester
-# 	run $tester.str= 'foo'
-# 	assert_success
-# 	refute_output
-# }
+@test '.set_attr() for a valid attribute updates the value' {
+	function Tester__init() {
+		local -n this="$1"
+		this[foo]='bar'
+	}
+	$Class.define Tester Tester__init
+	$Tester.new obj
+	${!obj}.set_foo 'baz'
+	local -n objr="$obj"
+	assert_equal "${objr[foo]}" 'baz'
+}
 
-# @test 'can add array attributes to classes' {
-# 	$Class:define Tester
-# 	run $Tester:attr arr $HBL_ARRAY
-# 	assert_success
-# 	refute_output
-# }
+@test '.set_attr() for an invalid attribute fails' {
+	$Class.define Tester
+	$Tester.new obj
+	run ${!obj}.set_foo 'baz'
+	assert_failure $HBL_ERR_UNDEFINED_METHOD
+}
 
-# @test 'can access array attributes on instantiated classes' {
-# 	local tester myarray
-# 	$Class:define Tester
-# 	$Tester:attr arr $HBL_ARRAY
-# 	$Tester:new tester
-# 	$tester.arr myarray
-# 	assert_array $myarray
-# }
+@test '._set_reference() within an instance method succeeds' {
+	function Tester__init() {
+		local -n this="$1"
+		local children
+		$Array.new children
+		run $this._set_reference children "$children"
+		assert_success
+		refute_output
+	}
+	$Class.define Tester Tester__init
+	$Tester.reference children Array
+	$Tester.new tester
+}
 
-# @test 'can add associative array attributes to classes' {
-# 	$Class:define Tester
-# 	run $Tester:attr dict $HBL_ASSOCIATIVE_ARRAY
-# 	assert_success
-# 	refute_output
-# }
+@test '._set_reference() within an instance method assigns the reference' {
+	function Tester__init() {
+		local -n this="$1"
+		local children
+		$Array.new children
+		$this._set_reference children "$children"
+	}
+	$Class.define Tester Tester__init
+	$Tester.reference children Array
+	$Tester.new tester
+	local -n t__ref="$tester"
+	assert_dict_has_key "$tester" '_children'
+}
 
-# @test 'can access associative array attributes on instantiated classes' {
-# 	local tester mydict
-# 	$Class:define Tester
-# 	$Tester:attr dict $HBL_ASSOCIATIVE_ARRAY
-# 	$Tester:new tester
-# 	$tester.dict mydict
-# 	assert_dict $mydict
-# }
-
-# @test 'can add instance methods to classes' {
-# 	$Class:define Tester
-# 	function test_func() { echo "testing\n"; }
-# 	run $Tester:method testing test_func
-# 	assert_success
-# 	refute_output
-# }
-
-# @test 'can call instance methods on instantiated classes' {
-# 	$Class:define Tester
-# 	function test_func() { printf "testing\n"; }
-# 	$Tester:method testing test_func
-# 	$Tester:new tester
-# 	run $tester:testing
-# 	assert_success
-# 	assert_output "testing"
-# }
+@test 'object.reference() provides access to the referenced object' {
+	function Tester__init() {
+		local -n this="$1"
+		local children
+		$Array.new children
+		${!children}.append 'foo'
+		$this._set_reference children "$children"
+	}
+	$Class.define Tester Tester__init
+	$Tester.reference children Array
+	$Tester.new tester
+	run ${!tester}.children.contains 'foo'
+	assert_success
+	run ${!tester}.children.contains 'bar'
+	assert_failure "$HBL_ERROR"
+}

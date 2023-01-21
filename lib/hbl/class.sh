@@ -1,39 +1,6 @@
 #!/usr/bin/env bash
 
-function __hbl__can_super() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	local obj selector func cls
-	obj="$1" selector="$2" func="$3"
-	local -n obj__ref="$obj"
-
-	cls="${obj__ref[__class]}"
-
-	# if there is a call on the stack
-	if [[ ${#__hbl__stack[@]} -gt 0 ]]; then
-		local -a stack_head=(${__hbl__stack[0]})
-
-		# if the current object and function match the call
-		if [[ "$obj" = "${stack_head[0]}" && "$func" = "${stack_head[3]}" ]]; then
-			# advance the cls by one level and go
-			[[ -v ${cls}[__base] ]] ||
-				$Error.illegal_instruction "${obj}.${selector}" \
-					'no base class found' || return
-			return $HBL_SUCCESS
-			local -n cls__ref="$cls"
-		else
-			# not in the last function we called.  can' super
-			$Error.illegal_instruction "${obj}.${selector}" \
-				'invalid context for super' || return
-		fi
-	else
-		# stack empty.  no super method exists
-		$Error.illegal_instruction "${obj}.${selector}" \
-			'invalid context for super' || return
-	fi
-}
-
-function __hbl__find_static_selector_() {
+function Class__static__find_selector_() {
 	[[ $# -ge 2 && -n "$1" && -n "$2" ]] ||
 		$Error.invocation $FUNCNAME "$@" || return
 	if [[ $# -gt 2 ]]; then
@@ -48,7 +15,7 @@ function __hbl__find_static_selector_() {
 		local -n cls__ref="$cls"
 
 		# check for a method
-		if [[ -n cls__ref[__methods] ]]; then
+		if [[ -v cls__ref[__methods] ]]; then
 			local -n cls_methods__ref="${cls__ref[__methods]}"
 			[[ -v cls_methods__ref[$2] ]] && ltype=$HBL_SELECTOR_METHOD
 		fi
@@ -92,133 +59,6 @@ function __hbl__find_static_selector_() {
 	done
 
 	return $HBL_ERROR
-}
-
-function __hbl__find_prototype_selector_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	if [[ $# -gt 2 ]]; then
-		[[ $# -eq 5 && -n "$3" && -n "$4" && -n "$5" ]] ||
-			$Error.invocation $FUNCNAME "$@" || return
-	fi
-
-	local cls
-	cls="$1"
-
-	while [[ -n "$cls" ]]; do
-		local -n cls__ref="$cls"
-
-		# check for the selector in this prototype
-		if [[ -v cls__ref[__prototype] ]]; then
-			local -n cls_prototype__ref="${cls__ref[__prototype]}"
-
-			if [[ -v cls_prototype__ref[$2] ]]; then
-				local -a proto_arr=(${cls_prototype__ref[$2]})
-				if [[ $# -gt 2 ]]; then
-					local -n tcls__ref="$3" ttype__ref="$4" tgt__ref="$5"
-					tcls__ref="$cls"
-					ttype__ref="${proto_arr[0]}"
-					tgt__ref="${proto_arr[1]}"
-				fi
-				return $HBL_SUCCESS
-			fi
-		fi
-
-		# did not find a match.  move to the next class in the heirarchy
-		if [[ -v cls__ref[__base] ]]; then
-			cls="${cls__ref[__base]}"
-			continue
-		fi
-
-		# reached the end of the heirarchy
-		cls=""
-	done
-
-	return $HBL_ERROR
-}
-
-function Class__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ "$2" =~ ^\. ]] || $Error.undefined_method "$1" "$2" || return
-
-	local obj selector cls cache_key super scls stype stgt
-	obj="$1" selector="${2#\.}" super=0 cache_key="${obj}:${selector}"
-	shift 2
-
-	hbl__util__is_associative_array Util "$obj" ||
-		$Error.argument $FUNCNAME object "$obj" || return
-
-	local -n obj__ref="$obj"
-	cls="${obj__ref[__class]}"
-
-	if [[ "$selector" = 'super' ]]; then
-		__hbl__can_super "$obj" "$selector" "${FUNCNAME[1]}" || return
-		local -n cls__ref="$cls"
-		local -a stack_head=(${__hbl__stack[0]})
-
-		super=1 selector="${stack_head[2]}" cls="${cls__ref[__base]}"
-		cache_key="${obj}:${selector}:super"
-	fi
-
-	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
-		printf ">> CACHE HIT << for %s\n" "$cache_key" >&3
-		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
-		scls="${cached[0]}" stype="${cached[1]}" stgt="${cached[2]}"
-	fi
-
-	if [[ -z "$scls" ]]; then
-		rc=0
-		__hbl__find_prototype_selector_ \
-			"$cls" "$selector" scls stype stgt || rc=$?
-		[[ $rc -eq $HBL_SUCCESS || $rc -eq $HBL_ERROR ]] || return $rc
-	fi
-
-	if [[ -n "$scls" && -n "$stype" && -n "$stgt" ]]; then
-		if [[ ! -v __hbl__dispatch_cache[$cache_key] ]]; then
-			__hbl__dispatch_cache[$cache_key]="${scls} ${stype} ${stgt}"
-		fi
-		case "$stype" in
-			"$HBL_SELECTOR_METHOD")
-				# push to the stack
-				__hbl__stack+=("$obj $scls $selector $stgt")
-				rc=0
-				"$stgt" "$obj" "$@" || rc=$?
-				__hbl__stack=("${__hbl__stack[@]:1}")
-				return $rc
-				;;
-		esac
-	fi
-
-	# not a method.  check for a getter/setter
-	if [[ -z "$scls" ]]; then
-		if [[ "$selector" =~ ^get_* && -v obj__ref[${selector#get_}] ]]; then
-			# getter
-			[[ $# -eq 1 ]] || $Error.invocation "${obj}.${selector}" "$@" || return
-			local -n attr_var__ref="$1"
-			attr_var__ref="${obj__ref[${selector#get_}]}"
-			return $HBL_SUCCESS
-		elif [[ "$selector" =~ ^set_* && -v obj__ref[${selector#set_}] ]]; then
-			# setter
-			[[ $# -ge 1 ]] || $Error.invocation "${obj}.${selector}" "$@" || return
-			[[ "$selector" =~ ^__* ]] &&
-				{ $Error.illegal_instruction "${obj}.${selector}" \
-					'system attributes cannot be set'; return; }
-			obj__ref[${selector#set_}]="$1"
-			return $HBL_SUCCESS
-		fi
-	fi
-
-	# no idea what the caller wanted
-	$Error.undefined_method "$obj" "$selector" || return
-}
-
-function Class__init() {
-	[[ $# -ge 1  && -n "$1" ]] || $Error.invocation $FUNCNAME "$@" || return
-
-	$Object.is_object "$1" || $Error.argument $FUNCNAME 'object' "$1" || return
-
-	local -n obj__ref="$1"
-	obj__ref[__id]="$1"
 }
 
 function Class__static__define() {
@@ -285,6 +125,39 @@ function Class__static__prototype_method() {
 	return $HBL_SUCCESS
 }
 
+function Class__static__prototype_reference() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
+		$Error.invocation $FUNCNAME "$@" || return
+	[[ "$1" != Object ]] ||
+		$Error.illegal_instruction 'Class.static_method' \
+		'cannot alter Object' || return
+	[[ "$1" != Class ]] ||
+		$Error.illegal_instruction 'Class.static_method' \
+		'cannot alter Class' || return
+
+	local vclass=0
+	# ensure we were passed an actual class
+	for cls in "${__hbl__classes[@]}"; do
+		if [[ "$cls" = "$3" ]]; then
+			vclass=1; break
+		fi
+	done
+
+	[[ $vclass -eq 1 ]] || Error.argument $FUNCNAME 'ref type' "$3" || return
+
+	local -n cls__ref="$1"
+	local -n cls_prototype__ref="${cls__ref[__prototype]}"
+
+	# ensure we don't have an existing method/reference for this selector
+	[[ ! -v cls_prototype__ref[$2] ]] ||
+		$Error.illegal_instruction "${1}.method" \
+		'a selector by that name already exists' || return
+
+	cls_prototype__ref[$2]="$HBL_SELECTOR_REFERENCE $3"
+
+	return $HBL_SUCCESS
+}
+
 function Class__static__method() {
 	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
 		$Error.invocation $FUNCNAME "$@" || return
@@ -299,7 +172,7 @@ function Class__static__method() {
 	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
 
 	# ensure we don't have an existing accessor in the tree by this name
-	! __hbl__find_static_selector_ "$1" "$2" ||
+	! Class__static__find_selector_ "$1" "$2" ||
 		$Error.illegal_instruction "${1}.static_method" \
 		'cannot redefine existing static method' || return
 
@@ -323,7 +196,7 @@ function Class__static__dispatch_() {
 		$Error.argument $FUNCNAME object "$1" || return
 
 	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
-		printf ">> CACHE HIT << for %s\n" "$cache_key" >&3
+		# printf ">> CACHE HIT << for %s\n" "$cache_key" >&3
 		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
 		scls="${cached[0]}"
 		stype="${cached[1]}"
@@ -332,7 +205,7 @@ function Class__static__dispatch_() {
 
 	if [[ -z "$scls" ]]; then
 		rc=0
-		__hbl__find_static_selector_ \
+		Class__static__find_selector_ \
 			"$cls" "$selector" scls stype stgt || rc=$?
 		[[ $rc -eq $HBL_SUCCESS || $rc -eq $HBL_ERROR ]] || return $rc
 	fi
@@ -387,15 +260,33 @@ function Class__static__new() {
 	local -n nobj_var__ref="$2"
 	local -n nobj__ref="$obj_id"
 	nobj__ref=(
-		[0]="Class__dispatch_ $obj_id "
+		[0]="Object__dispatch_ $obj_id "
 		[__class]="$1"
 	)
 	nobj_var__ref="$obj_id"
+
+	# create the references
+	# declare -Ag ${nobj[__refs]}
+	# local -n nobj_refs__ref=${nobj[__refs]}
+	# nobj_refs__ref=()
+	# local -n cls_prefs__ref="$cls_prefs"
+	# for key in "${!cls_prefs__ref[@]}"; do
+	# 	nobj_refs__ref[$key]=""
+	# done
 
 	# call the initializer
 	$nobj__ref.__init "${@:3}" || return
 
 	return $HBL_SUCCESS
+}
+
+function Class__init() {
+	[[ $# -ge 1  && -n "$1" ]] || $Error.invocation $FUNCNAME "$@" || return
+
+	$Object.is_object "$1" || $Error.argument $FUNCNAME 'object' "$1" || return
+
+	local -n obj__ref="$1"
+	obj__ref[__id]="$1"
 }
 
 # function hbl__class__define() {
@@ -532,8 +423,9 @@ declare -Ag Class__methods
 Class__methods=(
 	[define]=Class__static__define
 	[ref]=Class__static__reference
-	[method]=Class__static__prototype_method
 	[static_method]=Class__static__method
+	[method]=Class__static__prototype_method
+	[reference]=Class__static__prototype_reference
 	[new]=Class__static__new
 )
 readonly Class__methods

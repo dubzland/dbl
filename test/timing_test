@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+source "./lib/hbl.sh"
+
+function foo_init() {
+	return 0
+}
+
+function define_a_command() {
+	local _cmd cmd_var opt
+	cmd_var="$1"
+	local -n cmd_var__ref="$cmd_var"
+
+	$Command.new _cmd 'backup-client' backup_client_run
+
+	${!_cmd}.set_description 'Manage backup jobs.'
+	${!_cmd}.add_example     '-d /etc/jobs.d <options>'
+
+	$Option.new opt 'job_directory'
+	${!opt}.set_type        'dir'
+	${!opt}.set_short_flag  'd'
+	${!opt}.set_long_flag   'job_directory'
+	${!opt}.set_description 'Backup job directory.'
+
+	${!_cmd}.add_option "$opt"
+	cmd_var__ref="$_cmd"
+	return 0
+}
+
+function command_loop() {
+	for i in {1..100}; do
+		[[ $((i%10)) -eq 0 ]] && printf "\r%d classes created." "$i"
+		define_a_command cmd || printf "failed!\n"
+	done
+	printf "Done\n"
+}
+
+command_loop

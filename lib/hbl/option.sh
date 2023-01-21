@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
-function hbl__option__init_() {
+function Option__init() {
 	[[ $# -eq 2 ]] || hbl__error__invocation "${@:2}" || exit
 	[[ -n "$2" ]] || hbl__error__argument 'option_name' "$2" || exit
 
-	local this="$1"
+	local -n this="$1"
 
-	$this:super
-	$this.name= "$2"
+	$this.super
+	this[name]="$2"
+	this[type]=""
+	this[short_flag]=""
+	this[long_flag]=""
+	this[description]=""
 
 	return $HBL_SUCCESS
 }
@@ -15,46 +19,20 @@ function hbl__option__init_() {
 ################################################################################
 # Option
 ################################################################################
-declare -Ag __hbl__Option__vtbl
-__hbl__Option__vtbl=(
-	[__next]=__hbl__Class__vtbl
+declare -Ag Option__prototype
+Option__prototype=(
+	[__init]="$HBL_SELECTOR_METHOD Option__init"
+	[command]="$HBL_SELECTOR_REFERENCE Command"
 )
-readonly __hbl__Option__vtbl
+readonly Option__prototype
 
-declare -Ag __hbl__Option__pvtbl
-__hbl__Option__pvtbl=(
-	[__ctor]=hbl__option__init_
-	[__next]=__hbl__Class__pvtbl
+declare -Ag Option
+Option=(
+	[0]='Class__static__dispatch_ Option '
+	[__name]=Option
+	[__base]=Class
+	[__prototype]=Option__prototype
 )
-readonly __hbl__Option__pvtbl
-
-declare -Ag __hbl__Option__pattrs
-__hbl__Option__pattrs=(
-	[name]=$HBL_STRING
-	[type]=$HBL_STRING
-	[short_flag]=$HBL_STRING
-	[long_flag]=$HBL_STRING
-	[description]=$HBL_STRING
-)
-readonly __hbl__Option__pattrs
-
-declare -Ag __hbl__Option__prefs
-__hbl__Option__prefs=(
-	[command]='Command'
-)
-readonly __hbl__Option__prefs
-
-declare -Ag __hbl__Option
-__hbl__Option=(
-	[__name]="Option"
-	[__ancestor]="Class"
-	[__vtbl]=__hbl__Option__vtbl
-	[__pvtbl]=__hbl__Option__pvtbl
-	[__pattrs]=__hbl__Option__pattrs
-	[__prefs]=__hbl__Option__prefs
-)
-
-declare -g Option
-Option="hbl__object__dispatch_ __hbl__Option__vtbl __hbl__Option__vtbl __hbl__Option '' "
 readonly Option
+
 __hbl__classes+=('Option')
