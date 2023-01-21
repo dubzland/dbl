@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[[ $__hbl__imported -eq 1 ]] && return || true
+
 # Error codes
 HBL_SUCCESS=0
 HBL_ERROR=1
@@ -94,3 +96,6 @@ source "${HBL_LIB}/hbl/option.sh"
 # source "${HBL_LIB}/hbl/command/usage.sh"
 # # shellcheck source=lib/hbl/util.sh
 source "${HBL_LIB}/hbl/util.sh"
+
+declare -g __hbl__imported
+__hbl__imported=1
