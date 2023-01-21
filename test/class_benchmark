@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+set -e
+
+source "./lib/hbl.sh"
+
+function _msg() {
+	[[ $quiet -eq 1 ]] && return
+	printf "$1" "${@:2}"
+}
+
+function Tester__test_method() {
+	return 0
+}
+
+function Tester__static__test_method() {
+	return 0
+}
+
+function test_class_method() {
+	$Tester.new foo
+	$Tester.test
+}
+
+function test_instance_method() {
+	$Tester.new myinstance
+	${!myinstance}.test
+}
+
+$Class.define Tester
+$Tester.static_method test Tester__static__test_method
+$Tester.method test Tester__test_method
+
+declare -A class_samples
+class_samples=(
+	['class_method']='test_class_method'
+	['instance_method']='test_instance_method'
+)
+
+function run_sample() {
+	_msg ">>> %s <<<\n" "$1"
+	for (( i=0; i<$2; i++)); do
+		if ! ${class_samples[$1]}; then
+			_msg "\r\033[KFAILED!\n"
+			return 1
+		fi
+		[[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"
+	done
+	_msg "\r\033[K"
+}
+
+function run_samples() {
+	local count=$1
+	local -a samples=("${@:2}")
+
+	for sample in "${samples[@]}"; do
+		if [[ $quiet -eq 1 ]]; then
+			run_sample "${sample}" $count
+		else
+			time run_sample "${sample}" $count
+		fi
+		_msg "\n\n"
+	done
+}
+
+declare -i quiet
+quiet=0
+
+declare -i count
+count=1000
+
+# Option parsing
+while getopts qc: opt
+do
+	case "$opt" in
+		q) quiet=1 ;;
+		c) count=$OPTARG ;;
+		\?) echo 'No arguments supplied'; exit 1 ;;
+	esac
+done
+
+shift $((OPTIND-1))
+
+declare -a benchmark_samples
+if [[ $# -gt 0 ]]; then
+	benchmark_samples=("$@")
+else
+	benchmark_samples=("${!class_samples[@]}")
+fi
+
+_msg "STARTING BENCHMARK WITH %d iterations...\n" $count
+
+run_samples $count "${benchmark_samples[@]}"
+

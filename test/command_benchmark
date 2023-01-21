@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+source "./lib/hbl.sh"
+
+function _msg() {
+	[[ $quiet -eq 1 ]] && return
+	printf "$1" "${@:2}"
+}
+
+function build_empty_command() {
+	$Command.new "$1" 'backup-client' backup_client_run
+}
+
+function build_simple_command() {
+	local opt
+
+	$Command.new "$1" 'backup-client' backup_client_run
+
+	${!1}.set_description 'Manage backup jobs.'
+	${!1}.add_example     '-d /etc/jobs.d <options>'
+
+	$Option.new opt 'job_directory'
+	${!opt}.set_type        'dir'
+	${!opt}.set_short_flag  'd'
+	${!opt}.set_long_flag   'job_directory'
+	${!opt}.set_description 'Backup job directory.'
+
+	${!1}.add_option "$opt"
+}
+
+function create_empty_command() {
+	local _cmd _cmd_instance
+
+	build_empty_command _cmd || return
+
+	${!_cmd}.new _cmd_instance
+}
+
+function create_basic_command() {
+	local _cmd _cmd_instance
+
+	build_basic_command _cmd || return
+
+	${!_cmd}.new _cmd_instance
+}
+
+declare -A command_samples
+command_samples=(
+	['build_empty']='build_empty_command _cmd'
+	['build_simple']='build_simple_command _cmd'
+	['create_empty']=create_empty_command
+	['create_basic']=create_basic_command
+)
+
+function run_sample() {
+	_msg ">>> %s <<<\n" "$1"
+	for (( i=0; i<$2; i++)); do
+		if ! ${command_samples[$1]}; then
+			_msg "\r\033[KFAILED!\n"
+			return 1
+		fi
+		[[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"
+	done
+	_msg "\r\033[K"
+}
+
+function run_samples() {
+	local count=$1
+	local -a samples=("${@:2}")
+
+	for sample in "${samples[@]}"; do
+		if [[ $quiet -eq 1 ]]; then
+			run_sample "${sample}" $count
+		else
+			time run_sample "${sample}" $count
+		fi
+		_msg "\n\n"
+	done
+}
+
+declare -i quiet
+quiet=0
+
+declare -i count
+count=1000
+
+# Option parsing
+while getopts qc: opt
+do
+	case "$opt" in
+		q) quiet=1 ;;
+		c) count=$OPTARG ;;
+		\?) echo 'No arguments supplied'; exit 1 ;;
+	esac
+done
+
+shift $((OPTIND-1))
+
+declare -a benchmark_samples
+if [[ $# -gt 0 ]]; then
+	benchmark_samples=("$@")
+else
+	benchmark_samples=("${!command_samples[@]}")
+fi
+
+_msg "STARTING BENCHMARK WITH %d iterations...\n" $count
+
+run_samples $count "${benchmark_samples[@]}"
+

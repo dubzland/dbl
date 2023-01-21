@@ -28,7 +28,7 @@ function define_a_command() {
 }
 
 function command_loop() {
-	for i in {1..100}; do
+	for i in {1..1000}; do
 		[[ $((i%10)) -eq 0 ]] && printf "\r%d classes created." "$i"
 		define_a_command cmd || printf "failed!\n"
 	done

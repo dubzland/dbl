@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 
+source "./lib/hbl.sh"
+
 trap "exit" INT TERM ERR
 trap "kill 0" EXIT
 
-PS4='+ ${EPOCHREALTIME}\011${BASH_SOURCE}\011${LINENO}\011 '
+if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 ]]; then
+	PS4='+ ${EPOCHREALTIME}\011${BASH_SOURCE}\011${LINENO}\011 '
+else
+	printf "Can't benchmark on Bash < 5.  Sorry :(\n"
+	return 1
+fi
 
 # File containing trace information
 declare trace_output_file
@@ -114,7 +121,6 @@ function injest_timing() {
 		record_arr=(${raw_trace_records[i]})
 		ctime="${record_arr[1]}" cfile="${record_arr[2]}"
 		cline=${record_arr[3]} ccmd="${record_arr[@]:4}"
-		[[ $i -eq 0 ]] && printf "ctime: %s\n" "$ctime"
 
 		[[ $(((i+1)%100)) -eq 0 ]] && progress_bar $((i+1)) ${#raw_trace_records[@]}
 
@@ -127,11 +133,7 @@ function injest_timing() {
 			if [[ -v trace_file[$pkey] ]]; then
 				trace_total_time[$pkey]=$((${trace_total_time[$pkey]}+elapsed))
 				trace_call_count[$pkey]=$((${trace_call_count[$pkey]}+1))
-				trace_average_time[$pkey]=$((${trace_average_time[$pkey]}/${trace_call_count[$pkey]}))
-				# local -n trec__ref=${trace_records[$pkey]}
-				# trec__ref[total_time]=$((${trec__ref[total]}+$elapsed))
-				# trec__ref[call_count]=$((${trec__ref[call_count]}+1))
-				# trec__ref[average]=$((${trec__ref[total_time]}/${trec__ref[call_count]}))
+				trace_average_time[$pkey]=$((${trace_total_time[$pkey]}/${trace_call_count[$pkey]}))
 			else
 				trace_file[$pkey]="$pfile"
 				trace_line[$pkey]=$pline
@@ -139,16 +141,6 @@ function injest_timing() {
 				trace_total_time[$pkey]="$elapsed"
 				trace_call_count[$pkey]=1
 				trace_average_time[$pkey]="$elapsed"
-				# trace_records[$pkey]="__trace__${pkey}"
-				# declare -Ag "${trace_records[$pkey]}"
-				# local -n trec__ref=${trace_records[$pkey]}
-				# trec__ref[total_time]="$elapsed"
-				# trec__ref[call_count]=1
-				# trec__ref[average]="$elapsed"
-				# trec__ref[file]="$pfile"
-				# trec__ref[line]="$pline"
-				# trec__ref[cmd]="$pcmd"
-				# printf "trec__ref!: %s\n" "${trec__ref[@]}"
 			fi
 		fi
 		ptime=${ctime//.}
@@ -158,7 +150,7 @@ function injest_timing() {
 	done
 	progress_bar ${#raw_trace_records[@]} ${#raw_trace_records[@]}
 
-	printf "total timings: %d\n" ${#trace_total_time[@]}
+	# printf "total timings: %d\n" ${#trace_total_time[@]}
 	# printf "total execution time: %d\n" ${#trace_total_time[@]}
 }
 
@@ -204,23 +196,35 @@ function print_timing_data() {
 			${trace_call_count[$summary_key]} \
 			"${trace_file[$summary_key]/$prefix/}:${trace_line[$summary_key]}" \
 			"${trace_cmd[$summary_key]}"
-		[[ $i -gt 20 ]] && break
+		# [[ $i -gt 20 ]] && break
 	done
 }
 
+# Option parsing
+while getopts qc: opt
+do
+	case "$opt" in
+		q) quiet=1 ;;
+		c) count=$OPTARG ;;
+		\?) echo 'No arguments supplied'; exit 1 ;;
+	esac
+done
+
 printf "Writing timing data to ${trace_output_file}.\n"
 
+(
 exec 3>&2 2>"$trace_output_file"
 set -x
 
-source "$1"
+source "$1" "${@:2}"
 
 set +x
 exec 2>&3 3>&-
+)
 
 printf "Execution complete.  Starting the number crunching.\n"
 
 load_trace_records
 injest_timing
 sort_timings
-print_timing_data
+print_timing_data | more
