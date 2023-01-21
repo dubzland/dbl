@@ -437,7 +437,7 @@ setup() {
 		local -n this="$1"
 		local children
 		$Array.new children
-		${!children}.append 'foo'
+		${!children}.push 'foo'
 		$this._set_reference children "$children"
 	}
 	$Class.define Tester Tester__init
