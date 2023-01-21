@@ -18,14 +18,30 @@ function hbl__util__is_function() {
 	return $HBL_ERROR
 }
 
+
+if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 ]]; then
+
 function hbl__util__is_associative_array() {
 	[[ $# -eq 2 ]] || hbl__error__invocation "$@" || exit
-	[[ -n "$2" ]] || hbl__error__argument 'dict' "$2" || exit
+	[[ -n $2 ]] || hbl__error__argument 'dict' "$2" || exit
+
+	local -n var=$2
+
+	[[ ${var@a} = *A* ]]
+}
+
+else
+
+function hbl__util__is_associative_array() {
+	[[ $# -eq 2 ]] || hbl__error__invocation "$@" || exit
+	[[ -n $2 ]] || hbl__error__argument 'dict' "$2" || exit
 
 	declare -p "$2" 2>/dev/null | grep 'declare -A' >/dev/null && return $HBL_SUCCESS
 
 	return $HBL_ERROR
 }
+
+fi
 
 function hbl__util__dump_associative_array() {
 	[[ $# -eq 2 ]] || hbl__error__invocation "$@" || exit
