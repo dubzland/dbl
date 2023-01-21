@@ -27,7 +27,7 @@ function Command__init() {
 function Command__add_example() {
 	local -n this="$1"
 
-	$this.examples.append "$2"
+	$this.examples.push "$2"
 
 	return $HBL_SUCCESS
 }
@@ -49,7 +49,7 @@ function Command__add_subcommand() {
 	local -n this="$1"
 	local sub subcommands
 
-	$this.subcommands.append "$2"
+	$this.subcommands.push "$2"
 
 	return $HBL_SUCCESS
 }
