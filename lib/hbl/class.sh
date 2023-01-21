@@ -196,7 +196,6 @@ function Class__static__dispatch_() {
 		$Error.argument $FUNCNAME object "$1" || return
 
 	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
-		# printf ">> CACHE HIT << for %s\n" "$cache_key" >&3
 		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
 		scls="${cached[0]}"
 		stype="${cached[1]}"
@@ -265,15 +264,6 @@ function Class__static__new() {
 	)
 	nobj_var__ref="$obj_id"
 
-	# create the references
-	# declare -Ag ${nobj[__refs]}
-	# local -n nobj_refs__ref=${nobj[__refs]}
-	# nobj_refs__ref=()
-	# local -n cls_prefs__ref="$cls_prefs"
-	# for key in "${!cls_prefs__ref[@]}"; do
-	# 	nobj_refs__ref[$key]=""
-	# done
-
 	# call the initializer
 	$nobj__ref.__init "${@:3}" || return
 
@@ -288,133 +278,6 @@ function Class__init() {
 	local -n obj__ref="$1"
 	obj__ref[__id]="$1"
 }
-
-# function hbl__class__define() {
-# 	# printf "*** hbl__class__define() ***\n" >&3
-# 	# printf "args: %s\n" "$@" >&3
-# 	local pcls pcls_vtbl pcls_pvtbl ncls ncls_name ncls_ctor
-# 	pcls="$1" ncls_name="$2" ncls_ctor="$3"
-
-# 	# create the class
-# 	ncls="__hbl__Class__$ncls_name"
-# 	declare -Ag $ncls
-# 	local -n ncls__ref=$ncls
-# 	ncls__ref=(
-# 		[__name]=$ncls_name
-# 		[__ancestor]='Object'
-# 		[__vtbl]="${ncls}__vtbl"
-# 		[__pvtbl]="${ncls}__pvtbl"
-# 		[__pattrs]="${ncls}__pattrs"
-# 		[__prefs]="${ncls}__prefs"
-# 	)
-# 	declare -g "$ncls_name"
-
-# 	# create the class vtable
-# 	$pcls.__vtbl pcls_vtbl
-# 	declare -Ag ${ncls__ref[__vtbl]}
-# 	local -n ncls_vtbl__ref=${ncls__ref[__vtbl]}
-# 	ncls_vtbl__ref=(
-# 		[__next]=$pcls_vtbl
-# 	)
-
-# 	# create the class prototype vtable
-# 	$pcls.__pvtbl pcls_pvtbl
-# 	declare -Ag ${ncls__ref[__pvtbl]}
-# 	local -n ncls_pvtbl__ref=${ncls__ref[__pvtbl]}
-# 	ncls_pvtbl__ref=(
-# 		[__next]=$pcls_pvtbl
-# 	)
-# 	[[ -n "$ncls_ctor" ]] && ncls_pvtbl__ref[__ctor]=$ncls_ctor
-
-# 	# create the class prototype_attributes
-# 	declare -Ag ${ncls__ref[__pattrs]}
-# 	local -n ncls_pattrs__ref=${ncls__ref[__pattrs]}
-# 	ncls_pattrs__ref=()
-
-# 	# create the class prototype reference objects
-# 	declare -Ag ${ncls__ref[__prefs]}
-# 	local -n ncls_prefs__ref=${ncls__ref[__prefs]}
-# 	ncls_prefs__ref=()
-
-# 	local -n ncls_dispatch__ref=$ncls_name
-# 	ncls_dispatch__ref="hbl__object__dispatch_ ${ncls__ref[__vtbl]} ${ncls__ref[__vtbl]} $ncls '' "
-
-# 	__hbl__classes+=("$ncls_name")
-# }
-
-# function hbl__class__attribute() {
-# 	local cls cls_pattrs attr attr_type
-# 	cls="$1" attr="$2" attr_type="$3"
-
-# 	case $attr_type in
-# 		$HBL_STRING|$HBL_NUMBER|$HBL_ARRAY|$HBL_ASSOCIATIVE_ARRAY)
-# 			$cls.__pattrs cls_pattrs
-# 			local -n cls_pattrs__ref=$cls_pattrs
-# 			cls_pattrs__ref[$attr]="$attr_type"
-# 			;;
-# 		*)
-# 			for hbl_cls in "${__hbl__classes[@]}"; do
-# 				if [[ "$attr_type" = "$hbl_cls" ]]; then
-# 					printf "Unsupported type for attribute: [%s].  Did you mean ':reference'?\n" \
-# 						"$attr_type" >&2 || return $HBL_ERROR
-# 				fi
-# 			done
-# 			printf "Unsupported attribute type: %s\n" "$attr_type" && return $HBL_ERROR
-# 			;;
-# 	esac
-
-# 	return $HBL_SUCCESS
-# }
-
-# function hbl__class__reference() {
-# 	local cls cls_prefs attr attr_type
-# 	cls="$1" attr="$2" attr_type="$3"
-
-# 	for hbl_cls in "${__hbl__classes[@]}"; do
-# 		if [[ "$attr_type" = "$hbl_cls" ]]; then
-# 			$cls.__prefs cls_prefs
-# 			local -n cls_prefs__ref=$cls_prefs
-# 			cls_prefs__ref[$attr]="$attr_type"
-# 			return $HBL_SUCCESS
-# 		fi
-# 	done
-
-# 	return $HBL_ERROR
-# }
-
-# function hbl__class__instance_method() {
-# 	local cls cls_pvtbl meth_func meth_name
-# 	cls="$1" meth_name="$2" meth_func="$3"
-
-# 	$cls.__pvtbl cls_pvtbl
-
-# 	local -n cls_pvtbl__ref=$cls_pvtbl
-# 	cls_pvtbl__ref[$meth_name]="$meth_func"
-# }
-
-# function hbl__class__static_method() {
-# 	local cls cls_vtbl meth_func meth_name
-# 	cls="$1" meth_name="$2" meth_func="$3"
-
-# 	$cls._vtbl cls_vtbl
-
-# 	local -n cls_vtbl__ref=$cls_vtbl
-# 	cls_vtbl__ref[$meth_name]="$meth_func"
-# }
-
-# function hbl__class__new() {
-# 	local cls
-# 	cls=$1
-
-# 	if $cls:super $2; then
-# 		local -n obj="$2"
-# 		$obj:__ctor "${@:3}"
-# 	fi
-# }
-
-# function hbl__class__init() {
-# 	return 0
-# }
 
 ################################################################################
 # Class

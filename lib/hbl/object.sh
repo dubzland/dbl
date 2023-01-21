@@ -43,7 +43,7 @@ function Object__can_super_() {
 
 	# if there is a call on the stack
 	if [[ ${#__hbl__stack[@]} -gt 0 ]]; then
-		local -a stack_head=(${__hbl__stack[0]})
+		local -a stack_head=(${__hbl__stack[-1]})
 
 		# if the current object and function match the call
 		if [[ "$obj" = "${stack_head[0]}" && "$func" = "${stack_head[3]}" ]]; then
@@ -147,14 +147,13 @@ function Object__dispatch_() {
 	if [[ "$selector" = 'super' ]]; then
 		Object__can_super_ "$obj" "$selector" "${FUNCNAME[1]}" || return
 		local -n cls__ref="$cls"
-		local -a stack_head=(${__hbl__stack[0]})
+		local -a stack_head=(${__hbl__stack[-1]})
 
 		super=1 selector="${stack_head[2]}" cls="${cls__ref[__base]}"
 		cache_key="${obj}:${selector}:super"
 	fi
 
 	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
-		# printf ">> CACHE HIT << for %s\n" "$cache_key" >&3
 		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
 		scls="${cached[0]}" stype="${cached[1]}" stgt="${cached[2]}"
 	fi
@@ -173,10 +172,10 @@ function Object__dispatch_() {
 		case "$stype" in
 			$HBL_SELECTOR_METHOD)
 				# push to the stack
-				__hbl__stack=("$obj $scls $selector $stgt" "${__hbl__stack[@]}")
+				__hbl__stack+=("$obj $scls $selector $stgt")
 				rc=0
 				"$stgt" "$obj" "$@" || rc=$?
-				__hbl__stack=("${__hbl__stack[@]:1}")
+				unset __hbl__stack[-1]
 				return $rc
 				;;
 			$HBL_SELECTOR_REFERENCE)
