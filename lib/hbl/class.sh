@@ -197,9 +197,7 @@ function Class__static__dispatch_() {
 
 	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
 		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
-		scls="${cached[0]}"
-		stype="${cached[1]}"
-		stgt="${cached[2]}"
+		scls="${cached[0]}" stype="${cached[1]}" stgt="${cached[2]}"
 	fi
 
 	if [[ -z "$scls" ]]; then
