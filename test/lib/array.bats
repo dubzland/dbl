@@ -3,222 +3,418 @@ setup() {
 	common_setup
 }
 
+teardown() {
+	stub_teardown
+}
+
 #
-# Array:is_array()
+# __hbl__Array__static__is_array()
 #
-@test 'Array.is_array() with an undefined variable fails' {
-	run $Array.is_array 'UNDEFINED'
-	assert_failure $HBL_ERROR
-	refute_output
-}
-
-@test 'Array.is_array() with a normal variable fails' {
-	declare DEFINED
-	run $Array.is_array 'DEFINED'
-	assert_failure $HBL_ERROR
-	refute_output
-}
-
-@test 'Array.is_array() with an associative array fails' {
-	declare -A DEFINED
-	run $Array.is_array 'DEFINED'
-	assert_failure $HBL_ERROR
-	refute_output
-}
-
-@test 'Array.is_array() with a normal array succeeds' {
-	declare -a DEFINED
-	run $Array.is_array 'DEFINED'
+@test '__hbl__Array__static__is_array() succeeds' {
+	local -a array=()
+	run __hbl__Array__static__is_array array
 	assert_success
 	refute_output
 }
 
-@test 'Array.new() succeeds' {
-	run $Array.new array
-	assert_success
+@test '__hbl__Array__static__is_array() with insufficient arguments fails' {
+	local -a array=()
+	run __hbl__Array__static__is_array
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
 }
 
-@test 'Array#at() succeeds' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.at 0 myvar
+@test '__hbl__Array__static__is_array() with an undefined variable fails' {
+	set +u
+	run __hbl__Array__static__is_array undefined
+	set -u
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+@test '__hbl__Array__static__is_array() with a normal variable fails' {
+	local defined
+	run __hbl__Array__static__is_array defined
+	assert_failure $HBL_ERROR
+	refute_output
+}
+
+@test '__hbl__Array__static__is_array() with an associative array fails' {
+	local -A defined=()
+	run __hbl__Array__static__is_array defined
+	assert_failure $HBL_ERROR
+	refute_output
+}
+
+#
+# __hbl__Array__static__at()
+#
+@test '__hbl__Array__static__at() succeeds' {
+	local -a arr=(foo bar baz)
+	run __hbl__Array__static__at arr 0 val
 	assert_success
 	refute_output
 }
 
-@test 'Array#at() returns the item at the specified index' {
-	$Array.new array 'foo' 'bar'
-	${!array}.at 0 myvar
+@test '__hbl__Array__static__at() returns the item at the specified index' {
+	local -a arr=(foo bar baz)
+	__hbl__Array__static__at arr 0 myvar
 	assert_equal "$myvar" 'foo'
-	${!array}.at 1 myvar
+	__hbl__Array__static__at arr 1 myvar
 	assert_equal "$myvar" 'bar'
 }
 
-@test 'Array#at() with a negative index succeeds' {
-	$Array.new array
-	for i in {1..10}; do
-		${!array}.push "val$i"
-	done
-	run ${!array}.at -2 myvar
+@test '__hbl__Array__static__at() with a negative index succeeds' {
+	local -a arr=(foo bar baz)
+	run __hbl__Array__static__at arr -2 myvar
 	assert_success
 	refute_output
 }
 
-@test 'Array#at() with a negative index returns the proper value' {
-	$Array.new array
-	for i in {1..10}; do
-		${!array}.push "val$i"
-	done
-	${!array}.at -2 myvar
-	assert_equal "$myvar" 'val9'
-}
-
-@test 'Array#at() with an empty array fails' {
-	$Array.new array
-	run ${!array}.at 0 myvar
-	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'Array#at() with an invalid index fails' {
-	$Array.new array
-	for i in {1..10}; do
-		${!array}.push "val$i"
-	done
-	run ${!array}.at 10 myvar
-	assert_failure $HBL_ERR_ARGUMENT
-}
-
-@test 'Array#shift() succeeds' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.shift myvar
-	assert_success
-	refute_output
-}
-
-@test 'Array#shift() removes the first item' {
-	$Array.new array 'foo' 'bar'
-	${!array}.shift
-	${!array}.at 0 myvar
+@test '__hbl__Array__static__at() with a negative index returns the proper value' {
+	local -a arr=(foo bar baz)
+	__hbl__Array__static__at arr -2 myvar
 	assert_equal "$myvar" 'bar'
 }
 
-@test 'Array#shift() returns first item' {
-	$Array.new array 'foo' 'bar'
-	${!array}.shift myvar
-	assert_equal "$myvar" 'foo'
+@test '__hbl__Array__static__at() with an empty array fails' {
+	local -a arr=()
+	run __hbl__Array__static__at arr 0 myvar
+	assert_failure $HBL_ERR_ARGUMENT
 }
 
-@test 'Array#shift() without an argument succeeds' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.shift
+@test '__hbl__Array__static__at() with an invalid index fails' {
+	local -a arr=(foo bar baz)
+	run __hbl__Array__static__at arr 10 myvar
+	assert_failure $HBL_ERR_ARGUMENT
+}
+
+#
+# __hbl__Array__static__shift()
+#
+@test '__hbl__Array__static__shift() succeeds' {
+	local -ag arr=(one two three)
+	run __hbl__Array__static__shift arr myvar
 	assert_success
 	refute_output
 }
 
-@test 'Array#shift() with an empty array fails' {
-	$Array.new array
-	run ${!array}.shift
+@test '__hbl__Array__static__shift() removes the first item' {
+	local -a arr=(one two three)
+	local myvar=""
+	__hbl__Array__static__shift arr
+	assert_equal "${arr[0]}" 'two'
+}
+
+@test '__hbl__Array__static__shift() returns first item' {
+	local -a arr=(one two three)
+	local myvar=""
+	__hbl__Array__static__shift arr myvar
+	assert_equal "$myvar" 'one'
+}
+
+@test '__hbl__Array__static__shift() without a return argument succeeds' {
+	local -a arr=(one two three)
+	local myvar=""
+	run __hbl__Array__static__shift arr
+	assert_success
+	refute_output
+}
+
+@test '__hbl__Array__static__shift() with insufficient arguments fails' {
+	local -a arr=(one two three)
+	local myvar=""
+	run __hbl__Array__static__shift
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+@test '__hbl__Array__static__shift() with an empty array fails' {
+	local -a arr=()
+	local myvar=""
+	run __hbl__Array__static__shift arr
 	assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
 }
 
-@test 'Array#unshift() succeeds' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.unshift 'baz'
+#
+# __hbl__Array__static__unshift()
+#
+@test '__hbl__Array__static__unshift() succeeds' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__unshift arr 'zero'
 	assert_success
 	refute_output
 }
 
-@test 'Array#unshift() prepends to the array' {
-	$Array.new array 'foo' 'bar'
-	${!array}.unshift 'baz'
-	${!array}.at 0 myvar
-	assert_equal "$myvar" 'baz'
+@test '__hbl__Array__static__unshift() prepends to the array' {
+	local -a arr=(one two three)
+	__hbl__Array__static__unshift arr 'zero'
+	assert_equal "${arr[0]}" 'zero'
+	assert_equal "${arr[1]}" 'one'
 }
 
-@test 'Array#unshift() with multiple values succeeds' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.unshift 'baz' 'biz'
+@test '__hbl__Array__static__unshift() with multiple values succeeds' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__unshift arr inf zero
 	assert_success
 	refute_output
 }
 
-@test 'Array#unshift() with multiple values prepends them to the array' {
-	local -a expected=(baz biz foo bar)
-	$Array.new array 'foo' 'bar'
-	${!array}.unshift 'baz' 'biz'
-	${!array}.to_array myvar
-	assert_array_equals myvar expected
+@test '__hbl__Array__static__unshift() with multiple values prepends them to the array' {
+	local -a arr=(one two three)
+	__hbl__Array__static__unshift arr inf zero
+	assert_equal "${arr[0]}" 'inf'
+	assert_equal "${arr[1]}" 'zero'
+	assert_equal "${arr[2]}" 'one'
 }
 
-@test 'Array#push() succeeds' {
-	$Array.new array
-	run ${!array}.push 'foo'
+#
+# __hbl__Array__static__push()
+#
+@test '__hbl__Array__static__push() succeeds' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__push arr four
 	assert_success
 	refute_output
 }
 
-@test 'Array#push() stores the value' {
-	$Array.new array
-	${!array}.push 'foo'
-	${!array}.get_raw myarr
-	assert_array_contains "$myarr" 'foo'
+@test '__hbl__Array__static__push() stores the value' {
+	local -a arr=(one two three)
+	__hbl__Array__static__push arr four
+	assert_equal "${arr[3]}" 'four'
 }
 
-@test 'Array#pop() succeeds' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.pop myvar
+@test '__hbl__Array__static__push() with multiple values succeeds' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__push arr four five
 	assert_success
 	refute_output
 }
 
-@test 'Array#pop() returns the last value' {
-	$Array.new array 'foo' 'bar'
-	${!array}.pop myvar
-	assert_equal "$myvar" 'bar'
+@test '__hbl__Array__static__push() with multiple values appends them all' {
+	local -a arr=(one two three)
+	__hbl__Array__static__push arr four five
+	assert_equal "${arr[3]}" 'four'
+	assert_equal "${arr[4]}" 'five'
 }
 
-@test 'Array#pop() works without an argument' {
-	$Array.new array 'foo' 'bar'
-	run ${!array}.pop
+@test '__hbl__Array__static__push() with insufficient arguments fails' {
+	local -a arr=()
+	run __hbl__Array__static__push
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+@test '__hbl__Array__static__push() without a value fails' {
+	local -a arr=()
+	run __hbl__Array__static__push arr
+	assert_failure $HBL_ERR_ARGUMENT
+}
+
+#
+# __hbl__Array__static__pop()
+#
+@test '__hbl__Array__static__pop() succeeds' {
+	local -a arr=(one two three)
+	local myvar=""
+	run __hbl__Array__static__pop arr myvar
 	assert_success
 	refute_output
 }
 
-@test 'Array#pop() removes the last value' {
-	$Array.new array 'foo' 'bar'
-	${!array}.pop
-	local -n arr__ref="${array}"
-	local -n raw__ref="${arr__ref[_raw]}"
-	assert_equal ${#raw__ref[@]} 1
-	assert_equal "${raw__ref[0]}" 'foo'
-}
-
-@test 'Array#sort() succeeds' {
-	$Array.new array 'orange' 'apple' 'lemon' 'banana'
-	run ${!array}.sort
+@test '__hbl__Array__static__pop() without a return argument succeeds' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__pop arr
 	assert_success
 	refute_output
 }
 
-@test 'Array#sort() sorts the items' {
-	declare -a expected=(apple banana lemon orange)
-	$Array.new array 'orange' 'apple' 'lemon' 'banana'
-	${!array}.sort
-	${!array}.get_raw actual
-	assert_array_equals $actual expected
+@test '__hbl__Array__static__pop() removes the last item' {
+	local -a arr=(one two three)
+	__hbl__Array__static__pop arr
+	assert_equal "${arr[-1]}" 'two'
 }
 
-@test 'Array#contains() succeeds' {
-	$Array.new array 'orange' 'apple' 'lemon' 'banana'
-	run ${!array}.contains 'apple'
+@test '__hbl__Array__static__pop() returns the item removed' {
+	local -a arr=(one two three)
+	local myvar=""
+	__hbl__Array__static__pop arr myvar
+	assert_equal "$myvar" 'three'
+}
+
+@test '__hbl__Array__static__pop() with insufficient arguments fails' {
+	run __hbl__Array__static__pop
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+@test '__hbl__Array__static__pop() with an empty array fails' {
+	local -a arr=()
+	run __hbl__Array__static__pop arr
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+@test '__hbl__Array__static__sort() succeeds' {
+	local -a arr=(orange apple lemon banana)
+	run __hbl__Array__static__sort arr
 	assert_success
 	refute_output
 }
 
-@test 'Array#contains() for a missing value fails' {
-	$Array.new array 'orange' 'apple' 'lemon' 'banana'
-	run ${!array}.contains 'pear'
+@test '__hbl__Array__static__sort() with an empty array succeeds' {
+	local -a arr=()
+	run __hbl__Array__static__sort arr
+	assert_success
+	refute_output
+}
+
+@test '__hbl__Array__static__sort() sorts the items' {
+	local -a arr=(orange apple lemon banana)
+	__hbl__Array__static__sort arr
+	assert_equal "${arr[0]}" apple
+	assert_equal "${arr[1]}" banana
+	assert_equal "${arr[2]}" lemon
+	assert_equal "${arr[3]}" orange
+}
+
+@test '__hbl__Array__static__sort() with insufficient arguments fails' {
+	run __hbl__Array__static__sort
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+#
+# __hbl__Array__static__contains()
+#
+@test '__hbl__Array__static__contains() succeeds' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__contains arr 'two'
+	assert_success
+	refute_output
+}
+
+@test '__hbl__Array__static__contains() for a missing value fails' {
+	local -a arr=(one two three)
+	run __hbl__Array__static__contains arr 'four'
 	assert_failure $HBL_ERROR
 	refute_output
+}
+
+@test '__hbl__Array__static__congtains() with insufficient arguments fails' {
+	run __hbl__Array__static__contains
+	assert_failure $HBL_ERR_ARGUMENT
+	refute_output
+}
+
+#
+# Array class methods
+#
+@test 'Array.is_array() calls the static function' {
+	stub __hbl__Array__static__is_array
+	$Array.is_array arr
+	assert_stub_with_args __hbl__Array__static__is_array arr
+}
+
+@test 'Array.at() calls the static function' {
+	stub __hbl__Array__static__at
+	$Array.at arr 0 myvar
+	assert_stub_with_args __hbl__Array__static__at arr 0 myvar
+}
+
+@test 'Array.shift() calls the static function' {
+	stub __hbl__Array__static__shift
+	$Array.shift arr myvar
+	assert_stub_with_args __hbl__Array__static__shift arr myvar
+}
+
+@test 'Array.unshift() calls the static function' {
+	stub __hbl__Array__static__unshift
+	$Array.unshift arr 'val'
+	assert_stub_with_args __hbl__Array__static__unshift arr 'val'
+}
+
+@test 'Array.push() calls the static function' {
+	stub __hbl__Array__static__push
+	$Array.push arr 'foo'
+	assert_stub_with_args __hbl__Array__static__push arr 'foo'
+}
+
+@test 'Array.pop() calls the static function' {
+	stub __hbl__Array__static__pop
+	$Array.pop arr myvar
+	assert_stub_with_args __hbl__Array__static__pop arr myvar
+}
+
+@test 'Array.sort() calls the static function' {
+	stub __hbl__Array__static__sort
+	$Array.sort arr
+	assert_stub_with_args __hbl__Array__static__sort arr
+}
+
+@test 'Array.contains() calls the static function' {
+	stub __hbl__Array__static__contains
+	$Array.contains arr 'needle'
+	assert_stub_with_args __hbl__Array__static__contains arr 'needle'
+}
+
+#
+# Array instance methods
+#
+@test 'Array#at() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__at
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.at 0 myvar
+	assert_stub_with_args __hbl__Array__static__at "${__ref[_raw]}" 0 myvar
+}
+
+@test 'Array#shift() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__shift
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.shift myvar
+	assert_stub_with_args __hbl__Array__static__shift "${__ref[_raw]}" myvar
+}
+
+@test 'Array#unshift() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__unshift
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.unshift 'baz'
+	assert_stub_with_args __hbl__Array__static__unshift "${__ref[_raw]}" 'baz'
+}
+
+@test 'Array#push() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__push
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.push 'baz'
+	assert_stub_with_args __hbl__Array__static__push "${__ref[_raw]}" 'baz'
+}
+
+@test 'Array#pop() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__pop
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.pop myvar
+	assert_stub_with_args __hbl__Array__static__pop "${__ref[_raw]}" myvar
+}
+
+@test 'Array#sort() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__sort
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.sort
+	assert_stub_with_args __hbl__Array__static__sort "${__ref[_raw]}"
+}
+
+@test 'Array#contains() calls the static function' {
+	local -a array
+	stub __hbl__Array__static__contains
+	$Array.new array 'foo' 'bar' && local -n __ref="$array"
+	${!array}.contains 'needle'
+	assert_stub_with_args __hbl__Array__static__contains "${__ref[_raw]}" 'needle'
 }
 
 @test 'Array#to_array() succeeds' {

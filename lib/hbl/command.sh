@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 function Command__init() {
-	[[ $# -eq 3 ]] || $Error.invocation $FUNCNAME "$@" || exit
-	[[ -n "$2" ]]  || $Error.argument $FUNCNAME command_name "$2" || exit
-	[[ -n "$3" ]]  || $Error.argument $FUNCNAME command_entrypoint "$3" || exit
+	[[ $# -eq 3 && -n "$2" && -n "$3" ]]  || return $HBL_ERR_ARGUMENT
 
 	local -n this="$1"
 	local examples options subcommands
@@ -71,7 +69,7 @@ readonly Command__prototype
 
 declare -Ag Command
 Command=(
-	[0]='Class__static__dispatch_ Command '
+	[0]='__hbl__Class__static__dispatch_ Command '
 	[__name]=Command
 	[__base]=Class
 	[__prototype]=Command__prototype

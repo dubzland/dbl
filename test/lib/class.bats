@@ -192,9 +192,8 @@ setup() {
 
 @test 'calling a static method passes the proper arguments' {
 	function Tester_test() {
-		assert_equal $# 2
-		assert_equal "$1" Tester
-		assert_equal "$2" 'foo'
+		assert_equal $# 1
+		assert_equal "$1" 'foo'
 	}
 	$Class.define Tester
 	$Tester.static_method test Tester_test

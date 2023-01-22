@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-function Class__static__find_selector_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
+function __hbl__Class__static__find_selector_() {
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
 	if [[ $# -gt 2 ]]; then
-		[[ $# -eq 5 && -n "$3" && -n "$4" && -n "$5" ]] ||
-			$Error.invocation $FUNCNAME "$@" || return
+		[[ $# -eq 5 && -n "$3" && -n "$4" && -n "$5" ]] || return $HBL_ERR_ARGUMENT
 	fi
 
 	local cls ltype
@@ -34,7 +32,7 @@ function Class__static__find_selector_() {
 			if [[ $# -gt 2 ]]; then
 
 				local -n scls__ref="$3" stype__ref="$4" stgt__ref="$5"
-				scls__ref="$1" stype__ref=$ltype
+				scls__ref="$cls" stype__ref=$ltype
 
 				case $ltype in
 					$HBL_SELECTOR_METHOD)
@@ -61,24 +59,21 @@ function Class__static__find_selector_() {
 	return $HBL_ERROR
 }
 
-function Class__static__define() {
-	[[ $# -ge 2 ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ -n "$1" ]] || $Error.argument $FUNCNAME 'parent object type' "$1" || return
-	[[ -n "$2" ]] || $Error.argument $FUNCNAME 'object name' "$2" || return
+function __hbl__Class__static__define() {
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENTj
 
 	local pcls ncls_name ncls_init
 	pcls="$1" ncls_name="$2"
 	[[ -n "$3" ]] && ncls_init="$3"
 
 	# ensure a class by this name doesn't exist
-	! $Util.is_defined "$ncls_name" ||
-		$Error.already_defined "$ncls_name" || return
+	! $Util.is_defined "$ncls_name" || return $HBL_ERR_ALREADY_DEFINED
 
 	# Create the class
 	declare -Ag "$ncls_name"
 	local -n ncls__ref="$ncls_name"
 	ncls__ref=(
-		[0]="Class__static__dispatch_ $ncls_name "
+		[0]="__hbl__Class__static__dispatch_ $ncls_name "
 		[__name]="$ncls_name"
 		[__base]="$pcls"
 		[__methods]="${ncls_name}__methods"
@@ -99,41 +94,29 @@ function Class__static__define() {
 	ncls_methods__ref=()
 }
 
-function Class__static__prototype_method() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	[[ "$1" != Object ]] ||
-		$Error.illegal_instruction 'Class.static_method' \
-		'cannot alter Object' || return
-	[[ "$1" != Class ]] ||
-		$Error.illegal_instruction 'Class.static_method' \
-		'cannot alter Class' || return
+function __hbl__Class__static__prototype_method() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ "$1" != Object ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
+	[[ "$1" != Class ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
 
 	# ensure we were passed an actual function
-	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
+	$Util.is_function "$3" || return $HBL_ERR_ARGUMENT
 
 	local -n cls__ref="$1"
 	local -n cls_prototype__ref="${cls__ref[__prototype]}"
 
 	# ensure we don't have an existing method/reference for this selector
-	[[ ! -v cls_prototype__ref[$2] ]] ||
-		$Error.illegal_instruction "${1}.method" \
-		'a selector by that name already exists' || return
+	[[ ! -v cls_prototype__ref[$2] ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
 
 	cls_prototype__ref[$2]="$HBL_SELECTOR_METHOD $3"
 
 	return $HBL_SUCCESS
 }
 
-function Class__static__prototype_reference() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	[[ "$1" != Object ]] ||
-		$Error.illegal_instruction 'Class.static_method' \
-		'cannot alter Object' || return
-	[[ "$1" != Class ]] ||
-		$Error.illegal_instruction 'Class.static_method' \
-		'cannot alter Class' || return
+function __hbl__Class__static__prototype_reference() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ "$1" != Object ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
+	[[ "$1" != Class ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
 
 	local vclass=0
 	# ensure we were passed an actual class
@@ -143,38 +126,30 @@ function Class__static__prototype_reference() {
 		fi
 	done
 
-	[[ $vclass -eq 1 ]] || Error.argument $FUNCNAME 'ref type' "$3" || return
+	[[ $vclass -eq 1 ]] || $HBL_ERR_ARGUMENT
 
 	local -n cls__ref="$1"
 	local -n cls_prototype__ref="${cls__ref[__prototype]}"
 
 	# ensure we don't have an existing method/reference for this selector
-	[[ ! -v cls_prototype__ref[$2] ]] ||
-		$Error.illegal_instruction "${1}.method" \
-		'a selector by that name already exists' || return
+	[[ ! -v cls_prototype__ref[$2] ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
 
 	cls_prototype__ref[$2]="$HBL_SELECTOR_REFERENCE $3"
 
 	return $HBL_SUCCESS
 }
 
-function Class__static__method() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
-	[[ "$1" != Object ]] ||
-		$Error.illegal_instruction 'Class.static_method' \
-		'cannot alter Object' || return
-	[[ "$1" != Class ]] ||
-		$Error.illegal_instruction 'Class.static_method' \
-		'cannot alter Class' || return
+function __hbl__Class__static__method() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ "$1" != Object ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
+	[[ "$1" != Class ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
 
 	# ensure we were passed an actual function
-	$Util.is_function "$3" || $Error.argument $FUNCNAME 'function' "$3" || return
+	$Util.is_function "$3" || return $HBL_ERR_ARGUMENT
 
 	# ensure we don't have an existing accessor in the tree by this name
-	! Class__static__find_selector_ "$1" "$2" ||
-		$Error.illegal_instruction "${1}.static_method" \
-		'cannot redefine existing static method' || return
+	! __hbl__Class__static__find_selector_ "$1" "$2" ||
+		return $HBL_ERR_ILLEGAL_INSTRUCTION
 
 	local -n cls__ref="$1"
 	local -n cls_methods__ref="${cls__ref[__methods]}"
@@ -184,16 +159,16 @@ function Class__static__method() {
 	return $HBL_SUCCESS
 }
 
-function Class__static__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ "$2" =~ ^\. ]] || $Error.undefined_method "$1" "$2" || return
+function __hbl__Class__static__dispatch_() {
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || $HBL_ERR_ARGUMENT
+	[[ "$2" =~ ^\. ]] || $HBL_ERR_UNDEFINED_METHOD
 
 	local cls selector cache_key scls stype stgt
 	cls="$1" selector="${2#\.}" cache_key="${cls}:${selector}"
+	scls="" stype="" stgt=""
 	shift 2
 
-	hbl__util__is_associative_array Util "$cls" ||
-		$Error.argument $FUNCNAME object "$1" || return
+	__hbl__Util__static__is_associative_array "$cls" || return $HBL_ERR_ARGUMENT
 
 	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
 		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
@@ -202,7 +177,7 @@ function Class__static__dispatch_() {
 
 	if [[ -z "$scls" ]]; then
 		rc=0
-		Class__static__find_selector_ \
+		__hbl__Class__static__find_selector_ \
 			"$cls" "$selector" scls stype stgt || rc=$?
 		[[ $rc -eq $HBL_SUCCESS || $rc -eq $HBL_ERROR ]] || return $rc
 	fi
@@ -214,21 +189,23 @@ function Class__static__dispatch_() {
 
 		case "$stype" in
 			"$HBL_SELECTOR_METHOD")
-				"$stgt" "$scls" "$@"
+				if [[ "$scls" = 'Class' ]]; then
+					"$stgt" "$cls" "$@"
+				else
+					"$stgt" "$@"
+				fi
 				return
 				;;
 			"$HBL_SELECTOR_GETTER")
-				[[ $# -eq 1 ]] || $Error.invocation "${cls}.${selector}" "$@" || return
+				[[ $# -eq 1 ]] || $HBL_ERR_ARGUMENT
 				local -n scls__ref="$scls"
 				local -n attr_var__ref="$1"
 				attr_var__ref="${scls__ref[$stgt]}"
 				return $HBL_SUCCESS
 				;;
 			"$HBL_SELECTOR_SETTER")
-				[[ $# -ge 1 ]] || $Error.invocation "${cls}.${selector}" "$@" || return
-				[[ "$stgt" =~ ^__* ]] &&
-					{ $Error.illegal_instruction "${cls}.${selector}" \
-						'system attributes cannot be set'; return; }
+				[[ $# -ge 1 ]] || $HBL_ERR_ARGUMENT
+				[[ "$stgt" =~ ^__* ]] && return $HBL_ERR_ILLEGAL_INSTRUCTION
 				local -n scls__ref="$scls"
 				scls__ref[$stgt]="$1"
 				return $HBL_SUCCESS
@@ -236,13 +213,11 @@ function Class__static__dispatch_() {
 		esac
 	fi
 
-	$Error.undefined_method "$cls" "$selector" || return
+	return $HBL_ERR_UNDEFINED_METHOD
 }
 
-function Class__static__new() {
-	[[ $# -ge 2 ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ -n "$1" ]] || $Error.argument $FUNCNAME class "$1" || return
-	[[ -n "$2" ]] || $Error.argument $FUNCNAME object_var "$2" || return
+function __hbl__Class__static__new() {
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
 
 	local obj_id
 
@@ -268,10 +243,10 @@ function Class__static__new() {
 	return $HBL_SUCCESS
 }
 
-function Class__init() {
-	[[ $# -ge 1  && -n "$1" ]] || $Error.invocation $FUNCNAME "$@" || return
+function __hbl__Class__init() {
+	[[ $# -ge 1  && -n "$1" ]] || return $HBL_ERR_ARGUMENT
 
-	$Object.is_object "$1" || $Error.argument $FUNCNAME 'object' "$1" || return
+	$Object.is_object "$1" || return $HBL_ERR_ARGUMENT
 
 	local -n obj__ref="$1"
 	obj__ref[__id]="$1"
@@ -280,30 +255,31 @@ function Class__init() {
 ################################################################################
 # Class
 ################################################################################
-declare -Ag Class__methods
-Class__methods=(
-	[define]=Class__static__define
-	[ref]=Class__static__reference
-	[static_method]=Class__static__method
-	[method]=Class__static__prototype_method
-	[reference]=Class__static__prototype_reference
-	[new]=Class__static__new
+declare -Ag __hbl__Class__methods
+__hbl__Class__methods=(
+	[define]=__hbl__Class__static__define
+	[ref]=__hbl__Class__static__reference
+	[static_method]=__hbl__Class__static__method
+	[method]=__hbl__Class__static__prototype_method
+	[reference]=__hbl__Class__static__prototype_reference
+	[new]=__hbl__Class__static__new
 )
-readonly Class__methods
+readonly __hbl__Class__methods
 
-declare -Ag Class__prototype
-Class__prototype=(
-	[__init]="$HBL_SELECTOR_METHOD Class__init"
+declare -Ag __hbl__Class__prototype
+__hbl__Class__prototype=(
+	[__init]="$HBL_SELECTOR_METHOD __hbl__Class__init"
 )
-readonly Class__prototype
+readonly __hbl__Class__prototype
 
 declare -Ag Class
 Class=(
-	[0]='Class__static__dispatch_ Class '
+	[0]='__hbl__Class__static__dispatch_ Class '
 	[__name]=Class
 	[__base]=Object
-	[__methods]=Class__methods
-	[__prototype]=Class__prototype
+	[__methods]=__hbl__Class__methods
+	[__prototype]=__hbl__Class__prototype
 )
+readonly Class
 
 __hbl__classes+=('Class')

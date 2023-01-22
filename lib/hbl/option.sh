@@ -28,7 +28,7 @@ readonly Option__prototype
 
 declare -Ag Option
 Option=(
-	[0]='Class__static__dispatch_ Option '
+	[0]='__hbl__Class__static__dispatch_ Option '
 	[__name]=Option
 	[__base]=Class
 	[__prototype]=Option__prototype

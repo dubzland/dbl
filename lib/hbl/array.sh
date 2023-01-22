@@ -1,10 +1,230 @@
 #!/usr/bin/env bash
 
-# @file hbl__array
+# @name Array
 # @brief A library for interacting with Bash arrays.
-###############################################################################
 
-function Array__init() {
+###############################################################################
+# @description Determine whether or not a variable is a bash array.
+#
+# @example
+#    $Array.is_array myvar
+#
+# @arg $1 string A variable name to check
+#
+# @exitcode $HBL_SUCCESS If successful.
+# @exitcode $HBL_ERROR If the argument is not an array
+#
+function __hbl__Array__static__is_array() {
+	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	$Util.is_defined "$1" || return $HBL_ERR_ARGUMENT
+
+	if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 && -z ${-//[^u]/} ]]; then
+		local -n __ref="$1"
+		[[ "${__ref@a}" = *a* ]]
+	else
+		[[ "$(declare -p "$1" 2>/dev/null)" == "declare -a"* ]]
+	fi
+}
+
+###############################################################################
+# @description Extract array element at the specified position
+#
+# @example
+#    $Array.at myarr 1 myvar
+#
+# @arg $1 string A bash array name
+# @arg $2 number Index of the array element to be retrieved
+# @arg $3 string Name of the var to hold the extracted value
+#
+# @exitcode 0 If successful.
+# @exitcode 1 If the array item does not exist
+#
+function __hbl__Array__static__at() {
+	[[ $# -eq 3 && -n $1 && -n $2 && -n $3 ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+	local -n arr__ref="$1"
+	local arr_size=${#arr__ref[@]}
+
+	[[ $2 -lt $arr_size && $2 -gt $((0-arr_size)) ]] ||
+		return $HBL_ERR_ARGUMENT
+
+	local -n ret__ref=$3
+	ret__ref=${arr__ref[$2]}
+
+	return $HBL_SUCCESS
+}
+
+###############################################################################
+# @description Remove (and optionally return) the first element of a bash array.
+#
+# @example
+#    $Array.shift myarr
+#
+# @arg $1 string A bash array name
+# @arg $2 string Name of a variable to hold the removed value (Optional)
+#
+# @exitcode 0 If successful.
+# @exitcode 1 If the array is empty
+#
+function __hbl__Array__static__shift() {
+	[[ $# -ge 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+
+	local -n __ref=$1
+
+	[[ ${#__ref[@]} -gt 0 ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
+
+	if [[ $# -gt 1 ]]; then
+		local -n ret__ref="$2"
+		ret__ref="${__ref[0]}"
+	fi
+	__ref=("${__ref[@]:1}")
+
+	return $HBL_SUCCESS
+}
+
+###############################################################################
+# @description Prepend a value to the beginning of a bash array.
+#
+# @example
+#    $Array.unshift myarr 'value'
+#
+# @arg $1 string A bash array name
+# @arg $2 string Value to be prepended (more values may be specified)
+#
+# @exitcode 0 If successful.
+# @exitcode 1 If the array is empty
+#
+function __hbl__Array__static__unshift() {
+	[[ $# -ge 2 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+
+	local -n __ref=$1; shift
+	__ref=("$@" "${__ref[@]}")
+
+	return $HBL_SUCCESS
+}
+
+###############################################################################
+# @description Append a value to the end of a bash array.
+#
+# @example
+#    $Array.push myarr 'value'
+#
+# @arg $1 string A bash array name
+# @arg $2 string Value to be appended (more values may be specified)
+#
+# @exitcode 0 If successful.
+#
+function __hbl__Array__static__push() {
+	[[ $# -ge 2 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+
+	local -n __ref="$1"; shift
+	__ref+=("$@")
+
+	return $HBL_SUCCESS
+}
+
+###############################################################################
+# @description Removes (and optionally returns) the last value from a bash array.
+#
+# @example
+#    $Array.pop myarr
+#
+# @arg $1 string A bash array name
+# @arg $2 string Variable name to hold the popped value (Optional)
+#
+# @exitcode 0 If successful.
+# @exitcode 1 Empty array was passed
+#
+function __hbl__Array__static__pop() {
+	[[ $# -ge 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+
+	local -n __ref="$1"; shift
+	[[ ${#__ref[@]} -gt 0 ]] || return $HBL_ERR_ARGUMENT
+
+	if [[ $# -eq 1 ]]; then
+		local -n var__ref="$1"
+		var__ref="${__ref[-1]}"
+	fi
+
+	unset __ref[-1];
+
+	return $HBL_SUCCESS
+}
+
+###############################################################################
+# @description Sorts the bash array in-place (using  bubble-sort algorithm).
+#
+# @example
+#    $Array.pop myarr
+#
+# @arg $1 string A bash array name
+#
+# @exitcode 0 If successful.
+#
+function __hbl__Array__static__sort() {
+	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+
+	local -n __ref="$1"
+
+	if [[ ${#__ref[@]} -gt 0 ]]; then
+
+		local swapped tmp
+		swapped=0 tmp=""
+
+		local -a sortable
+
+		sortable=("${__ref[@]}")
+
+		for ((i = 0; i < ${#sortable[@]}; i++)); do
+			for(( j = 0; j < ${#sortable[@]}-i-1; j++)); do
+				if [[ "${sortable[j]}" > "${sortable[$((j+1))]}" ]]; then
+					tmp=${sortable[j]}
+					sortable[$j]=${sortable[$((j+1))]}
+					sortable[$((j+1))]=$tmp
+					swapped=1
+				fi
+			done
+			[[ $swapped -eq 0 ]] && break
+		done
+		__ref=("${sortable[@]}")
+	fi
+
+	return $HBL_SUCCESS
+}
+
+###############################################################################
+# @description Checks for the existence of a value in a bash array.
+#
+# @example
+#    $Array.contains myarr 'needle'
+#
+# @arg $1 string A bash array name
+# @arg $2 string Value to search for
+#
+# @exitcode 0 If the value is present
+# @exitcode 1 If the value is not present
+#
+function __hbl__Array__static__contains() {
+	[[ $# -eq 2 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+
+	local val=""
+	local -n __ref="$1"; shift
+	[[ ${#__ref[@]} -gt 0 ]] || return $HBL_ERROR
+
+	for val in "${__ref[@]}"; do
+		[[ "$val" = "$1" ]] && return $HBL_SUCCESS
+	done
+
+	return $HBL_ERROR
+}
+
+function __hbl__Array__init() {
 	local -n this="$1"
 	$this.super || return
 
@@ -15,128 +235,77 @@ function Array__init() {
 	this[_size]=${#_raw[@]}
 }
 
-function Array__at() {
-	[[ $# -ge 3 ]] || $Error.invocation 'Array#at' "$@" || return
-	local -n this="$1"
-	local -n _raw=${this[_raw]}
-
-	# printf "this[_size]: %s\n" ${this[_size]} >&3
-
-	[[ $2 -lt ${this[_size]} && $2 -gt $((0-this[_size])) ]] ||
-		$Error.argument 'Array#at' 'index' "$2 is out of range" || return
-
-	local index=$2
-	[[ $index -lt 0 ]] && index=$((this[_size]+$index)) || true
-	local -n ret__ref="$3"
-
-	ret__ref=${_raw[index]}
-
-	return $HBL_SUCCESS
+function __hbl__Array__at() {
+	[[ $# -ge 3 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
+	__hbl__Array__static__at ${this[_raw]} "$@"
 }
 
-function Array__shift() {
-	[[ $# -ge 1 ]] || $Error.invocation 'Array#shift' "$@" || return
-	local -n this="$1"
-	local -n _raw=${this[_raw]}
+function __hbl__Array__shift() {
+	[[ $# -ge 1 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
+	local -n _raw="${this[_raw]}"
 
-	[[ ${this[_size]} -gt 0 ]] ||
-		$Error.illegal_instruction 'Array#shift' \
-			'cannot shift an empty array' || return
+	__hbl__Array__static__shift ${this[_raw]} "$@" || return
 
-	if [[ $# -gt 1 ]]; then
-		local -n ret__ref="$2"
-		ret__ref="${_raw[0]}"
-	fi
-	_raw=("${_raw[@]:1}")
 	this[_size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
 
-function Array__unshift() {
-	[[ $# -ge 2 ]] || $Error.invocation 'Array#shift' "$@" || return
-	local -n this="$1"
-	local -n _raw=${this[_raw]}
+function __hbl__Array__unshift() {
+	[[ $# -ge 2 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
+	local -n _raw="${this[_raw]}"
 
-	_raw=("${@:2}" "${_raw[@]}")
+	__hbl__Array__static__unshift ${this[_raw]} "$@" || return
+
 	this[_size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
 
-function Array__push() {
-	[[ $# -ge 2 ]] || $Error.invocation 'Array#push' "$@" || return
-
-	local -n this="$1"
+function __hbl__Array__push() {
+	[[ $# -ge 2 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
 	local -n _raw="${this[_raw]}"
 
-	_raw+=("${@:2}")
+	__hbl__Array__static__push ${this[_raw]} "$@" || return
+
 	this[_size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
 
-function Array__pop() {
-	[[ $# -ge 1 ]] || $Error.invocation 'Array#pop' "$@" || return
-
-	local -n this="$1"
+function __hbl__Array__pop() {
+	[[ $# -ge 2 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
 	local -n _raw="${this[_raw]}"
 
-	if [[ $# -gt 1 ]]; then
-		local -n var__ref="$2"
-		var__ref="${_raw[-1]}"
-	fi
+	__hbl__Array__static__pop ${this[_raw]} "$@" || return
 
-	unset _raw[-1];
 	this[_size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
 
-function Array__bubble_sort() {
-	[[ $# -eq 1 ]] || $Error.invocation 'Array#sort' "$@" || return
+function __hbl__Array__sort() {
+	[[ $# -eq 1 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
 
-	local -n this="$1"
-
-	local swapped tmp
-	swapped=0
-
-	declare -a sortable
-
-	local -n _raw="${this[_raw]}"
-
-	sortable=("${_raw[@]}")
-
-	for ((i = 0; i < ${#sortable[@]}; i++)); do
-		for(( j = 0; j < ${#sortable[@]}-i-1; j++)); do
-			if [[ "${sortable[j]}" > "${sortable[$((j+1))]}" ]]; then
-				tmp=${sortable[j]}
-				sortable[$j]=${sortable[$((j+1))]}
-				sortable[$((j+1))]=$tmp
-				swapped=1
-			fi
-		done
-		[[ $swapped -eq 0 ]] && break
-	done
-	_raw=("${sortable[@]}")
+	__hbl__Array__static__sort ${this[_raw]} || return
 
 	return $HBL_SUCCESS
 }
 
-function Array__contains() {
-	[[ $# -eq 2 ]] || $Error.invocation 'Array#contains' "${@:2}" || return
+function __hbl__Array__contains() {
+	[[ $# -ge 2 ]] || return $HBL_ERR_ARGUMENT
+	local -n this="$1"; shift
 
-	local -n this="$1"
-
-	local -n _raw="${this[_raw]}"
-	for val in "${_raw[@]}"; do
-		[[ "$val" = "$2" ]] && return $HBL_SUCCESS
-	done
-
-	return $HBL_ERROR
+	__hbl__Array__static__contains ${this[_raw]} "$@"
 }
 
-function Array__to_array() {
+function __hbl__Array__to_array() {
 	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
 
 	local -n this=$1
@@ -149,57 +318,44 @@ function Array__to_array() {
 	return $HBL_SUCCESS
 }
 
-if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 ]]; then
-function Array__static__is_array() {
-	[[ $# -eq 2 && "$1" = 'Array' ]] || $Error.invocation "$@" || exit
-	[[ -n "$2" ]] || $Error.argument 'array' "$2" || exit
-
-	local -n _v="$2"
-	[[ ${_v@a} = *a* ]]
-}
-else
-function Array__static__is_array() {
-	printf "BASH4\n" >&3
-	[[ $# -eq 2 && "$1" = 'Array' ]] || $Error.invocation "$@" || exit
-	[[ -n "$2" ]] || $Error.argument 'array' "$2" || exit
-
-	[[ "$(declare -p "$2" 2>/dev/null)" == "declare -a"* ]] && return $HBL_SUCCESS
-
-	return $HBL_ERROR
-}
-fi
-
 ################################################################################
 # Array
 ################################################################################
-declare -Ag Array__methods
-Array__methods=(
-	[is_array]=Array__static__is_array
+declare -Ag __hbl__Array__methods
+__hbl__Array__methods=(
+	[is_array]=__hbl__Array__static__is_array
+	[at]=__hbl__Array__static__at
+	[shift]=__hbl__Array__static__shift
+	[unshift]=__hbl__Array__static__unshift
+	[push]=__hbl__Array__static__push
+	[pop]=__hbl__Array__static__pop
+	[sort]=__hbl__Array__static__sort
+	[contains]=__hbl__Array__static__contains
 )
-readonly Array__methods
+readonly __hbl__Array__methods
 
-declare -Ag Array__prototype
-Array__prototype=(
-	[__init]="$HBL_SELECTOR_METHOD Array__init"
-	[at]="$HBL_SELECTOR_METHOD Array__at"
-	[shift]="$HBL_SELECTOR_METHOD Array__shift"
-	[unshift]="$HBL_SELECTOR_METHOD Array__unshift"
-	[push]="$HBL_SELECTOR_METHOD Array__push"
-	[pop]="$HBL_SELECTOR_METHOD Array__pop"
-	[bubble_sort]="$HBL_SELECTOR_METHOD Array__bubble_sort"
-	[sort]="$HBL_SELECTOR_METHOD Array__bubble_sort"
-	[contains]="$HBL_SELECTOR_METHOD Array__contains"
-	[to_array]="$HBL_SELECTOR_METHOD Array__to_array"
+declare -Ag __hbl__Array__prototype
+__hbl__Array__prototype=(
+	[__init]="$HBL_SELECTOR_METHOD __hbl__Array__init"
+	[at]="$HBL_SELECTOR_METHOD __hbl__Array__at"
+	[shift]="$HBL_SELECTOR_METHOD __hbl__Array__shift"
+	[unshift]="$HBL_SELECTOR_METHOD __hbl__Array__unshift"
+	[push]="$HBL_SELECTOR_METHOD __hbl__Array__push"
+	[pop]="$HBL_SELECTOR_METHOD __hbl__Array__pop"
+	[sort]="$HBL_SELECTOR_METHOD __hbl__Array__sort"
+	[contains]="$HBL_SELECTOR_METHOD __hbl__Array__contains"
+	[to_array]="$HBL_SELECTOR_METHOD __hbl__Array__to_array"
 )
-readonly Array__prototype
+readonly __hbl__Array__prototype
 
 declare -Ag Array
 Array=(
-	[0]='Class__static__dispatch_ Array '
+	[0]='__hbl__Class__static__dispatch_ Array '
 	[__name]=Array
 	[__base]=Class
-	[__methods]=Array__methods
-	[__prototype]=Array__prototype
+	[__methods]=__hbl__Array__methods
+	[__prototype]=__hbl__Array__prototype
 )
+readonly Array
 
 __hbl__classes+=('Array')

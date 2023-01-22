@@ -1,6 +1,6 @@
 ##!/usr/bin/env bash
 
-function Dict__init_() {
+function __hbl__Dict__init_() {
 	local -n this="$1"
 	$this.super || return
 
@@ -11,8 +11,8 @@ function Dict__init_() {
 	_raw=()
 }
 
-function Dict__set() {
-	[[ $# -eq 3 ]] || $Error.invocation $FUNCNAME "$@" || return
+function __hbl__Dict__set() {
+	[[ $# -eq 3 ]] || return $HBL_ERR_ARGUMENT
 	local -n this="$1"
 
 	local -n _raw="${this[_raw]}"
@@ -22,9 +22,9 @@ function Dict__set() {
 	return $HBL_SUCCESS
 }
 
-function Dict__get() {
-	[[ $# -eq 3 ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ -n "$2" ]] || $Error.argument $FUNCNAME key "$2" || return
+function __hbl__Dict__get() {
+	[[ $# -eq 3 ]] || $HBL_ERR_ARGUMENT
+	[[ -n "$2" ]] || $HBL_ERR_ARGUMENT
 
 	local -n this="$1"
 
@@ -35,9 +35,9 @@ function Dict__get() {
 	return $HBL_SUCCESS
 }
 
-function Dict__has_key() {
-	[[ $# -eq 2 ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ -n "$2" ]] || $Error.argument $FUNCNAME key "$2" || return
+function __hbl__Dict__has_key() {
+	[[ $# -eq 2 ]] || $HBL_ERR_ARGUMENT
+	[[ -n "$2" ]] || $HBL_ERR_ARGUMENT
 
 	local -n this="$1"
 	local -n _raw="${this[_raw]}"
@@ -45,9 +45,9 @@ function Dict__has_key() {
 	[[ -v _raw[$2] ]]
 }
 
-function Dict__to_associative_array() {
-	[[ $# -eq 2 ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ -n "$2" ]] || $Error.argument $FUNCNAME target "$2" || return
+function __hbl__Dict__to_associative_array() {
+	[[ $# -eq 2 ]] || $HBL_ERR_ARGUMENT
+	[[ -n "$2" ]] || $HBL_ERR_ARGUMENT
 
 	local -n this="$1"
 
@@ -64,27 +64,27 @@ function Dict__to_associative_array() {
 ################################################################################
 # Dict
 ################################################################################
-declare -Ag Dict__methods
-Dict__methods=()
-readonly Dict__methods
+declare -Ag __hbl__Dict__methods
+__hbl__Dict__methods=()
+readonly __hbl__Dict__methods
 
-declare -Ag Dict__prototype
-Dict__prototype=(
-	[__init]="$HBL_SELECTOR_METHOD Dict__init_"
-	[set]="$HBL_SELECTOR_METHOD Dict__set"
-	[get]="$HBL_SELECTOR_METHOD Dict__get"
-	[has_key]="$HBL_SELECTOR_METHOD Dict__has_key"
-	[to_associative_array]="$HBL_SELECTOR_METHOD Dict__to_associative_array"
+declare -Ag __hbl__Dict__prototype
+__hbl__Dict__prototype=(
+	[__init]="$HBL_SELECTOR_METHOD __hbl__Dict__init_"
+	[set]="$HBL_SELECTOR_METHOD __hbl__Dict__set"
+	[get]="$HBL_SELECTOR_METHOD __hbl__Dict__get"
+	[has_key]="$HBL_SELECTOR_METHOD __hbl__Dict__has_key"
+	[to_associative_array]="$HBL_SELECTOR_METHOD __hbl__Dict__to_associative_array"
 )
-readonly Dict__prototype
+readonly __hbl__Dict__prototype
 
 declare -Ag Dict
 Dict=(
-	[0]='Class__static__dispatch_ Dict '
+	[0]='__hbl__Class__static__dispatch_ Dict '
 	[__name]=Dict
 	[__base]=Class
-	[__methods]=Dict__methods
-	[__prototype]=Dict__prototype
+	[__methods]=__hbl__Dict__methods
+	[__prototype]=__hbl__Dict__prototype
 )
 
 __hbl__classes+=('Dict')

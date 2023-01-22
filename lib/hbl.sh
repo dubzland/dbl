@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-[[ $__hbl__imported -eq 1 ]] && return || true
+[[ -v __hbl__imported && $__hbl__imported -eq 1 ]] && return || true
+
+FORCE_BASH4=${FORCE_BASH4:-0}
 
 # Error codes
 HBL_SUCCESS=0

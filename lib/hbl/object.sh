@@ -33,8 +33,7 @@ function Object__inspect() {
 }
 
 function Object__can_super_() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
 	local obj selector func cls
 	obj="$1" selector="$2" func="$3"
 	local -n obj__ref="$obj"
@@ -48,20 +47,16 @@ function Object__can_super_() {
 		# if the current object and function match the call
 		if [[ "$obj" = "${stack_head[0]}" && "$func" = "${stack_head[3]}" ]]; then
 			# advance the cls by one level and go
-			[[ -v ${cls}[__base] ]] ||
-				$Error.illegal_instruction "${obj}.${selector}" \
-					'no base class found' || return
+			[[ -v ${cls}[__base] ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
 			return $HBL_SUCCESS
 			local -n cls__ref="$cls"
 		else
 			# not in the last function we called.  can' super
-			$Error.illegal_instruction "${obj}.${selector}" \
-				'invalid context for super' || return
+			return $HBL_ERR_ILLEGAL_INSTRUCTION
 		fi
 	else
 		# stack empty.  no super method exists
-		$Error.illegal_instruction "${obj}.${selector}" \
-			'invalid context for super1' || return
+		return $HBL_ERR_ILLEGAL_INSTRUCTION
 	fi
 }
 
@@ -71,11 +66,9 @@ function Object__set_reference_() {
 }
 
 function Object__find_selector_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
 	if [[ $# -gt 2 ]]; then
-		[[ $# -eq 5 && -n "$3" && -n "$4" && -n "$5" ]] ||
-			$Error.invocation $FUNCNAME "$@" || return
+		[[ $# -eq 5 && -n "$3" && -n "$4" && -n "$5" ]] || return $HBL_ERR_ARGUMENT
 	fi
 
 	local cls head tail
@@ -131,15 +124,15 @@ function Object__find_selector_() {
 }
 
 function Object__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.invocation $FUNCNAME "$@" || return
-	[[ "$2" =~ ^\. ]] || $Error.undefined_method "$1" "$2" || return
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ "$2" =~ ^\. ]] || return $HBL_ERR_ARGUMENT
 
 	local obj selector cls cache_key super scls stype stgt
-	obj="$1" selector="${2#\.}" super=0 cache_key="${obj}:${selector}"
+	obj="$1" selector="${2#\.}" cls="" cache_key="${obj}:${selector}"
+	super=0 scls="" stype="" stgt=""
 	shift 2
 
-	hbl__util__is_associative_array Util "$obj" ||
-		$Error.argument $FUNCNAME object "$obj" || return
+	__hbl__Util__static__is_associative_array "$obj" || return $HBL_ERR_ARGUMENT
 
 	local -n obj__ref="$obj"
 	cls="${obj__ref[__class]}"
@@ -196,31 +189,28 @@ function Object__dispatch_() {
 	if [[ -z "$scls" ]]; then
 		if [[ "$selector" =~ ^get_* && -v obj__ref[${selector#get}] ]]; then
 			# getter
-			[[ $# -eq 1 ]] || $Error.invocation "${obj}.${selector}" "$@" || return
+			[[ $# -eq 1 ]] || return $HBL_ERR_ARGUMENT
 			local -n attr_var__ref="$1"
 			attr_var__ref="${obj__ref[${selector#get}]}"
 			return $HBL_SUCCESS
 		elif [[ "$selector" =~ ^set_* && -v obj__ref[${selector#set}] ]]; then
 			# setter
-			[[ $# -ge 1 ]] || $Error.invocation "${obj}.${selector}" "$@" || return
-			[[ "$selector" =~ ^__* ]] &&
-				{ $Error.illegal_instruction "${obj}.${selector}" \
-					'system attributes cannot be set'; return; }
+			[[ $# -ge 1 ]] || return $HBL_ERR_ARGUMENT
+			[[ "$selector" =~ ^__* ]] && return $HBL_ERR_ILLEGAL_INSTRUCTION
 			obj__ref[${selector#set}]="$1"
 			return $HBL_SUCCESS
 		fi
 	fi
 
 	# no idea what the caller wanted
-	$Error.undefined_method "$obj" "$selector" || return
+	return $HBL_ERR_UNDEFINED_METHOD
 }
 
 function Object__static__is_object() {
-	[[ $# -ge 2 && "$1" = 'Object' && -n "$2" ]] ||
-		$Error.invocation $FUNCNAME "$@" || return
+	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
 
-	$Util.is_associative_array $2 || return $HBL_ERROR
-	local -n obj__ref="$2"
+	$Util.is_associative_array $1 || return $HBL_ERROR
+	local -n obj__ref="$1"
 	[[ -v obj__ref[__class] ]] || return $HBL_ERROR
 
 	return $HBL_SUCCESS
@@ -245,7 +235,7 @@ readonly Object__prototype
 
 declare -Ag Object
 Object=(
-	[0]='Class__static__dispatch_ Object '
+	[0]='__hbl__Class__static__dispatch_ Object '
 	[__methods]=Object__methods
 	[__prototype]=Object__prototype
 )
