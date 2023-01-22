@@ -6,37 +6,37 @@ setup() {
 #
 # Array:is_array()
 #
-# @test 'Array.is_array() with an undefined variable fails' {
-# 	run $Array.is_array 'UNDEFINED'
-# 	assert_failure $HBL_ERROR
-# 	refute_output
-# }
+@test 'Array.is_array() with an undefined variable fails' {
+	run $Array.is_array 'UNDEFINED'
+	assert_failure $HBL_ERROR
+	refute_output
+}
 
-# @test 'Array.is_array() with a normal variable fails' {
-# 	declare DEFINED
-# 	run $Array.is_array 'DEFINED'
-# 	assert_failure $HBL_ERROR
-# 	refute_output
-# }
+@test 'Array.is_array() with a normal variable fails' {
+	declare DEFINED
+	run $Array.is_array 'DEFINED'
+	assert_failure $HBL_ERROR
+	refute_output
+}
 
-# @test 'Array.is_array() with an associative array fails' {
-# 	declare -A DEFINED
-# 	run $Array.is_array 'DEFINED'
-# 	assert_failure $HBL_ERROR
-# 	refute_output
-# }
+@test 'Array.is_array() with an associative array fails' {
+	declare -A DEFINED
+	run $Array.is_array 'DEFINED'
+	assert_failure $HBL_ERROR
+	refute_output
+}
 
-# @test 'Array.is_array() with a normal array succeeds' {
-# 	declare -a DEFINED
-# 	run $Array.is_array 'DEFINED'
-# 	assert_success
-# 	refute_output
-# }
+@test 'Array.is_array() with a normal array succeeds' {
+	declare -a DEFINED
+	run $Array.is_array 'DEFINED'
+	assert_success
+	refute_output
+}
 
-# @test 'Array.new() succeeds' {
-# 	run $Array.new array
-# 	assert_success
-# }
+@test 'Array.new() succeeds' {
+	run $Array.new array
+	assert_success
+}
 
 @test 'Array#at() succeeds' {
 	$Array.new array 'foo' 'bar'
@@ -159,7 +159,7 @@ setup() {
 @test 'Array#push() stores the value' {
 	$Array.new array
 	${!array}.push 'foo'
-	${!array}.get__raw myarr
+	${!array}.get_raw myarr
 	assert_array_contains "$myarr" 'foo'
 }
 
@@ -203,7 +203,7 @@ setup() {
 	declare -a expected=(apple banana lemon orange)
 	$Array.new array 'orange' 'apple' 'lemon' 'banana'
 	${!array}.sort
-	${!array}.get__raw actual
+	${!array}.get_raw actual
 	assert_array_equals $actual expected
 }
 

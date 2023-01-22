@@ -9,9 +9,9 @@ function Command__init() {
 	local examples options subcommands
 
 	$this.super
-	this[name]="$2"
-	this[entrypoint]="$3"
-	this[description]=""
+	this[_name]="$2"
+	this[_entrypoint]="$3"
+	this[_description]=""
 
 	$Array.new         examples
 	$Dict.new          options

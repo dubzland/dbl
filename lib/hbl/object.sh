@@ -26,7 +26,7 @@ function Object__inspect() {
 	local -n this="$1"
 	printf "<%s" "$1"
 	for attr in "${!this[@]}"; do
-		[[ "$attr" =~ ^__* || "$attr" = "0" ]] && continue
+		[[ "$attr" =~ ^__ || "$attr" = "0" ]] && continue
 		printf " %s='%s'" "$attr" "${this[$attr]}"
 	done
 	printf ">\n"
@@ -194,19 +194,19 @@ function Object__dispatch_() {
 
 	# not a method.  check for a getter/setter
 	if [[ -z "$scls" ]]; then
-		if [[ "$selector" =~ ^get_* && -v obj__ref[${selector#get_}] ]]; then
+		if [[ "$selector" =~ ^get_* && -v obj__ref[${selector#get}] ]]; then
 			# getter
 			[[ $# -eq 1 ]] || $Error.invocation "${obj}.${selector}" "$@" || return
 			local -n attr_var__ref="$1"
-			attr_var__ref="${obj__ref[${selector#get_}]}"
+			attr_var__ref="${obj__ref[${selector#get}]}"
 			return $HBL_SUCCESS
-		elif [[ "$selector" =~ ^set_* && -v obj__ref[${selector#set_}] ]]; then
+		elif [[ "$selector" =~ ^set_* && -v obj__ref[${selector#set}] ]]; then
 			# setter
 			[[ $# -ge 1 ]] || $Error.invocation "${obj}.${selector}" "$@" || return
 			[[ "$selector" =~ ^__* ]] &&
 				{ $Error.illegal_instruction "${obj}.${selector}" \
 					'system attributes cannot be set'; return; }
-			obj__ref[${selector#set_}]="$1"
+			obj__ref[${selector#set}]="$1"
 			return $HBL_SUCCESS
 		fi
 	fi

@@ -316,7 +316,7 @@ setup() {
 	assert_equal "${#__hbl__stack[@]}" 0
 }
 
-@test '.super() within an instance method succeeds' {
+@test 'Class#super() within an instance method succeeds' {
 	function Tester_inspect() {
 		local -n this="$1"
 		$this.super
@@ -328,7 +328,7 @@ setup() {
 	assert_success
 }
 
-@test '.super() within an instance method calls both methods' {
+@test 'Class#super() within an instance method calls both methods' {
 	function Tester_inspect() {
 		local -n this="$1"
 		printf "Tester_inspect()\n"
@@ -345,10 +345,10 @@ setup() {
 	assert_line --index 1 "<${obj} attrA='red' attrB='blue'>"
 }
 
-@test '.get_attr() for a valid attribute succeeds' {
+@test 'Class#get_attr() for a valid attribute succeeds' {
 	function Tester__init() {
 		local -n this="$1"
-		this[foo]='bar'
+		this[_foo]='bar'
 	}
 	$Class.define Tester Tester__init
 	$Tester.new obj
@@ -356,10 +356,10 @@ setup() {
 	assert_success
 }
 
-@test '.get_attr() for a valid attribute returns the value' {
+@test 'Class#get_attr() for a valid attribute returns the value' {
 	function Tester__init() {
 		local -n this="$1"
-		this[foo]='bar'
+		this[_foo]='bar'
 	}
 	$Class.define Tester Tester__init
 	$Tester.new obj
@@ -367,17 +367,17 @@ setup() {
 	assert_equal "$var" 'bar'
 }
 
-@test '.get_attr() for an invalid attribute fails' {
+@test 'Class#get_attr() for an invalid attribute fails' {
 	$Class.define Tester
 	$Tester.new obj
 	run ${!obj}.get_foo var
 	assert_failure $HBL_ERR_UNDEFINED_METHOD
 }
 
-@test '.set_attr() for a valid attribute succeeds' {
+@test 'Class#set_attr() for a valid attribute succeeds' {
 	function Tester__init() {
 		local -n this="$1"
-		this[foo]='bar'
+		this[_foo]='bar'
 	}
 	$Class.define Tester Tester__init
 	$Tester.new obj
@@ -385,26 +385,26 @@ setup() {
 	assert_success
 }
 
-@test '.set_attr() for a valid attribute updates the value' {
+@test 'Class#set_attr() for a valid attribute updates the value' {
 	function Tester__init() {
 		local -n this="$1"
-		this[foo]='bar'
+		this[_foo]='bar'
 	}
 	$Class.define Tester Tester__init
 	$Tester.new obj
 	${!obj}.set_foo 'baz'
 	local -n objr="$obj"
-	assert_equal "${objr[foo]}" 'baz'
+	assert_equal "${objr[_foo]}" 'baz'
 }
 
-@test '.set_attr() for an invalid attribute fails' {
+@test 'Class#set_attr() for an invalid attribute fails' {
 	$Class.define Tester
 	$Tester.new obj
 	run ${!obj}.set_foo 'baz'
 	assert_failure $HBL_ERR_UNDEFINED_METHOD
 }
 
-@test '._set_reference() within an instance method succeeds' {
+@test 'Class#_set_reference() within an instance method succeeds' {
 	function Tester__init() {
 		local -n this="$1"
 		local children
@@ -418,7 +418,7 @@ setup() {
 	$Tester.new tester
 }
 
-@test '._set_reference() within an instance method assigns the reference' {
+@test 'Class#_set_reference() within an instance method assigns the reference' {
 	function Tester__init() {
 		local -n this="$1"
 		local children
@@ -432,7 +432,7 @@ setup() {
 	assert_dict_has_key "$tester" '_children'
 }
 
-@test 'object.reference() provides access to the referenced object' {
+@test 'Class#reference() provides access to the referenced object' {
 	function Tester__init() {
 		local -n this="$1"
 		local children

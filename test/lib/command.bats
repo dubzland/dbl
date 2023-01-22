@@ -10,7 +10,7 @@ setup() {
 	refute_output
 }
 
-@test 'command.description= sets the description on the command' {
+@test 'Command#set_description() sets the description on the command' {
 	local cmd actual expected
 	expected='A simple command'
 	$Command.new cmd foo bar
@@ -23,33 +23,32 @@ setup() {
 	assert_equal "$actual" "$expected"
 }
 
-@test 'commands can have examples' {
-	local cmd
-	local -a examples_arr
-
+@test 'Command#add_example() succeeds' {
 	$Command.new cmd foo bar
 	run ${!cmd}.add_example 'foo -h'
 	assert_success
 	refute_output
+}
 
+@test 'Command#add_example() adds to the examples reference' {
+	$Command.new cmd foo bar
 	${!cmd}.add_example 'foo -h'
 	${!cmd}.examples.to_array examples_arr
-
 	assert_equal ${#examples_arr[@]} 1
 	assert_equal "${examples_arr[0]}" 'foo -h'
 }
 
-@test 'commands allow options to be added' {
-	local cmd opt
-	local -A options_dict
-
+@test 'Command#add_option() succeeds' {
 	$Option.new opt verbose
-
 	$Command.new cmd foo bar
 	run ${!cmd}.add_option "$opt"
 	assert_success
 	refute_output
+}
 
+@test 'Command#add_option() adds the option to the reference' {
+	$Option.new opt verbose
+	$Command.new cmd foo bar
 	${!cmd}.add_option "$opt"
 	${!cmd}.options.to_associative_array options_dict
 
@@ -57,17 +56,18 @@ setup() {
 	assert_equal "${options_dict[verbose]}" "$opt"
 }
 
-@test 'commands allow subcommands to be added' {
-	local cmd sub
-	local -a subcommands_arr
-
+@test 'Command#add_subcommand() succeeds' {
 	$Command.new sub 'sub-command' command_exec
 
 	$Command.new cmd foo bar
 	run ${!cmd}.add_subcommand "$sub"
 	assert_success
 	refute_output
+}
 
+@test 'Command#add_subcommand() adds the subcommand to the reference' {
+	$Command.new sub 'sub-command' command_exec
+	$Command.new cmd foo bar
 	${!cmd}.add_subcommand "$sub"
 	${!cmd}.subcommands.to_array subcommands_arr
 

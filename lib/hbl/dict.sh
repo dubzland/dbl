@@ -5,6 +5,7 @@ function Dict__init_() {
 	$this.super || return
 
 	this[_raw]="$1__raw_dict"
+	this[_size]=0
 	declare -Ag "${this[_raw]}"
 	local -n _raw="${this[_raw]}"
 	_raw=()
@@ -14,8 +15,9 @@ function Dict__set() {
 	[[ $# -eq 3 ]] || $Error.invocation $FUNCNAME "$@" || return
 	local -n this="$1"
 
-	local -n dict__ref="${this[_raw]}"
-	dict__ref[$2]="$3"
+	local -n _raw="${this[_raw]}"
+	_raw[$2]="$3"
+	this[_size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
@@ -26,9 +28,9 @@ function Dict__get() {
 
 	local -n this="$1"
 
-	local -n dict__ref="${this[_raw]}"
+	local -n _raw="${this[_raw]}"
 	local -n val_var__ref="$3"
-	val_var__ref="${dict__ref[$2]}"
+	val_var__ref="${_raw[$2]}"
 
 	return $HBL_SUCCESS
 }
@@ -38,9 +40,9 @@ function Dict__has_key() {
 	[[ -n "$2" ]] || $Error.argument $FUNCNAME key "$2" || return
 
 	local -n this="$1"
-	local -n dict__ref="${this[_raw]}"
+	local -n _raw="${this[_raw]}"
 
-	[[ -v dict__ref[$2] ]]
+	[[ -v _raw[$2] ]]
 }
 
 function Dict__to_associative_array() {
