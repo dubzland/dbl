@@ -8,6 +8,9 @@ services:
 
 test:
   stage: test
+  before_script:
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.dubzland.net/".insteadOf "git@git.dubzland.net:"
+    - git submodule sync && git submodule update --init
   script:
     - apt update
     - apt install -y make git
