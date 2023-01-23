@@ -8,16 +8,16 @@ function _msg() {
 }
 
 function build_empty_command() {
-	$Command.new "$1" 'backup-client' backup_client_run
+	$Command.new _cmd 'backup-client' backup_client_run || return
 }
 
 function build_simple_command() {
 	local opt
 
-	$Command.new "$1" 'backup-client' backup_client_run
+	$Command.new _cmd 'backup-client' backup_client_run
 
-	${!1}.set_description 'Manage backup jobs.'
-	${!1}.add_example     '-d /etc/jobs.d <options>'
+	${!_cmd}.set_description 'Manage backup jobs.'
+	${!_cmd}.add_example     '-d /etc/jobs.d <options>'
 
 	$Option.new opt 'job_directory'
 	${!opt}.set_type        'dir'
@@ -25,31 +25,13 @@ function build_simple_command() {
 	${!opt}.set_long_flag   'job_directory'
 	${!opt}.set_description 'Backup job directory.'
 
-	${!1}.add_option "$opt"
-}
-
-function create_empty_command() {
-	local _cmd _cmd_instance
-
-	build_empty_command _cmd || return
-
-	${!_cmd}.new _cmd_instance
-}
-
-function create_basic_command() {
-	local _cmd _cmd_instance
-
-	build_basic_command _cmd || return
-
-	${!_cmd}.new _cmd_instance
+	${!_cmd}.add_option "$opt"
 }
 
 declare -A command_samples
 command_samples=(
-	['build_empty']='build_empty_command _cmd'
-	['build_simple']='build_simple_command _cmd'
-	['create_empty']=create_empty_command
-	['create_basic']=create_basic_command
+	['build_empty']='build_empty_command'
+	['build_simple']='build_simple_command'
 )
 
 function run_sample() {
