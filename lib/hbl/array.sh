@@ -211,7 +211,7 @@ function __hbl__Array__static__sort() {
 #
 function __hbl__Array__static__contains() {
 	[[ $# -eq 2 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
-	__hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
+	# __hbl__Array__static__is_array $1 || return $HBL_ERR_ARGUMENT
 
 	local val=""
 	local -n __ref="$1"; shift
@@ -317,45 +317,14 @@ function __hbl__Array__to_array() {
 
 	return $HBL_SUCCESS
 }
+# declare -Ag Array
+# Array=(
+# 	[0]='__hbl__Class__static__dispatch_ Array '
+# 	[__name]=Array
+# 	[__base]=Class
+# 	[__methods]=__hbl__Array__methods
+# 	[__prototype]=__hbl__Array__prototype
+# )
+# readonly Array
 
-################################################################################
-# Array
-################################################################################
-declare -Ag __hbl__Array__methods
-__hbl__Array__methods=(
-	[is_array]=__hbl__Array__static__is_array
-	[at]=__hbl__Array__static__at
-	[shift]=__hbl__Array__static__shift
-	[unshift]=__hbl__Array__static__unshift
-	[push]=__hbl__Array__static__push
-	[pop]=__hbl__Array__static__pop
-	[sort]=__hbl__Array__static__sort
-	[contains]=__hbl__Array__static__contains
-)
-readonly __hbl__Array__methods
-
-declare -Ag __hbl__Array__prototype
-__hbl__Array__prototype=(
-	[__init]="$HBL_SELECTOR_METHOD __hbl__Array__init"
-	[at]="$HBL_SELECTOR_METHOD __hbl__Array__at"
-	[shift]="$HBL_SELECTOR_METHOD __hbl__Array__shift"
-	[unshift]="$HBL_SELECTOR_METHOD __hbl__Array__unshift"
-	[push]="$HBL_SELECTOR_METHOD __hbl__Array__push"
-	[pop]="$HBL_SELECTOR_METHOD __hbl__Array__pop"
-	[sort]="$HBL_SELECTOR_METHOD __hbl__Array__sort"
-	[contains]="$HBL_SELECTOR_METHOD __hbl__Array__contains"
-	[to_array]="$HBL_SELECTOR_METHOD __hbl__Array__to_array"
-)
-readonly __hbl__Array__prototype
-
-declare -Ag Array
-Array=(
-	[0]='__hbl__Class__static__dispatch_ Array '
-	[__name]=Array
-	[__base]=Class
-	[__methods]=__hbl__Array__methods
-	[__prototype]=__hbl__Array__prototype
-)
-readonly Array
-
-__hbl__classes+=('Array')
+# __hbl__classes+=('Array')

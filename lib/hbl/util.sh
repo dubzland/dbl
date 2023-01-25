@@ -117,10 +117,11 @@ readonly __hbl__Util__methods
 
 declare -Ag Util
 Util=(
-	[0]='__hbl__Class__static__dispatch_ Util '
-	[__name]=Util
-	[__base]=Class
-	[__methods]=__hbl__Util__methods
+	[0]='__hbl__Class__dispatch_ Util '
+	[__id__]=3
+	[__class__]=Class
+	[__superclass__]=Object
+	[__methods__]=__hbl__Util__methods
 )
 readonly Util
 

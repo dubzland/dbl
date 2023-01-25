@@ -14,15 +14,70 @@ function dump_entry_() {
 	printf "**********\n"
 }
 
-function Object__init() {
-	local -n this="$1"
+__hbl__Object__get_prototype_method_() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	local mcls meth
+	mcls="$1" meth="${2#\.}"
+	local -n mfunc__ref="$3"
 
-	[[ -v this[__class] ]] || this[__class]=Object
-	[[ -v this[__prototype] ]] || this[__prototype]=Object__prototype
-	return 0
+	while [[ -n "$mcls" ]]; do
+		local -n mcls__ref="$mcls"
+		if [[ -v mcls__ref[__prototype__] ]]; then
+			local -n cproto__ref="${mcls__ref[__prototype__]}"
+			if [[ -v cproto__ref[__methods__] ]]; then
+				local -n pmethods__ref="${cproto__ref[__methods__]}"
+				if [[ -v pmethods__ref[$meth] ]]; then
+					mfunc__ref="${pmethods__ref[$meth]}"
+					return $HBL_SUCCESS
+				fi
+			fi
+		fi
+		if [[ -n mcls__ref[__superclass__] ]]; then
+			mcls="${mcls__ref[__superclass__]}"
+			continue
+		fi
+		mcls=""
+	done
 }
 
-function Object__inspect() {
+__hbl__Object__get_method_() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	local dobj dmeth cls
+	dobj="$1" dmeth="${2#\.}" cls=""
+	local -n dfunc__ref="$3"
+
+	local -n dobj__ref="$dobj"
+	if [[ -v dobj__ref[__methods__] ]]; then
+		local -n dmethods__ref="${dobj__ref[__methods__]}"
+		if [[ -v dmethods__ref[$dmeth] ]]; then
+			dfunc__ref="${dmethods__ref[$dmeth]}"
+			return $HBL_SUCCESS
+		fi
+	fi
+
+	__hbl__Object__get_prototype_method_ "${dobj__ref[__class__]}" "$dmeth" dfunc__ref || return
+
+	return $HBL_SUCCESS
+}
+
+function __hbl__Object__dispatch_() {
+	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ "$2" =~ ^\. ]] || return $HBL_ERR_ARGUMENT
+	local dobj dsel dfunc dsuper
+	dobj="$1" dsel="$2" dfunc=''
+	shift 2
+
+	__hbl__Object__get_method_ "$dobj" "$dsel" dfunc || return
+	if [[ -n "$dfunc" ]]; then
+		# call the function
+		${dfunc} "$dobj" "$@"
+		return
+	fi
+
+	return $HBL_UNDEFINED_METHOD
+}
+
+function __hbl__Object__inspect() {
 	local -n this="$1"
 	printf "<%s" "$1"
 	for attr in "${!this[@]}"; do
@@ -32,213 +87,81 @@ function Object__inspect() {
 	printf ">\n"
 }
 
-function Object__can_super_() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
-	local obj selector func cls
-	obj="$1" selector="$2" func="$3"
-	local -n obj__ref="$obj"
+function __hbl__Object__get_methods() {
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	local mobj mcls meth emeth
+	mobj="$1" mcls="$1" meth=""
+	local -n meths__ref="$2"
 
-	cls="${obj__ref[__class]}"
-
-	# if there is a call on the stack
-	if [[ ${#__hbl__stack[@]} -gt 0 ]]; then
-		local -a stack_head=(${__hbl__stack[-1]})
-
-		# if the current object and function match the call
-		if [[ "$obj" = "${stack_head[0]}" && "$func" = "${stack_head[3]}" ]]; then
-			# advance the cls by one level and go
-			[[ -v ${cls}[__base] ]] || return $HBL_ERR_ILLEGAL_INSTRUCTION
-			return $HBL_SUCCESS
-			local -n cls__ref="$cls"
-		else
-			# not in the last function we called.  can' super
-			return $HBL_ERR_ILLEGAL_INSTRUCTION
-		fi
-	else
-		# stack empty.  no super method exists
-		return $HBL_ERR_ILLEGAL_INSTRUCTION
-	fi
-}
-
-function Object__set_reference_() {
-	local -n this="$1"
-	this["_$2"]="$3"
-}
-
-function Object__find_selector_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
-	if [[ $# -gt 2 ]]; then
-		[[ $# -eq 5 && -n "$3" && -n "$4" && -n "$5" ]] || return $HBL_ERR_ARGUMENT
+	local -n dobj__ref="$dobj"
+	if [[ -v dobj__ref[__methods__] ]]; then
+		local -n dmethods__ref="${dobj__ref[__methods__]}"
+		for meth in "${!dmethods__ref[@]}"; do
+			meths__ref+=("$meth")
+		done
 	fi
 
-	local cls head tail
-	cls="$1"
-
-	while [[ -n "$cls" ]]; do
-		local -n cls__ref="$cls"
-
-		head="${2%%.*}"
-		tail="${2#${head}}"
-
-		# check for the selector in this prototype
-		if [[ -v cls__ref[__prototype] ]]; then
-			local -n cls_prototype__ref="${cls__ref[__prototype]}"
-
-			if [[ -v cls_prototype__ref[$head] ]]; then
-				local -a proto_arr=(${cls_prototype__ref[$head]})
-				if [[ ${proto_arr[0]} -eq $HBL_SELECTOR_METHOD ]]; then
-					if [[ -z "$tail" ]]; then
-						if [[ $# -gt 2 ]]; then
-							local -n tcls__ref="$3" ttype__ref="$4" tgt__ref="$5"
-							tcls__ref="$cls"
-							ttype__ref="${proto_arr[0]}"
-							tgt__ref="${proto_arr[1]}"
-						fi
-						return $HBL_SUCCESS
+	# Walk the superclass tree looking for instance methods
+	mcls="${dobj__ref[__class__]}"
+	while [[ -n "$mcls" ]]; do
+		local -n mcls__ref="$mcls"
+		if [[ -v mcls__ref[__prototype__] ]]; then
+			local -n cproto__ref="${mcls__ref[__prototype__]}"
+			if [[ -v cproto__ref[__methods__] ]]; then
+				local -n pmethods__ref="${cproto__ref[__methods__]}"
+				for meth in "${!pmethods__ref[@]}"; do
+					if ! __hbl__Array__static__contains "${!meths__ref}" "$meth"; then
+						meths__ref+=("$meth")
 					fi
-				elif [[ ${proto_arr[0]} -eq $HBL_SELECTOR_REFERENCE ]]; then
-					if [[ -n "$tail" ]]; then
-						if [[ $# -gt 2 ]]; then
-							local -n tcls__ref="$3" ttype__ref="$4" tgt__ref="$5"
-							tcls__ref="${proto_arr[1]}"
-							ttype__ref="${proto_arr[0]}"
-							tgt__ref="$tail"
-						fi
-						return $HBL_SUCCESS
-					fi
-				fi
+				done
 			fi
 		fi
-
-		# did not find a match.  move to the next class in the heirarchy
-		if [[ -v cls__ref[__base] ]]; then
-			cls="${cls__ref[__base]}"
+		if [[ -n mcls__ref[__superclass__] ]]; then
+			mcls="${mcls__ref[__superclass__]}"
 			continue
 		fi
-
-		# reached the end of the heirarchy
-		cls=""
+		mcls=""
 	done
-
-	return $HBL_ERROR
-}
-
-function Object__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
-	[[ "$2" =~ ^\. ]] || return $HBL_ERR_ARGUMENT
-
-	local obj selector cls cache_key super scls stype stgt
-	obj="$1" selector="${2#\.}" cls="" cache_key="${obj}:${selector}"
-	super=0 scls="" stype="" stgt=""
-	shift 2
-
-	__hbl__Util__static__is_associative_array "$obj" || return $HBL_ERR_ARGUMENT
-
-	local -n obj__ref="$obj"
-	cls="${obj__ref[__class]}"
-
-	if [[ "$selector" = 'super' ]]; then
-		Object__can_super_ "$obj" "$selector" "${FUNCNAME[1]}" || return
-		local -n cls__ref="$cls"
-		local -a stack_head=(${__hbl__stack[-1]})
-
-		super=1 selector="${stack_head[2]}" cls="${cls__ref[__base]}"
-		cache_key="${obj}:${selector}:super"
-	fi
-
-	if [[ -v __hbl__dispatch_cache["$cache_key"] ]]; then
-		local -a cached=(${__hbl__dispatch_cache["$cache_key"]})
-		scls="${cached[0]}" stype="${cached[1]}" stgt="${cached[2]}"
-	fi
-
-	if [[ -z "$scls" ]]; then
-		rc=0
-		Object__find_selector_ \
-			"$cls" "$selector" scls stype stgt || rc=$?
-		[[ $rc -eq $HBL_SUCCESS || $rc -eq $HBL_ERROR ]] || return $rc
-	fi
-
-	if [[ -n "$scls" && -n "$stype" && -n "$stgt" ]]; then
-		if [[ ! -v __hbl__dispatch_cache[$cache_key] ]]; then
-			__hbl__dispatch_cache[$cache_key]="${scls} ${stype} ${stgt}"
-		fi
-		case "$stype" in
-			$HBL_SELECTOR_METHOD)
-				# push to the stack
-				__hbl__stack+=("$obj $scls $selector $stgt")
-				rc=0
-				"$stgt" "$obj" "$@" || rc=$?
-				unset __hbl__stack[-1]
-				return $rc
-				;;
-			$HBL_SELECTOR_REFERENCE)
-				head="${selector%%.*}"
-				# ensure the reference is assigned
-				if [[ -v obj__ref[_${head}] ]]; then
-					rc=0
-					Object__dispatch_ "${obj__ref[_${head}]}" "$stgt" "$@" || rc=$?
-					return $rc
-				else
-					printf "reference not set!\n" && return $HBL_ERROR
-				fi
-				;;
-		esac
-	fi
-
-	# not a method.  check for a getter/setter
-	if [[ -z "$scls" ]]; then
-		if [[ "$selector" =~ ^get_* && -v obj__ref[${selector#get}] ]]; then
-			# getter
-			[[ $# -eq 1 ]] || return $HBL_ERR_ARGUMENT
-			local -n attr_var__ref="$1"
-			attr_var__ref="${obj__ref[${selector#get}]}"
-			return $HBL_SUCCESS
-		elif [[ "$selector" =~ ^set_* && -v obj__ref[${selector#set}] ]]; then
-			# setter
-			[[ $# -ge 1 ]] || return $HBL_ERR_ARGUMENT
-			[[ "$selector" =~ ^__* ]] && return $HBL_ERR_ILLEGAL_INSTRUCTION
-			obj__ref[${selector#set}]="$1"
-			return $HBL_SUCCESS
-		fi
-	fi
-
-	# no idea what the caller wanted
-	return $HBL_ERR_UNDEFINED_METHOD
-}
-
-function Object__static__is_object() {
-	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
-
-	$Util.is_associative_array $1 || return $HBL_ERROR
-	local -n obj__ref="$1"
-	[[ -v obj__ref[__class] ]] || return $HBL_ERROR
 
 	return $HBL_SUCCESS
 }
 
-################################################################################
-# Object
-################################################################################
-declare -Ag Object__methods
-Object__methods=(
-	[is_object]=Object__static__is_object
-)
-readonly Object__methods
+function __hbl__Object__add_method() {
+	local -n obj__ref="$1"
+	local -n omethods__ref="${obj__ref[__methods__]}"
+	omethods__ref[$2]="$3"
+	return $HBL_SUCCESS
+}
 
-declare -Ag Object__prototype
-Object__prototype=(
-	[__init]=Object__init
-	[inspect]="$HBL_SELECTOR_METHOD Object__inspect"
-	[_set_reference]="$HBL_SELECTOR_METHOD Object__set_reference_"
-)
-readonly Object__prototype
+function __hbl__Object__init() {
+	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
 
-declare -Ag Object
-Object=(
-	[0]='__hbl__Class__static__dispatch_ Object '
-	[__methods]=Object__methods
-	[__prototype]=Object__prototype
-)
-readonly Object
+	local obj_name="$1"
 
-__hbl__classes+=('Object')
+	local -n obj__ref="$obj_name"
+
+	obj__ref[0]="__hbl__Object__dispatch_ ${obj_name} "
+	obj__ref[__id__]=${__hbl__object__id}
+	obj__ref[__methods__]="${obj_name}__methods"
+
+	declare -Ag "${obj__ref[__methods__]}"
+	local -n obj_methods__ref="${obj__ref[__methods__]}"
+	obj_methods__ref=()
+	__hbl__object__id=$((__hbl__object__id+1))
+}
+
+function __hbl__Object__new() {
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+
+	# Generate a random suffix
+	while true; do
+		obj_id="${1}_$RANDOM"
+		$Util.is_defined "$obj_id" || break
+	done
+
+	local -n id__ref="$2"
+	id__ref="__hbl__${obj_id}"
+
+	declare -Ag "$id__ref"
+	__hbl__Object__init "$id__ref"
+}
