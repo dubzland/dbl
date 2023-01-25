@@ -1,6 +1,6 @@
 ##!/usr/bin/env bash
 
-function __hbl__Dict__init_() {
+function __hbl__Dict__init() {
 	local -n this="$1"
 	$this.super || return
 
@@ -60,31 +60,3 @@ function __hbl__Dict__to_associative_array() {
 
 	return $HBL_SUCCESS
 }
-
-################################################################################
-# Dict
-################################################################################
-declare -Ag __hbl__Dict__methods
-__hbl__Dict__methods=()
-readonly __hbl__Dict__methods
-
-declare -Ag __hbl__Dict__prototype
-__hbl__Dict__prototype=(
-	[__init]="$HBL_SELECTOR_METHOD __hbl__Dict__init_"
-	[set]="$HBL_SELECTOR_METHOD __hbl__Dict__set"
-	[get]="$HBL_SELECTOR_METHOD __hbl__Dict__get"
-	[has_key]="$HBL_SELECTOR_METHOD __hbl__Dict__has_key"
-	[to_associative_array]="$HBL_SELECTOR_METHOD __hbl__Dict__to_associative_array"
-)
-readonly __hbl__Dict__prototype
-
-declare -Ag Dict
-Dict=(
-	[0]='__hbl__Class__static__dispatch_ Dict '
-	[__name]=Dict
-	[__base]=Class
-	[__methods]=__hbl__Dict__methods
-	[__prototype]=__hbl__Dict__prototype
-)
-
-__hbl__classes+=('Dict')

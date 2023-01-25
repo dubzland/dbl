@@ -102,27 +102,3 @@ function __hbl__Util__static__dump_associative_array() {
 
 	return $HBL_SUCCESS
 }
-
-################################################################################
-# Util
-################################################################################
-declare -Ag __hbl__Util__methods
-__hbl__Util__methods=(
-	[is_defined]=__hbl__Util__static__is_defined
-	[is_function]=__hbl__Util__static__is_function
-	[is_associative_array]=__hbl__Util__static__is_associative_array
-	[dump_associative_array]=__hbl__Util__static__dump_associative_array
-)
-readonly __hbl__Util__methods
-
-declare -Ag Util
-Util=(
-	[0]='__hbl__Class__dispatch_ Util '
-	[__id__]=3
-	[__class__]=Class
-	[__superclass__]=Object
-	[__methods__]=__hbl__Util__methods
-)
-readonly Util
-
-__hbl__classes+=('Util')

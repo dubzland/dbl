@@ -91,12 +91,12 @@ source "${HBL_LIB}/hbl/object.sh"
 # shellcheck source=lib/hbl/array.sh
 source "${HBL_LIB}/hbl/array.sh"
 # shellcheck source=lib/hbl/dict.sh
-# source "${HBL_LIB}/hbl/dict.sh"
+source "${HBL_LIB}/hbl/dict.sh"
 
 # shellcheck source=lib/hbl/command.sh
-# source "${HBL_LIB}/hbl/command.sh"
+source "${HBL_LIB}/hbl/command.sh"
 # shellcheck source=lib/hbl/option.sh
-# source "${HBL_LIB}/hbl/option.sh"
+source "${HBL_LIB}/hbl/option.sh"
 # # shellcheck source=lib/hbl/command/usage.sh
 # source "${HBL_LIB}/hbl/command/usage.sh"
 # # shellcheck source=lib/hbl/util.sh
@@ -105,69 +105,59 @@ source "${HBL_LIB}/hbl/util.sh"
 #################################################################################
 ## Class
 #################################################################################
-declare -Ag __hbl__Class__prototype__methods
-__hbl__Class__prototype__methods=(
+declare -Agr __hbl__Class__prototype__methods=(
 	[new]=__hbl__Class__new
 	[extend]=__hbl__Class__extend
-	[method]=__hbl__Object__add_method
 	[inspect]=__hbl__Class__inspect
-	# [method]=__hbl__Class__method
-	# [instance_method]=__hbl__Class_instance_method
-	# [define]=__hbl__Class__define
-	# [reference]=__hbl__Class__reference
+	[static_method]=__hbl__Class__add_static_method
+	[prototype_method]=__hbl__Class__add_prototype_method
 )
-readonly __hbl__Class__prototype__methods
 
-declare -Ag __hbl__Class__prototype
-__hbl__Class__prototype=(
+declare -Agr __hbl__Class__prototype=(
 	[__methods__]=__hbl__Class__prototype__methods
 )
 
-declare -Ag Class
-__hbl__Object__init Class
-Class[__class__]=Class
-Class[__superclass__]=Object
-Class[__prototype__]=__hbl__Class__prototype
+declare -Agr __hbl__Class__static_methods=(
+	[define]=__hbl__Class__static__define
+)
 
-$Class.method define __hbl__Class__static__define || exit
+declare -A __hbl__Class__classdef=(
+	[prototype]=__hbl__Class__prototype
+	[static_methods]=__hbl__Class__static_methods
+)
+
+__hbl__Class__static__define Class __hbl__Class__classdef || exit
+
+unset __hbl__Class__classdef
 
 #################################################################################
 ## Object
 #################################################################################
-declare -Ag __hbl__Object__prototype__methods
-__hbl__Object__prototype__methods=(
+declare -Agr __hbl__Object__prototype__methods=(
+	[__init]=__hbl__Object__init
 	[inspect]=__hbl__Object__inspect
 	[methods]=__hbl__Object__get_methods
+	[method]=__hbl__Object__add_method
 )
-readonly __hbl__Object__prototype__methods
 
-declare -Ag __hbl__Object__prototype
-__hbl__Object__prototype=(
+declare -Agr __hbl__Object__prototype=(
 	[__methods__]=__hbl__Object__prototype__methods
 )
-readonly __hbl__Object__prototype
 
-$Class.define Object __hbl__Object__prototype || return
-$Object.method new __hbl__Object__new
+declare -A __hbl__Object__classdef=(
+	[prototype]=__hbl__Object__prototype
+)
+
+$Class.define Object __hbl__Object__classdef || exit
+
+unset __hbl__Object__classdef
+
+$Object.method new __hbl__Object__new || exit
 
 ################################################################################
 # Array
 ################################################################################
-declare -Ag __hbl__Array__methods
-__hbl__Array__methods=(
-	[is_array]=__hbl__Array__static__is_array
-	[at]=__hbl__Array__static__at
-	[shift]=__hbl__Array__static__shift
-	[unshift]=__hbl__Array__static__unshift
-	[push]=__hbl__Array__static__push
-	[pop]=__hbl__Array__static__pop
-	[sort]=__hbl__Array__static__sort
-	[contains]=__hbl__Array__static__contains
-)
-readonly __hbl__Array__methods
-
-declare -Ag __hbl__Array__prototype__methods
-__hbl__Array__prototype__methods=(
+declare -Agr __hbl__Array__prototype__methods=(
 	[__init]=__hbl__Array__init
 	[at]=__hbl__Array__at
 	[shift]=__hbl__Array__shift
@@ -178,15 +168,122 @@ __hbl__Array__prototype__methods=(
 	[contains]=__hbl__Array__contains
 	[to_array]=__hbl__Array__to_array
 )
-readonly __hbl__Array__prototype__methods
 
-declare -Ag __hbl__Array__prototype
-__hbl__Array__prototype=(
+declare -Agr __hbl__Array__prototype=(
 	[__methods__]=__hbl__Array__prototype__methods
 )
-readonly __hbl__Array__prototype
 
-$Object.extend Array __hbl__Array__prototype
+declare -Agr __hbl__Array__static_methods=(
+	[at]=__hbl__Array__static__at
+	[shift]=__hbl__Array__static__shift
+	[unshift]=__hbl__Array__static__unshift
+	[push]=__hbl__Array__static__push
+	[pop]=__hbl__Array__static__pop
+	[sort]=__hbl__Array__static__sort
+	[contains]=__hbl__Array__static__contains
+	[to_array]=__hbl__Array__static__to_array
+)
+
+declare -A __hbl__Array__classdef=(
+	[prototype]=__hbl__Array__prototype
+	[static_methods]=__hbl__Array__static_methods
+)
+
+$Object.extend Array __hbl__Array__classdef
+
+unset __hbl__Array__classdef
+
+################################################################################
+# Util
+################################################################################
+declare -Agr __hbl__Util__static_methods=(
+	[is_defined]=__hbl__Util__static__is_defined
+	[is_function]=__hbl__Util__static__is_function
+	[is_associative_array]=__hbl__Util__static__is_associative_array
+	[dump_associative_array]=__hbl__Util__static__dump_associative_array
+)
+
+declare -A __hbl__Util__classdef=(
+	[static_methods]=__hbl__Util__static_methods
+)
+
+$Class.define Util __hbl__Util__classdef
+
+unset __hbl__Util__classdef
+
+################################################################################
+# Command
+################################################################################
+declare -Agr __hbl__Command__prototype__methods=(
+	[__init]=__hbl__Command__init
+	[add_example]=__hbl__Command__add_example
+	[add_option]=__hbl__Command__add_option
+	[add_subcommand]=__hbl__Command__add_subcommand
+	# [examples]="Array"
+	# [options]="Dict"
+	# [subcommands]="Array"
+)
+
+declare -Agr __hbl__Command__prototype=(
+	[__methods__]=__hbl__Command__prototype__methods
+)
+
+declare -A __hbl__Command__classdef=(
+	[prototype]=__hbl__Command__prototype
+)
+
+$Object.extend Command __hbl__Command__classdef
+
+unset __hbl__Command__classdef
+
+################################################################################
+# Option
+################################################################################
+declare -Agr __hbl__Option__prototype__methods=(
+	[__init]=__hbl__Option__init
+	# [command]=Command
+)
+
+declare -Agr __hbl__Option__prototype=(
+	[__methods__]=__hbl__Option__prototype__methods
+)
+
+declare -A __hbl__Option__classdef=(
+	[prototype]=__hbl__Option__prototype
+)
+
+$Object.extend Option __hbl__Option__classdef
+# Option=(
+# 	[0]='__hbl__Class__static__dispatch_ Option '
+# 	[__name]=Option
+# 	[__base]=Class
+# 	[__prototype]=Option__prototype
+# )
+# readonly Option
+
+# __hbl__classes+=('Option')
+
+################################################################################
+# Dict
+################################################################################
+
+declare -Agr __hbl__Dict__prototype__methods=(
+	[__init]=__hbl__Dict__init
+	[set]=__hbl__Dict__set
+	[get]=__hbl__Dict__get
+	[has_key]=__hbl__Dict__has_key
+	[to_associative_array]=__hbl__Dict__to_associative_array
+)
+
+declare -Agr __hbl__Dict__prototype=(
+	[__methods__]=__hbl__Dict__prototype__methods
+)
+
+declare -A __hbl__Dict__classdef=(
+	[prototype]=__hbl__Dict__prototype
+)
+
+$Object.extend Dict __hbl__Dict__classdef
 
 declare -g __hbl__imported
 __hbl__imported=1

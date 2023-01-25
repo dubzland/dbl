@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-function Command__init() {
+function __hbl__Command__init() {
+	dump_entry_ "$@"
 	[[ $# -eq 3 && -n "$2" && -n "$3" ]]  || return $HBL_ERR_ARGUMENT
 
 	local -n this="$1"
@@ -15,14 +16,14 @@ function Command__init() {
 	$Dict.new          options
 	$Array.new         subcommands
 
-	$this._set_reference examples    "$examples"
-	$this._set_reference options     "$options"
-	$this._set_reference subcommands "$subcommands"
+# 	$this._set_reference examples    "$examples"
+# 	$this._set_reference options     "$options"
+# 	$this._set_reference subcommands "$subcommands"
 
 	return $HBL_SUCCESS
 }
 
-function Command__add_example() {
+function __hbl__Command__add_example() {
 	local -n this="$1"
 
 	$this.examples.push "$2"
@@ -30,7 +31,7 @@ function Command__add_example() {
 	return $HBL_SUCCESS
 }
 
-function Command__add_option() {
+function __hbl__Command__add_option() {
 	local -n this="$1"
 	local opt opt_name options
 	opt="$2"
@@ -43,7 +44,7 @@ function Command__add_option() {
 	return $HBL_SUCCESS
 }
 
-function Command__add_subcommand() {
+function __hbl__Command__add_subcommand() {
 	local -n this="$1"
 	local sub subcommands
 
@@ -51,28 +52,3 @@ function Command__add_subcommand() {
 
 	return $HBL_SUCCESS
 }
-
-################################################################################
-# Command
-################################################################################
-declare -Ag Command__prototype
-Command__prototype=(
-	[__init]="$HBL_SELECTOR_METHOD Command__init"
-	[add_example]="$HBL_SELECTOR_METHOD Command__add_example"
-	[add_option]="$HBL_SELECTOR_METHOD Command__add_option"
-	[add_subcommand]="$HBL_SELECTOR_METHOD Command__add_subcommand"
-	[examples]="$HBL_SELECTOR_REFERENCE Array"
-	[options]="$HBL_SELECTOR_REFERENCE Dict"
-	[subcommands]="$HBL_SELECTOR_REFERENCE Array"
-)
-readonly Command__prototype
-
-declare -Ag Command
-Command=(
-	[0]='__hbl__Class__static__dispatch_ Command '
-	[__name]=Command
-	[__base]=Class
-	[__prototype]=Command__prototype
-)
-
-__hbl__classes+=('Command')

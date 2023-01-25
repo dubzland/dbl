@@ -310,11 +310,6 @@ teardown() {
 #
 # Array class methods
 #
-@test 'Array.is_array() calls the static function' {
-	stub __hbl__Array__static__is_array
-	$Array.is_array arr
-	assert_stub_with_args __hbl__Array__static__is_array arr
-}
 
 @test 'Array.at() calls the static function' {
 	stub __hbl__Array__static__at
@@ -418,7 +413,7 @@ teardown() {
 }
 
 @test 'Array#to_array() succeeds' {
-	local -a expected=('orange' 'apple','lemon' 'banana')
+	local -a expected=('orange' 'apple' 'lemon' 'banana')
 	$Array.new array "${expected[@]}"
 	run ${!array}.to_array myarr
 	assert_success
@@ -426,7 +421,7 @@ teardown() {
 }
 
 @test 'Array#to_array() injects the contents into the bash array' {
-	local -a expected=('orange' 'apple','lemon' 'banana')
+	local -a expected=('orange' 'apple' 'lemon' 'banana')
 	$Array.new array "${expected[@]}"
 	${!array}.to_array myarr
 	assert_array_equals myarr expected

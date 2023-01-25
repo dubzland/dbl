@@ -306,7 +306,7 @@ function __hbl__Array__contains() {
 }
 
 function __hbl__Array__to_array() {
-	[[ $# -eq 2 ]] || hbl__error__invocation_ 1 "${@:2}" || return
+	[[ $# -eq 2 ]] || return $HBL_ERR_ARGUMENT
 
 	local -n this=$1
 	local tgt="$2"
@@ -317,14 +317,3 @@ function __hbl__Array__to_array() {
 
 	return $HBL_SUCCESS
 }
-# declare -Ag Array
-# Array=(
-# 	[0]='__hbl__Class__static__dispatch_ Array '
-# 	[__name]=Array
-# 	[__base]=Class
-# 	[__methods]=__hbl__Array__methods
-# 	[__prototype]=__hbl__Array__prototype
-# )
-# readonly Array
-
-# __hbl__classes+=('Array')

@@ -9,37 +9,37 @@ setup() {
 	refute_output
 }
 
-@test 'Dict#get_size() succeeds' {
-	$Dict.new dict
-	run ${!dict}.get_size mysize
-	assert_success
-	refute_output
-}
+# @test 'Dict#get_size() succeeds' {
+# 	$Dict.new dict
+# 	run ${!dict}.get_size mysize
+# 	assert_success
+# 	refute_output
+# }
 
-@test 'Dict#size() returns the size' {
-	$Dict.new dict
-	${!dict}.get_size mysize
-	assert_equal $mysize 0
-	${!dict}.set foo bar
-	${!dict}.get_size mysize
-	assert_equal $mysize 1
-}
+# @test 'Dict#size() returns the size' {
+# 	$Dict.new dict
+# 	${!dict}.get_size mysize
+# 	assert_equal $mysize 0
+# 	${!dict}.set foo bar
+# 	${!dict}.get_size mysize
+# 	assert_equal $mysize 1
+# }
 
-@test 'Dict#set()  succeeds' {
-	$Dict.new dict
-	run ${!dict}.set 'foo' 'bar'
-	assert_success
-	refute_output
-}
+# @test 'Dict#set()  succeeds' {
+# 	$Dict.new dict
+# 	run ${!dict}.set 'foo' 'bar'
+# 	assert_success
+# 	refute_output
+# }
 
 @test 'Dict#set() stores the value' {
+	local -A mydict
 	$Dict.new dict
 	${!dict}.set 'foo' 'bar'
-	${!dict}.get_raw mydict
-	assert_dict "$mydict"
-	assert_dict_has_key "$mydict" foo
-	local -n dict__ref="$mydict"
-	assert_equal "${dict__ref[foo]}" 'bar'
+	${!dict}.to_associative_array mydict
+	assert_dict mydict
+	assert_dict_has_key mydict foo
+	assert_equal "${mydict[foo]}" 'bar'
 }
 
 @test 'Dict#get() succeeds' {

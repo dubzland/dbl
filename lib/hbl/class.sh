@@ -1,43 +1,84 @@
 #!/usr/bin/env bash
 
 function __hbl__Class__static__define() {
-	local cls name
-	cls="$1" name="$2"
+	local name
+	name="$1"
 
 	declare -Ag "$name"
 
-	__hbl__Object__init "$name" || return
+	__hbl__Object__new_ "$name" || return
 
 	local -n cls__ref="${name}"
+	cls__ref[0]="__hbl__Class__dispatch_ ${name} "
 	cls__ref[__class__]=Class
-	cls__ref[__superclass__]=''
-	if [[ "$cls" != Class ]]; then
-		cls__ref[__superclass__]="$cls"
+	cls__ref[__superclass__]=Object
+
+	if [[ $# -gt 1 ]]; then
+		local -n classdef__ref="$2"
+		if [[ -v classdef__ref[prototype] ]]; then
+			cls__ref[__prototype__]="${classdef__ref[prototype]}"
+		fi
+
+		if [[ -v classdef__ref[static_methods] ]]; then
+			cls__ref[__static_methods__]="${classdef__ref[static_methods]}"
+		fi
 	fi
 
-	if [[ $# -gt 2 ]]; then
-		cls__ref[__prototype__]="$3"
+	return $HBL_SUCCESS
+}
+
+function __hbl__Class__add_static_method() {
+	local -n cls__ref="$1"
+
+	if [[ ! -v cls__ref[__static_methods__] ]]; then
+		cls__ref[__static_methods__]="$1__static_methods"
+		declare -Ag "${cls__ref[__static_methods__]}"
 	fi
+
+	local -n smethods__ref="${cls__ref[__static_methods__]}"
+	smethods__ref[$2]="$3"
+
+	return $HBL_SUCCESS
+}
+
+function __hbl__Class__add_prototype_method() {
+	local -n cls__ref="$1"
+
+	if [[ ! -v cls__ref[__prototype__] ]]; then
+		cls__ref[__prototype__]="$1__prototype"
+		declare -Ag "${cls__ref[__prototype__]}"
+	fi
+
+	local -n cproto__ref="${cls__ref[__prototype__]}"
+
+	if [[ ! -v cproto__ref[__methods__] ]]; then
+		cproto__ref[__methods__]="${!cproto__ref}__methods"
+		declare -Ag "${cproto__ref[__methods__]}"
+	fi
+
+	local -n pmethods__ref="${cproto__ref[__methods__]}"
+	pmethods__ref[$2]="$3"
+	return $HBL_SUCCESS
 }
 
 __hbl__Class__get_method_() {
-	dump_entry_ "$@"
 	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
 	local mcls meth
-	mcls="$1" meth="${2#\.}"
+	mcls="$1" meth="$2"
 	local -n mfunc__ref="$3"
 
 	while [[ -n "$mcls" ]]; do
 		local -n mcls__ref="$mcls"
-		if [[ -v mcls__ref[__methods__] ]]; then
-			local -n cmethods__ref="${mcls__ref[__methods__]}"
+		if [[ -v mcls__ref[__static_methods__] ]]; then
+			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
 			if [[ -v cmethods__ref[$meth] ]]; then
 				mfunc__ref="${cmethods__ref[$meth]}"
 				return $HBL_SUCCESS
 			fi
 		fi
-		if [[ -v mcls__ref[__class__] && "${mcls__ref[__class__]}" != "$mcls" ]]; then
-			mcls="${mcls__ref[__class__]}"
+
+		if [[ -v mcls__ref[__superclass__] && "${mcls__ref[__superclass__]}" != "$mcls" ]]; then
+			mcls="${mcls__ref[__superclass__]}"
 			continue
 		fi
 		mcls=""
@@ -49,15 +90,16 @@ __hbl__Class__get_method_() {
 __hbl__Class__dispatch_() {
 	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
 	[[ "$2" =~ ^\. ]] || return $HBL_ERR_ARGUMENT
-	local dobj dsel dfunc
-	dobj="$1" dsel="$2" dfunc=''
+	local dobj dsel dcls dfunc
+	dobj="$1" dsel="${2#\.}" dcls='' dfunc=''
 	shift 2
 
-	__hbl__Object__get_method_ "$dobj" "$dsel" dfunc || return
+	__hbl__Object__get_method_ "$dobj" "$dsel" dcls dfunc || return
 	if [[ -n "$dfunc" ]]; then
-		# call the function
-		${dfunc} "$dobj" "$@"
-		return
+		rc=$HBL_SUCCESS
+		__hbl__Object__dispatch_function_ "$dsel" "$dcls" "$dfunc" \
+			"$dobj" "$@" || rc=$?
+		return $rc
 	fi
 
 	__hbl__Class__get_method_ "$dobj" "$dsel" dfunc || return
@@ -73,27 +115,30 @@ __hbl__Class__dispatch_() {
 function __hbl__Class__new() {
 	local self obj
 	self="$1" obj=""
+	local -n id__ref="$2"
+	shift 2
 
 	# Build the object
-	__hbl__Object__new "$self" obj
+	__hbl__Object__new "$self" obj || return
 
 	local -n obj__ref="$obj"
 	obj__ref[__class__]="$self"
 
-	local -n id__ref="$2"
 	id__ref="$obj"
+	${!obj}.__init "$@"
 	return $HBL_SUCCESS
 }
 
 function __hbl__Class__extend() {
-	local base cls proto
-	base="$1" cls="$2" proto="$3"
+	local base
+	base="$1"; shift
 
 	__hbl__Class__static__define "$@"
 
-	local -n cls__ref="$cls"
-
-	cls__ref[__superclass__]="$base"
+	if [[ "$base" != Class ]]; then
+		local -n cls__ref="$1"
+		cls__ref[__superclass__]="$base"
+	fi
 
 	return $HBL_SUCCESS
 }
