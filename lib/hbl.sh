@@ -33,15 +33,10 @@ readonly HBL_NUMBER
 readonly HBL_ARRAY
 readonly HBL_ASSOCIATIVE_ARRAY
 
-# selector types
-HBL_SELECTOR_METHOD=1
-HBL_SELECTOR_GETTER=2
-HBL_SELECTOR_SETTER=3
-HBL_SELECTOR_REFERENCE=4
-readonly HBL_SELECTOR_METHOD
-readonly HBL_SELECTOR_GETTER
-readonly HBL_SELECTOR_SETTER
-readonly HBL_SELECTOR_REFERENCE
+HBL_ATRR_NONE=0
+HBL_ATTR_GETTER=1
+HBL_ATTR_SETTER=2
+HBL_ATTR_BOTH=3
 
 # OPTION TYPES
 HBL_OPTION_TYPES=(string number flag dir)
@@ -111,6 +106,7 @@ declare -Agr __hbl__Class__prototype__methods=(
 	[inspect]=__hbl__Class__inspect
 	[static_method]=__hbl__Class__add_static_method
 	[prototype_method]=__hbl__Class__add_prototype_method
+	[attribute]=__hbl__Class__add_prototype_attribute
 )
 
 declare -Agr __hbl__Class__prototype=(
@@ -138,6 +134,8 @@ declare -Agr __hbl__Object__prototype__methods=(
 	[inspect]=__hbl__Object__inspect
 	[methods]=__hbl__Object__get_methods
 	[method]=__hbl__Object__add_method
+	[read_attribute]=__hbl__Object__read_attribute
+	[write_attribute]=__hbl__Object__write_attribute
 )
 
 declare -Agr __hbl__Object__prototype=(
@@ -224,8 +222,15 @@ declare -Agr __hbl__Command__prototype__methods=(
 	# [subcommands]="Array"
 )
 
+declare -Agr __hbl__Command__prototype__attributes=(
+	[name]=$HBL_ATTR_BOTH
+	[entrypoint]=$HBL_ATTR_BOTH
+	[description]=$HBL_ATTR_BOTH
+)
+
 declare -Agr __hbl__Command__prototype=(
 	[__methods__]=__hbl__Command__prototype__methods
+	[__attributes__]=__hbl__Command__prototype__attributes
 )
 
 declare -A __hbl__Command__classdef=(
@@ -241,6 +246,15 @@ unset __hbl__Command__classdef
 ################################################################################
 declare -Agr __hbl__Option__prototype__methods=(
 	[__init]=__hbl__Option__init
+	# [command]=Command
+)
+
+declare -Agr __hbl__Option__prototype__attributes=(
+	[name]=$HBL_ATTR_BOTH
+	[type]=$HBL_ATTR_BOTH
+	[short_flag]=$HBL_ATTR_BOTH
+	[long_flag]=$HBL_ATTR_BOTH
+	[description]=$HBL_ATTR_BOTH
 	# [command]=Command
 )
 
@@ -275,8 +289,13 @@ declare -Agr __hbl__Dict__prototype__methods=(
 	[to_associative_array]=__hbl__Dict__to_associative_array
 )
 
+declare -Agr __hbl__Dict__prototype__attributes=(
+	[size]=$HBL_ATTR_GETTER
+)
+
 declare -Agr __hbl__Dict__prototype=(
 	[__methods__]=__hbl__Dict__prototype__methods
+	[__attributes__]=__hbl__Dict__prototype__attributes
 )
 
 declare -A __hbl__Dict__classdef=(

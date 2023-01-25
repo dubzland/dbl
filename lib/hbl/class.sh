@@ -58,6 +58,30 @@ function __hbl__Class__add_prototype_method() {
 
 	local -n pmethods__ref="${cproto__ref[__methods__]}"
 	pmethods__ref[$2]="$3"
+
+	return $HBL_SUCCESS
+}
+
+function __hbl__Class__add_prototype_attribute() {
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+
+	local -n cls__ref="$1"
+
+	if [[ ! -v cls__ref[__prototype__] ]]; then
+		cls__ref[__prototype__]="$1__prototype"
+		declare -Ag "${cls__ref[__prototype__]}"
+	fi
+
+	local -n cproto__ref="${cls__ref[__prototype__]}"
+
+	if [[ ! -v cproto__ref[__attributes__] ]]; then
+		cproto__ref[__attributes__]="${!cproto__ref}__attributes"
+		declare -ag "${cproto__ref[__attributes__]}"
+	fi
+
+	local -n pattributes__ref="${cproto__ref[__attributes__]}"
+	pattributes__ref+=("$2")
+
 	return $HBL_SUCCESS
 }
 
@@ -113,7 +137,7 @@ __hbl__Class__dispatch_() {
 }
 
 function __hbl__Class__new() {
-	local self obj
+	local self obj attr
 	self="$1" obj=""
 	local -n id__ref="$2"
 	shift 2
@@ -123,6 +147,50 @@ function __hbl__Class__new() {
 
 	local -n obj__ref="$obj"
 	obj__ref[__class__]="$self"
+
+	local -n self__ref="$self"
+	if [[ -v self__ref[__prototype__] ]]; then
+		local -n cproto__ref="${self__ref[__prototype__]}"
+		if [[ -v cproto__ref[__attributes__] ]]; then
+			local -n cattrs__ref="${cproto__ref[__attributes__]}"
+			if [[ ! -v obj__ref[__methods__] ]]; then
+				obj__ref[__methods__]="${obj}__methods"
+				declare -Ag "${obj__ref[__methods__]}"
+			fi
+
+			local -n omethods__ref="${obj__ref[__methods__]}"
+			for attr in "${!cattrs__ref[@]}"; do
+				local attr_flag="${cattrs__ref[$attr]}"
+				if [[ $(($attr_flag & $HBL_ATTR_GETTER)) -gt 0 ]]; then
+					# make getter function
+					local getter="${obj}_get_${attr}"
+					source /dev/stdin <<-EOF
+						function ${getter}() {
+							local -n this="\$1";
+							\$this.read_attribute "$attr" "\$2";
+						};
+					EOF
+					# assign getter function
+					omethods__ref[get_$attr]="$getter"
+				fi
+
+				if [[ $(($attr_flag & $HBL_ATTR_SETTER)) -gt 0 ]]; then
+					# make setter function
+					local setter="${obj}_set_${attr}"
+					source /dev/stdin <<-EOF
+						function ${setter}() {
+							local -n this="\$1";
+							\$this.write_attribute "$attr" "\$2";
+						};
+					EOF
+					# assign setter function
+					omethods__ref[set_$attr]="${setter}"
+				fi
+
+				obj__ref[$attr]=''
+			done
+		fi
+	fi
 
 	id__ref="$obj"
 	${!obj}.__init "$@"

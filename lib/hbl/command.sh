@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 
 function __hbl__Command__init() {
-	dump_entry_ "$@"
 	[[ $# -eq 3 && -n "$2" && -n "$3" ]]  || return $HBL_ERR_ARGUMENT
 
 	local -n this="$1"
 	local examples options subcommands
 
 	$this.super
-	this[_name]="$2"
-	this[_entrypoint]="$3"
-	this[_description]=""
+	this[name]="$2"
+	this[entrypoint]="$3"
+	this[description]=""
 
 	$Array.new         examples
 	$Dict.new          options

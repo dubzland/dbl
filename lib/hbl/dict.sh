@@ -2,10 +2,12 @@
 
 function __hbl__Dict__init() {
 	local -n this="$1"
-	$this.super || return
+	if ! $this.super; then
+		printf "failed to call superclass: %d\n" $?
+	fi
 
 	this[_raw]="$1__raw_dict"
-	this[_size]=0
+	this[size]=0
 	declare -Ag "${this[_raw]}"
 	local -n _raw="${this[_raw]}"
 	_raw=()
@@ -17,7 +19,8 @@ function __hbl__Dict__set() {
 
 	local -n _raw="${this[_raw]}"
 	_raw[$2]="$3"
-	this[_size]=${#_raw[@]}
+	printf "Updating size to %d\n" ${#_raw[@]}
+	this[size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }

@@ -205,6 +205,28 @@ function __hbl__Object__add_method() {
 	return $HBL_SUCCESS
 }
 
+function __hbl__Object__read_attribute() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+
+	local -n obj__ref="$1"
+
+	local -n ret__ref="$3"
+
+	ret__ref="${obj__ref[$2]}"
+
+	return $HBL_SUCCESS
+}
+
+function __hbl__Object__write_attribute() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+
+	local -n obj__ref="$1"
+
+	obj__ref[$2]="$3"
+
+	return $HBL_SUCCESS
+}
+
 function __hbl__Object__init() {
 	return 0
 }

@@ -7,11 +7,11 @@ function __hbl__Option__init() {
 	local -n this="$1"
 
 	$this.super
-	this[_name]="$2"
-	this[_type]=""
-	this[_short_flag]=""
-	this[_long_flag]=""
-	this[_description]=""
+	this[name]="$2"
+	this[type]=""
+	this[short_flag]=""
+	this[long_flag]=""
+	this[description]=""
 
 	return $HBL_SUCCESS
 }
