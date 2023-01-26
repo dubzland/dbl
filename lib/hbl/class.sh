@@ -9,7 +9,6 @@ function __hbl__Class__static__define() {
 	__hbl__Object__new_ "$name" || return
 
 	local -n cls__ref="${name}"
-	cls__ref[0]="__hbl__Class__dispatch_ ${name} "
 	cls__ref[__class__]=Class
 	cls__ref[__superclass__]=Object
 
@@ -27,6 +26,69 @@ function __hbl__Class__static__define() {
 			cls__ref[__references__]="${classdef__ref[references]}"
 		fi
 	fi
+
+	return $HBL_SUCCESS
+}
+
+function __hbl__Class__get_method_() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	local mcls meth
+	mcls="$1" meth="$2"
+	local -n mfunc__ref="$3"
+
+	while [[ -n "$mcls" ]]; do
+		local -n mcls__ref="$mcls"
+		if [[ -v mcls__ref[__static_methods__] ]]; then
+			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
+			if [[ -v cmethods__ref[$meth] ]]; then
+				mfunc__ref="${cmethods__ref[$meth]}"
+				return $HBL_SUCCESS
+			fi
+		fi
+
+		if [[ -v mcls__ref[__superclass__] && "${mcls__ref[__superclass__]}" != "$mcls" ]]; then
+			mcls="${mcls__ref[__superclass__]}"
+			continue
+		fi
+		mcls=""
+	done
+
+	return $HBL_ERROR
+}
+
+function __hbl__Class__get_prototype_method_() {
+	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
+		return $HBL_ERR_ARGUMENT
+	local mcls meth i
+	mcls="$1" meth="$2"
+	local -n mcls__ref="$3" mfunc__ref="$4"
+
+	if [[ $# -gt 4 ]]; then
+		for ((i=0; i < $5; i++)); do
+			local -n pcls__ref="$mcls"
+			mcls="${pcls__ref[__superclass__]}"
+		done
+	fi
+
+	while [[ -n "$mcls" ]]; do
+		local -n pcls__ref="$mcls"
+		if [[ -v pcls__ref[__prototype__] ]]; then
+			local -n cproto__ref="${pcls__ref[__prototype__]}"
+			if [[ -v cproto__ref[__methods__] ]]; then
+				local -n pmethods__ref="${cproto__ref[__methods__]}"
+				if [[ -v pmethods__ref[$meth] ]]; then
+					mcls__ref="$mcls"
+					mfunc__ref="${pmethods__ref[$meth]}"
+					return $HBL_SUCCESS
+				fi
+			fi
+		fi
+		if [[ -n pcls__ref[__superclass__] && "${pcls__ref[__superclass__]}" != "$mcls" ]]; then
+			mcls="${pcls__ref[__superclass__]}"
+			continue
+		fi
+		mcls=""
+	done
 
 	return $HBL_SUCCESS
 }
@@ -110,57 +172,6 @@ function __hbl__Class__add_prototype_reference() {
 	preferences__ref["$2"]="$3"
 
 	return $HBL_SUCCESS
-}
-
-__hbl__Class__get_method_() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
-	local mcls meth
-	mcls="$1" meth="$2"
-	local -n mfunc__ref="$3"
-
-	while [[ -n "$mcls" ]]; do
-		local -n mcls__ref="$mcls"
-		if [[ -v mcls__ref[__static_methods__] ]]; then
-			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
-			if [[ -v cmethods__ref[$meth] ]]; then
-				mfunc__ref="${cmethods__ref[$meth]}"
-				return $HBL_SUCCESS
-			fi
-		fi
-
-		if [[ -v mcls__ref[__superclass__] && "${mcls__ref[__superclass__]}" != "$mcls" ]]; then
-			mcls="${mcls__ref[__superclass__]}"
-			continue
-		fi
-		mcls=""
-	done
-
-	return $HBL_ERROR
-}
-
-__hbl__Class__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
-	[[ "$2" =~ ^\. ]] || return $HBL_ERR_ARGUMENT
-	local dobj dsel dcls dfunc
-	dobj="$1" dsel="${2#\.}" dcls='' dfunc=''
-	shift 2
-
-	__hbl__Object__get_method_ "$dobj" "$dsel" dcls dfunc || return
-	if [[ -n "$dfunc" ]]; then
-		rc=$HBL_SUCCESS
-		__hbl__Object__dispatch_function_ "$dsel" "$dcls" "$dfunc" \
-			"$dobj" "$@" || rc=$?
-		return $rc
-	fi
-
-	__hbl__Class__get_method_ "$dobj" "$dsel" dfunc || return
-
-	if [[ -n "$dfunc" ]]; then
-		# call the function
-		${dfunc} "$@"
-	else
-		return $HBL_ERROR
-	fi
 }
 
 function __hbl__Class__new() {

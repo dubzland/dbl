@@ -31,43 +31,6 @@ function dump_array_() {
 	printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
 }
 
-function __hbl__Object__get_prototype_method_() {
-	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
-		return $HBL_ERR_ARGUMENT
-	local mcls meth i
-	mcls="$1" meth="$2"
-	local -n mcls__ref="$3" mfunc__ref="$4"
-
-	if [[ $# -gt 4 ]]; then
-		for ((i=0; i < $5; i++)); do
-			local -n pcls__ref="$mcls"
-			mcls="${pcls__ref[__superclass__]}"
-		done
-	fi
-
-	while [[ -n "$mcls" ]]; do
-		local -n pcls__ref="$mcls"
-		if [[ -v pcls__ref[__prototype__] ]]; then
-			local -n cproto__ref="${pcls__ref[__prototype__]}"
-			if [[ -v cproto__ref[__methods__] ]]; then
-				local -n pmethods__ref="${cproto__ref[__methods__]}"
-				if [[ -v pmethods__ref[$meth] ]]; then
-					mcls__ref="$mcls"
-					mfunc__ref="${pmethods__ref[$meth]}"
-					return $HBL_SUCCESS
-				fi
-			fi
-		fi
-		if [[ -n pcls__ref[__superclass__] && "${pcls__ref[__superclass__]}" != "$mcls" ]]; then
-			mcls="${pcls__ref[__superclass__]}"
-			continue
-		fi
-		mcls=""
-	done
-
-	return $HBL_SUCCESS
-}
-
 function __hbl__Object__get_method_() {
 	[[ $# -eq 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] || return $HBL_ERR_ARGUMENT
 	local dobj dmeth
@@ -84,7 +47,7 @@ function __hbl__Object__get_method_() {
 		fi
 	fi
 
-	__hbl__Object__get_prototype_method_ "${dobj__ref[__class__]}" "$dmeth" \
+	__hbl__Class__get_prototype_method_ "${dobj__ref[__class__]}" "$dmeth" \
 		"${!dcls__ref}" "${!dfunc__ref}" || return
 
 	return $HBL_SUCCESS
@@ -128,7 +91,7 @@ function __hbl__Object__dispatch_() {
 		if [[ "$dobj" = "${stack_head[3]}" && "${FUNCNAME[1]}" = "${stack_head[2]}" ]]; then
 			# look for a prototype method for the parent class
 			local -n dobj__ref="$dobj"
-			__hbl__Object__get_prototype_method_ "${dobj__ref[__class__]}" \
+			__hbl__Class__get_prototype_method_ "${dobj__ref[__class__]}" \
 				"${stack_head[0]}" dcls dfunc 1 || return
 		else
 			printf "bad\n"
@@ -146,7 +109,14 @@ function __hbl__Object__dispatch_() {
 		return $rc
 	fi
 
-	return $HBL_ERR_UNDEFINED_METHOD
+	__hbl__Class__get_method_ "$dobj" "$dsel" dfunc || return
+
+	if [[ -n "$dfunc" ]]; then
+		# call the function
+		${dfunc} "$@"
+	else
+		return $HBL_ERR_UNDEFINED_METHOD
+	fi
 }
 
 function __hbl__Object__inspect() {
