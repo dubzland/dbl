@@ -147,11 +147,12 @@ declare -A __hbl__Object__classdef=(
 	[prototype]=__hbl__Object__prototype
 )
 
-$Class.define Object __hbl__Object__classdef || exit
+__hbl__Class__static__define Object __hbl__Object__classdef || exit
 
 unset __hbl__Object__classdef
 
-$Object.method new __hbl__Object__new || exit
+__hbl__Object__add_method Object new __hbh__Object__new || exit
+# $Object.method new __hbl__Object__new || exit
 
 ################################################################################
 # Array
@@ -193,7 +194,8 @@ declare -A __hbl__Array__classdef=(
 	[static_methods]=__hbl__Array__static_methods
 )
 
-$Object.extend Array __hbl__Array__classdef
+__hbl__Class__extend Object Array __hbl__Array__classdef
+# $Object.extend Array __hbl__Array__classdef
 
 unset __hbl__Array__classdef
 
@@ -211,7 +213,8 @@ declare -A __hbl__Util__classdef=(
 	[static_methods]=__hbl__Util__static_methods
 )
 
-$Class.define Util __hbl__Util__classdef
+__hbl__Class__static__define Util __hbl__Util__classdef || exit
+# $Class.define Util __hbl__Util__classdef
 
 unset __hbl__Util__classdef
 
@@ -247,7 +250,8 @@ declare -A __hbl__Command__classdef=(
 	[prototype]=__hbl__Command__prototype
 )
 
-$Object.extend Command __hbl__Command__classdef
+__hbl__Class__extend Object Command __hbl__Command__classdef
+# $Object.extend Command __hbl__Command__classdef
 
 unset __hbl__Command__classdef
 
@@ -277,7 +281,8 @@ declare -A __hbl__Option__classdef=(
 	[prototype]=__hbl__Option__prototype
 )
 
-$Object.extend Option __hbl__Option__classdef
+__hbl__Class__extend Object Option __hbl__Option__classdef
+# $Object.extend Option __hbl__Option__classdef
 
 ################################################################################
 # Dict
@@ -304,7 +309,8 @@ declare -A __hbl__Dict__classdef=(
 	[prototype]=__hbl__Dict__prototype
 )
 
-$Object.extend Dict __hbl__Dict__classdef
+__hbl__Class__extend Object Dict __hbl__Dict__classdef
+# $Object.extend Dict __hbl__Dict__classdef
 
 declare -g __hbl__imported
 __hbl__imported=1

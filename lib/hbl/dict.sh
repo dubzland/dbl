@@ -2,9 +2,7 @@
 
 function __hbl__Dict__init() {
 	local -n this="$1"
-	if ! $this.super; then
-		printf "failed to call superclass: %d\n" $?
-	fi
+	$this.super || return
 
 	this[_raw]="$1__raw_dict"
 	this[size]=0

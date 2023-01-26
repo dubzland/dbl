@@ -12,13 +12,13 @@ function __hbl__Command__init() {
 	this[entrypoint]="$3"
 	this[description]=""
 
-	$Array.new         examples
-	$Dict.new          options
-	$Array.new         subcommands
+	__hbl__Class__new Array examples
+	__hbl__Class__new Dict options
+	__hbl__Class__new Array subcommands
 
-	$this.assign_reference examples    "$examples"
-	$this.assign_reference options     "$options"
-	$this.assign_reference subcommands "$subcommands"
+	__hbl__Object__assign_reference "$1" examples "$examples"
+	__hbl__Object__assign_reference "$1" options "$options"
+	__hbl__Object__assign_reference "$1" subcommands "$subcommands"
 
 	return $HBL_SUCCESS
 }
@@ -36,7 +36,7 @@ function __hbl__Command__add_option() {
 	local opt opt_name options
 	opt="$2"
 
-	$opt._set_reference command "$this"
+	$opt.assign_reference command "$this" || return
 	$opt.get_name opt_name
 
 	$this.options.set "$opt_name" "$opt"

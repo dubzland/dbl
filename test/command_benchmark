@@ -39,7 +39,7 @@ function run_sample() {
 	_msg ">>> %s <<<\n" "$1"
 	for (( i=0; i<$2; i++)); do
 		if ! ${command_samples[$1]}; then
-			_msg "\r\033[KFAILED!\n"
+			_msg "\r\033[KFAILED! $rc\n"
 			return 1
 		fi
 		[[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"

@@ -168,8 +168,8 @@ function __hbl__Class__add_prototype_reference() {
 }
 
 function __hbl__Class__new() {
-	local self obj attr cls
-	self="$1" obj=""
+	local self obj attr meth cls init
+	self="$1" obj="" init="" icls=""
 	local -n id__ref="$2"
 	shift 2
 
@@ -185,19 +185,36 @@ function __hbl__Class__new() {
 
 	while [[ -n "$cls" ]]; do
 		local -n cls__ref="$cls"
+
 		if [[ -v cls__ref[__prototype__] ]]; then
 			local -n cproto__ref="${cls__ref[__prototype__]}"
+
+			if [[ -v cproto__ref[__methods__] ]]; then
+				local -n cmethods__ref="${cproto__ref[__methods__]}"
+
+				for meth in "${!cmethods__ref[@]}"; do
+					if [[ ! -v omethods__ref[$meth] ]]; then
+						omethods__ref[$meth]="${cmethods__ref[$meth]}"
+					fi
+
+					if [[ "$meth" = '__init' && -z "$init" ]]; then
+						init="${omethods__ref[$meth]}"
+						icls="$cls"
+					fi
+				done
+			fi
+
 			if [[ -v cproto__ref[__attributes__] ]]; then
 				local -n cattrs__ref="${cproto__ref[__attributes__]}"
 
 				for attr in "${!cattrs__ref[@]}"; do
 					local attr_flag="${cattrs__ref[$attr]}"
 					if [[ $(($attr_flag & $HBL_ATTR_GETTER)) -gt 0 ]]; then
-						${!obj}.getter "$attr"
+						__hbl__Object__add_getter "$obj" "$attr"
 					fi
 
 					if [[ $(($attr_flag & $HBL_ATTR_SETTER)) -gt 0 ]]; then
-						${!obj}.setter "$attr"
+						__hbl__Object__add_setter "$obj" "$attr"
 					fi
 
 					obj__ref[$attr]=''
@@ -208,7 +225,7 @@ function __hbl__Class__new() {
 				local -n creferences__ref="${cproto__ref[__references__]}"
 				for ref in "${!creferences__ref[@]}"; do
 					local ref_class="${creferences__ref[$ref]}"
-					${!obj}.add_reference "$ref" "$ref_class" || return
+					__hbl__Object__add_reference "$obj" "$ref" "$ref_class" || return
 				done
 			fi
 		fi
@@ -221,8 +238,12 @@ function __hbl__Class__new() {
 
 	# Return the dispatcher
 	id__ref="${!obj}"
-	${!obj}.__init "$@"
-	return $HBL_SUCCESS
+
+	if [[ -n "$init" ]]; then
+		__hbl__Object__dispatch_function_ __init $icls $init "$obj" "$@"
+	else
+		return $HBL_SUCCESS
+	fi
 }
 
 function __hbl__Class__extend() {

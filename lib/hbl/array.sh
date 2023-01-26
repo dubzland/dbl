@@ -16,7 +16,7 @@
 #
 function __hbl__Array__static__is_array() {
 	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
-	$Util.is_defined "$1" || return $HBL_ERR_ARGUMENT
+	__hbl__Util__static__is_defined "$1" || return $HBL_ERR_ARGUMENT
 
 	if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 && -z ${-//[^u]/} ]]; then
 		local -n __ref="$1"

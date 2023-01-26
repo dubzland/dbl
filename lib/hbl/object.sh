@@ -189,14 +189,11 @@ function __hbl__Object__add_getter() {
 	local getter="${!this}_get_${attr}"
 	source /dev/stdin <<-EOF
 		function ${getter}() {
-			local -n this="\$1";
-			\$this.read_attribute "$attr" "\$2";
+			__hbl__Object__read_attribute "\$1" "$attr" "\${@:2}";
 		};
 	EOF
 
-	$this.method "get_$attr" "$getter"
-	# assign getter function
-	# omethods__ref[get_$attr]="$getter"
+	__hbl__Object__add_method "${!this}" "get_$attr" "$getter"
 }
 
 function __hbl__Object__add_setter() {
@@ -209,12 +206,11 @@ function __hbl__Object__add_setter() {
 	local setter="${!this}__set_${attr}"
 	source /dev/stdin <<-EOF
 		function ${setter}() {
-			local -n this="\$1";
-			\$this.write_attribute "$attr" "\${@:2}";
+			__hbl__Object__write_attribute "\$1" "$attr" "\${@:2}";
 		};
 	EOF
 
-	$this.method "set_$attr" "$setter"
+	__hbl__Object__add_method "${!this}" "set_$attr" "$setter"
 }
 
 function __hbl__Object__add_reference() {
@@ -226,12 +222,11 @@ function __hbl__Object__add_reference() {
 	local ref_func="${!this}__ref__${ref}"
 	source /dev/stdin <<-EOF
 		function ${ref_func}() {
-			local -n this="\$1"; shift;
-			\$this.delegate_to_reference "$ref" "\$@";
+			__hbl__Object__delegate_to_reference "\$1" "$ref" "\${@:2}";
 		};
 	EOF
 
-	$this.method "$ref" "$ref_func"
+	__hbl__Object__add_method "${!this}" "$ref" "$ref_func"
 }
 
 function __hbl__Object__read_attribute() {
@@ -286,7 +281,7 @@ function __hbl__Object__get_id_() {
 }
 
 function __hbl__Object__init() {
-	return 0
+	return $HBL_SUCCESS
 }
 
 function __hbl__Object__new_() {
