@@ -232,7 +232,7 @@ function __hbl__Array__init() {
 	declare -ag "${this[_raw]}"
 	local -n _raw="${this[_raw]}"
 	_raw=("${@:2}")
-	this[_size]=${#_raw[@]}
+	this[size]=${#_raw[@]}
 }
 
 function __hbl__Array__at() {
@@ -248,7 +248,7 @@ function __hbl__Array__shift() {
 
 	__hbl__Array__static__shift ${this[_raw]} "$@" || return
 
-	this[_size]=${#_raw[@]}
+	this[size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
@@ -260,7 +260,7 @@ function __hbl__Array__unshift() {
 
 	__hbl__Array__static__unshift ${this[_raw]} "$@" || return
 
-	this[_size]=${#_raw[@]}
+	this[size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
@@ -272,7 +272,7 @@ function __hbl__Array__push() {
 
 	__hbl__Array__static__push ${this[_raw]} "$@" || return
 
-	this[_size]=${#_raw[@]}
+	this[size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }
@@ -284,7 +284,7 @@ function __hbl__Array__pop() {
 
 	__hbl__Array__static__pop ${this[_raw]} "$@" || return
 
-	this[_size]=${#_raw[@]}
+	this[size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
 }

@@ -15,9 +15,9 @@ function __hbl__Command__init() {
 	$Dict.new          options
 	$Array.new         subcommands
 
-# 	$this._set_reference examples    "$examples"
-# 	$this._set_reference options     "$options"
-# 	$this._set_reference subcommands "$subcommands"
+	$this.assign_reference examples    "$examples"
+	$this.assign_reference options     "$options"
+	$this.assign_reference subcommands "$subcommands"
 
 	return $HBL_SUCCESS
 }

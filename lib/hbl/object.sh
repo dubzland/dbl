@@ -31,7 +31,7 @@ function dump_array_() {
 	printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
 }
 
-__hbl__Object__get_prototype_method_() {
+function __hbl__Object__get_prototype_method_() {
 	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
 		return $HBL_ERR_ARGUMENT
 	local mcls meth
@@ -68,7 +68,7 @@ __hbl__Object__get_prototype_method_() {
 	return $HBL_SUCCESS
 }
 
-__hbl__Object__get_method_() {
+function __hbl__Object__get_method_() {
 	[[ $# -eq 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] || return $HBL_ERR_ARGUMENT
 	local dobj dmeth
 	dobj="$1" dmeth="$2"
@@ -199,10 +199,69 @@ function __hbl__Object__get_methods() {
 }
 
 function __hbl__Object__add_method() {
+	local -n this="$1"
 	local -n obj__ref="$1"
+
 	local -n omethods__ref="${obj__ref[__methods__]}"
+
 	omethods__ref[$2]="$3"
+
 	return $HBL_SUCCESS
+}
+
+function __hbl__Object__add_getter() {
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+
+	local attr="$2"
+	local -n this="$1"
+
+	# make getter function
+	local getter="${!this}_get_${attr}"
+	source /dev/stdin <<-EOF
+		function ${getter}() {
+			local -n this="\$1";
+			\$this.read_attribute "$attr" "\$2";
+		};
+	EOF
+
+	$this.method "get_$attr" "$getter"
+	# assign getter function
+	# omethods__ref[get_$attr]="$getter"
+}
+
+function __hbl__Object__add_setter() {
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+
+	local -n this="$1"
+	local attr="$2"
+
+	# make getter function
+	local setter="${!this}__set_${attr}"
+	source /dev/stdin <<-EOF
+		function ${setter}() {
+			local -n this="\$1";
+			\$this.write_attribute "$attr" "\${@:2}";
+		};
+	EOF
+
+	$this.method "set_$attr" "$setter"
+}
+
+function __hbl__Object__add_reference() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+
+	local ref="$2"
+	local -n this="$1"
+
+	local ref_func="${!this}__ref__${ref}"
+	source /dev/stdin <<-EOF
+		function ${ref_func}() {
+			local -n this="\$1"; shift;
+			\$this.delegate_to_reference "$ref" "\$@";
+		};
+	EOF
+
+	$this.method "$ref" "$ref_func"
 }
 
 function __hbl__Object__read_attribute() {
@@ -220,11 +279,28 @@ function __hbl__Object__read_attribute() {
 function __hbl__Object__write_attribute() {
 	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
 
-	local -n obj__ref="$1"
+	local -n this="$1"
 
-	obj__ref[$2]="$3"
+	this[$2]="$3"
 
 	return $HBL_SUCCESS
+}
+
+function __hbl__Object__assign_reference() {
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+
+	local -n this="$1"
+
+	this[__ref_$2]="$3"
+
+}
+
+function __hbl__Object__delegate_to_reference() {
+	[[ $# -ge 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+
+	# TODO: Add some sanity checking
+	local -n this="$1"
+	__hbl__Object__dispatch_ "${this[__ref_$2]}" "$3" "${@:4}"
 }
 
 function __hbl__Object__init() {

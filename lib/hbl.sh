@@ -33,6 +33,7 @@ readonly HBL_NUMBER
 readonly HBL_ARRAY
 readonly HBL_ASSOCIATIVE_ARRAY
 
+# ATTRIBUTE ACCESS
 HBL_ATRR_NONE=0
 HBL_ATTR_GETTER=1
 HBL_ATTR_SETTER=2
@@ -45,9 +46,6 @@ readonly HBL_OPTION_TYPES
 declare -Ag __hbl
 __hbl=()
 
-declare -ag __hbl__classes
-__hbl__classes=()
-
 declare -g __hbl__object__id
 __hbl__object__id=0
 
@@ -56,9 +54,6 @@ __hbl__objects=()
 
 declare -ag __hbl__stack
 __hbl__stack=()
-
-declare -Ag __hbl__dispatch_cache
-__hbl__dispatch_cache=()
 
 declare HBL_LIB
 
@@ -136,6 +131,11 @@ declare -Agr __hbl__Object__prototype__methods=(
 	[method]=__hbl__Object__add_method
 	[read_attribute]=__hbl__Object__read_attribute
 	[write_attribute]=__hbl__Object__write_attribute
+	[getter]=__hbl__Object__add_getter
+	[setter]=__hbl__Object__add_setter
+	[add_reference]=__hbl__Object__add_reference
+	[assign_reference]=__hbl__Object__assign_reference
+	[delegate_to_reference]=__hbl__Object__delegate_to_reference
 )
 
 declare -Agr __hbl__Object__prototype=(
@@ -167,8 +167,13 @@ declare -Agr __hbl__Array__prototype__methods=(
 	[to_array]=__hbl__Array__to_array
 )
 
+declare -Agr __hbl__Array__prototype__attributes=(
+	[size]=$HBL_ATTR_GETTER
+)
+
 declare -Agr __hbl__Array__prototype=(
 	[__methods__]=__hbl__Array__prototype__methods
+	[__attributes__]=__hbl__Array__prototype__attributes
 )
 
 declare -Agr __hbl__Array__static_methods=(
@@ -217,9 +222,6 @@ declare -Agr __hbl__Command__prototype__methods=(
 	[add_example]=__hbl__Command__add_example
 	[add_option]=__hbl__Command__add_option
 	[add_subcommand]=__hbl__Command__add_subcommand
-	# [examples]="Array"
-	# [options]="Dict"
-	# [subcommands]="Array"
 )
 
 declare -Agr __hbl__Command__prototype__attributes=(
@@ -228,9 +230,16 @@ declare -Agr __hbl__Command__prototype__attributes=(
 	[description]=$HBL_ATTR_BOTH
 )
 
+declare -Agr __hbl__Command__prototype__references=(
+	[examples]="Array"
+	[options]="Dict"
+	[subcommands]="Array"
+)
+
 declare -Agr __hbl__Command__prototype=(
 	[__methods__]=__hbl__Command__prototype__methods
 	[__attributes__]=__hbl__Command__prototype__attributes
+	[__references__]=__hbl__Command__prototype__references
 )
 
 declare -A __hbl__Command__classdef=(
@@ -260,6 +269,7 @@ declare -Agr __hbl__Option__prototype__attributes=(
 
 declare -Agr __hbl__Option__prototype=(
 	[__methods__]=__hbl__Option__prototype__methods
+	[__attributes__]=__hbl__Option__prototype__attributes
 )
 
 declare -A __hbl__Option__classdef=(
@@ -267,15 +277,6 @@ declare -A __hbl__Option__classdef=(
 )
 
 $Object.extend Option __hbl__Option__classdef
-# Option=(
-# 	[0]='__hbl__Class__static__dispatch_ Option '
-# 	[__name]=Option
-# 	[__base]=Class
-# 	[__prototype]=Option__prototype
-# )
-# readonly Option
-
-# __hbl__classes+=('Option')
 
 ################################################################################
 # Dict

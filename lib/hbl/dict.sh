@@ -19,7 +19,6 @@ function __hbl__Dict__set() {
 
 	local -n _raw="${this[_raw]}"
 	_raw[$2]="$3"
-	printf "Updating size to %d\n" ${#_raw[@]}
 	this[size]=${#_raw[@]}
 
 	return $HBL_SUCCESS
