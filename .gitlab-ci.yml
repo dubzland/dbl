@@ -15,6 +15,5 @@ test:
     - git submodule init
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.dubzland.net/".insteadOf "git@git.dubzland.net:"
     - git submodule sync && git submodule update --init
-    - ls -l test/test_helper/bats-support/
   script:
     - make test
