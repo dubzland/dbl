@@ -15,16 +15,15 @@ function build_empty_command() {
 function build_simple_command() {
 	local cmd opt
 
-	$Command.new cmd 'backup-client' backup_client_run
+	$Command.new cmd 'backup-client' backup_client_run &&
+	$cmd.set_description 'Manage backup jobs.'         &&
+	$cmd.add_example     '-d /etc/jobs.d <options>'    || return
 
-	$cmd.set_description 'Manage backup jobs.'
-	$cmd.add_example     '-d /etc/jobs.d <options>'
-
-	$Command__Option.new opt 'job_directory'
-	$opt.set_type        'dir'
-	$opt.set_short_flag  'd'
-	$opt.set_long_flag   'job_directory'
-	$opt.set_description 'Backup job directory.'
+	$Command__Option.new opt 'job_directory'     &&
+	$opt.set_type        'dir'                   &&
+	$opt.set_short_flag  'd'                     &&
+	$opt.set_long_flag   'job_directory'         &&
+	$opt.set_description 'Backup job directory.' || return
 
 	$cmd.add_option "$opt"
 }
@@ -94,5 +93,3 @@ fi
 _msg "STARTING BENCHMARK WITH %d iterations...\n" $count
 
 run_samples $count "${benchmark_samples[@]}"
-
-declare -p
