@@ -8,24 +8,25 @@ function _msg() {
 }
 
 function build_empty_command() {
-	$Command.new _cmd 'backup-client' backup_client_run || return
+	local cmd
+	$Command.new cmd 'backup-client' backup_client_run || return
 }
 
 function build_simple_command() {
-	local opt
+	local cmd opt
 
-	$Command.new _cmd 'backup-client' backup_client_run
+	$Command.new cmd 'backup-client' backup_client_run
 
-	$_cmd.set_description 'Manage backup jobs.'
-	$_cmd.add_example     '-d /etc/jobs.d <options>'
+	$cmd.set_description 'Manage backup jobs.'
+	$cmd.add_example     '-d /etc/jobs.d <options>'
 
-	$Option.new opt 'job_directory'
+	$Command__Option.new opt 'job_directory'
 	$opt.set_type        'dir'
 	$opt.set_short_flag  'd'
 	$opt.set_long_flag   'job_directory'
 	$opt.set_description 'Backup job directory.'
 
-	$_cmd.add_option "$opt"
+	$cmd.add_option "$opt"
 }
 
 declare -A command_samples
@@ -39,7 +40,7 @@ function run_sample() {
 	_msg ">>> %s <<<\n" "$1"
 	for (( i=0; i<$2; i++)); do
 		if ! ${command_samples[$1]}; then
-			_msg "\r\033[KFAILED! $rc\n"
+			_msg "\r\033[KFAILED!\n"
 			return 1
 		fi
 		[[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"
@@ -48,7 +49,8 @@ function run_sample() {
 }
 
 function run_samples() {
-	local count=$1
+	local sample count
+	count=$1
 	local -a samples=("${@:2}")
 
 	for sample in "${samples[@]}"; do
@@ -67,6 +69,8 @@ quiet=0
 declare -i count
 count=1000
 
+declare opt
+
 # Option parsing
 while getopts qc: opt
 do
@@ -78,6 +82,7 @@ do
 done
 
 shift $((OPTIND-1))
+unset OPTIND OPTARG opt
 
 declare -a benchmark_samples
 if [[ $# -gt 0 ]]; then
@@ -90,3 +95,4 @@ _msg "STARTING BENCHMARK WITH %d iterations...\n" $count
 
 run_samples $count "${benchmark_samples[@]}"
 
+declare -p

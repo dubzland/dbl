@@ -69,7 +69,7 @@ Object=(
 # @test 'Object.is_object() for an invalid object succeeds' {
 # 	local -A obj=()
 # 	run $Object.is_object obj
-# 	assert_failure $HBL_ERROR
+# 	assert_failure $__hbl__rc__error
 # 	refute_output
 # }
 

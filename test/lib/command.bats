@@ -3,10 +3,24 @@ setup() {
 	common_setup
 }
 
-@test 'Command.new succeeds' {
+@test 'Command.new() succeeds' {
 	local cmd
 	run $Command.new cmd foo bar
 	assert_success
+	refute_output
+}
+
+@test 'Command.new() requires a name' {
+	local cmd
+	run $Command.new cmd '' bar
+	assert_failure $__hbl__rc__argument_error
+	refute_output
+}
+
+@test 'Command.new() requires an entrypoint' {
+	local cmd
+	run $Command.new cmd foo ''
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -39,7 +53,7 @@ setup() {
 }
 
 @test 'Command#add_option() succeeds' {
-	$Option.new opt verbose
+	$Command__Option.new opt verbose
 	$Command.new cmd foo bar
 	run $cmd.add_option "$opt"
 	assert_success
@@ -47,7 +61,7 @@ setup() {
 }
 
 @test 'Command#add_option() adds the option to the reference' {
-	$Option.new opt verbose
+	$Command__Option.new opt verbose
 	$Command.new cmd foo bar
 	$cmd.add_option "$opt"
 	$cmd.options.to_associative_array options_dict

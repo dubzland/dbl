@@ -63,7 +63,7 @@ setup() {
 	local dict
 	$Dict.new dict
 	run $dict.has_key 'foo'
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 

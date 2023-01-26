@@ -1,6 +1,7 @@
 ##!/usr/bin/env bash
 
 function __hbl__Dict__init() {
+	[[ $# -eq 1 ]] || $Error.argument || return
 	local -n this="$1"
 	$this.super || return
 
@@ -12,19 +13,18 @@ function __hbl__Dict__init() {
 }
 
 function __hbl__Dict__set() {
-	[[ $# -eq 3 ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" ]] || $Error.argument || return
 	local -n this="$1"
 
 	local -n _raw="${this[_raw]}"
 	_raw[$2]="$3"
 	this[size]=${#_raw[@]}
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Dict__get() {
-	[[ $# -eq 3 ]] || $HBL_ERR_ARGUMENT
-	[[ -n "$2" ]] || $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local -n this="$1"
 
@@ -32,12 +32,11 @@ function __hbl__Dict__get() {
 	local -n val_var__ref="$3"
 	val_var__ref="${_raw[$2]}"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Dict__has_key() {
-	[[ $# -eq 2 ]] || $HBL_ERR_ARGUMENT
-	[[ -n "$2" ]] || $HBL_ERR_ARGUMENT
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local -n this="$1"
 	local -n _raw="${this[_raw]}"
@@ -46,8 +45,7 @@ function __hbl__Dict__has_key() {
 }
 
 function __hbl__Dict__to_associative_array() {
-	[[ $# -eq 2 ]] || $HBL_ERR_ARGUMENT
-	[[ -n "$2" ]] || $HBL_ERR_ARGUMENT
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local -n this="$1"
 
@@ -58,5 +56,5 @@ function __hbl__Dict__to_associative_array() {
 		tgt__ref[$key]="${src__ref[$key]}"
 	done
 
-	return $HBL_SUCCESS
+	return 0
 }

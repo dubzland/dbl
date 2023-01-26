@@ -27,11 +27,11 @@ function __hbl__Class__static__define() {
 		fi
 	fi
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__get_method_() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
 	local mcls meth
 	mcls="$1" meth="$2"
 	local -n mfunc__ref="$3"
@@ -42,7 +42,7 @@ function __hbl__Class__get_method_() {
 			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
 			if [[ -v cmethods__ref[$meth] ]]; then
 				mfunc__ref="${cmethods__ref[$meth]}"
-				return $HBL_SUCCESS
+				return 0
 			fi
 		fi
 
@@ -53,12 +53,13 @@ function __hbl__Class__get_method_() {
 		mcls=""
 	done
 
-	return $HBL_ERROR
+	return 1
 }
 
 function __hbl__Class__get_prototype_method_() {
 	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
-		return $HBL_ERR_ARGUMENT
+		$Error.argument || return
+
 	local mcls meth i
 	mcls="$1" meth="$2"
 	local -n mcls__ref="$3" mfunc__ref="$4"
@@ -72,7 +73,7 @@ function __hbl__Class__get_prototype_method_() {
 				if [[ -v pmethods__ref[$meth] ]]; then
 					mcls__ref="$mcls"
 					mfunc__ref="${pmethods__ref[$meth]}"
-					return $HBL_SUCCESS
+					return 0
 				fi
 			fi
 		fi
@@ -83,7 +84,7 @@ function __hbl__Class__get_prototype_method_() {
 		mcls=""
 	done
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__add_static_method() {
@@ -97,7 +98,7 @@ function __hbl__Class__add_static_method() {
 	local -n smethods__ref="${cls__ref[__static_methods__]}"
 	smethods__ref[$2]="$3"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__add_prototype_method() {
@@ -118,11 +119,11 @@ function __hbl__Class__add_prototype_method() {
 	local -n pmethods__ref="${cproto__ref[__methods__]}"
 	pmethods__ref[$2]="$3"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__add_prototype_attribute() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument
 
 	local -n cls__ref="$1"
 
@@ -141,11 +142,11 @@ function __hbl__Class__add_prototype_attribute() {
 	local -n pattributes__ref="${cproto__ref[__attributes__]}"
 	pattributes__ref["$2"]="$3"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__add_prototype_reference() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
 
 	local -n cls__ref="$1"
 
@@ -164,11 +165,11 @@ function __hbl__Class__add_prototype_reference() {
 	local -n preferences__ref="${cproto__ref[__references__]}"
 	preferences__ref["$2"]="$3"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__new() {
-	local self obj attr meth cls init
+	local self obj attr meth cls init icls ref
 	self="$1" obj="" init="" icls=""
 	local -n id__ref="$2"
 	shift 2
@@ -209,11 +210,11 @@ function __hbl__Class__new() {
 
 				for attr in "${!cattrs__ref[@]}"; do
 					local attr_flag="${cattrs__ref[$attr]}"
-					if [[ $(($attr_flag & $HBL_ATTR_GETTER)) -gt 0 ]]; then
+					if [[ $((attr_flag & __hbl__attr__getter)) -gt 0 ]]; then
 						__hbl__Object__add_getter "$obj" "$attr"
 					fi
 
-					if [[ $(($attr_flag & $HBL_ATTR_SETTER)) -gt 0 ]]; then
+					if [[ $((attr_flag & __hbl__attr__setter)) -gt 0 ]]; then
 						__hbl__Object__add_setter "$obj" "$attr"
 					fi
 
@@ -242,13 +243,12 @@ function __hbl__Class__new() {
 	if [[ -n "$init" ]]; then
 		__hbl__Object__dispatch_function_ __init $icls $init "$obj" "$@"
 	else
-		return $HBL_SUCCESS
+		return 0
 	fi
 }
 
 function __hbl__Class__extend() {
-	local base
-	base="$1"; shift
+	local base="$1"; shift
 
 	__hbl__Class__static__define "$@"
 
@@ -257,7 +257,7 @@ function __hbl__Class__extend() {
 		cls__ref[__superclass__]="$base"
 	fi
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Class__inspect() {

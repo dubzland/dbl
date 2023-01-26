@@ -20,7 +20,7 @@ teardown() {
 @test '__hbl__Array__static__is_array() with insufficient arguments fails' {
 	local -a array=()
 	run __hbl__Array__static__is_array
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -28,21 +28,21 @@ teardown() {
 	set +u
 	run __hbl__Array__static__is_array undefined
 	set -u
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Array__static__is_array() with a normal variable fails' {
 	local defined
 	run __hbl__Array__static__is_array defined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Array__static__is_array() with an associative array fails' {
 	local -A defined=()
 	run __hbl__Array__static__is_array defined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
@@ -80,13 +80,13 @@ teardown() {
 @test '__hbl__Array__static__at() with an empty array fails' {
 	local -a arr=()
 	run __hbl__Array__static__at arr 0 myvar
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 }
 
 @test '__hbl__Array__static__at() with an invalid index fails' {
 	local -a arr=(foo bar baz)
 	run __hbl__Array__static__at arr 10 myvar
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 }
 
 #
@@ -125,7 +125,7 @@ teardown() {
 	local -a arr=(one two three)
 	local myvar=""
 	run __hbl__Array__static__shift
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -133,7 +133,7 @@ teardown() {
 	local -a arr=()
 	local myvar=""
 	run __hbl__Array__static__shift arr
-	assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
+	assert_failure $__hbl__rc__illegal_instruction
 }
 
 #
@@ -201,14 +201,14 @@ teardown() {
 @test '__hbl__Array__static__push() with insufficient arguments fails' {
 	local -a arr=()
 	run __hbl__Array__static__push
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Array__static__push() without a value fails' {
 	local -a arr=()
 	run __hbl__Array__static__push arr
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 }
 
 #
@@ -244,14 +244,14 @@ teardown() {
 
 @test '__hbl__Array__static__pop() with insufficient arguments fails' {
 	run __hbl__Array__static__pop
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Array__static__pop() with an empty array fails' {
 	local -a arr=()
 	run __hbl__Array__static__pop arr
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -280,7 +280,7 @@ teardown() {
 
 @test '__hbl__Array__static__sort() with insufficient arguments fails' {
 	run __hbl__Array__static__sort
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -297,13 +297,13 @@ teardown() {
 @test '__hbl__Array__static__contains() for a missing value fails' {
 	local -a arr=(one two three)
 	run __hbl__Array__static__contains arr 'four'
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Array__static__congtains() with insufficient arguments fails' {
 	run __hbl__Array__static__contains
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 

@@ -19,19 +19,19 @@ teardown() {
 
 @test '__hbl__Util__static__is_defined() with insufficient arguments fails' {
 	run __hbl__Util__static__is_defined
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_defined() with an undefined variable fails' {
 	run __hbl__Util__static__is_defined undefined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__ubl__Util__static__is_defined() with an empty variable name fails' {
 	run __hbl__Util__static__is_defined ''
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -47,26 +47,26 @@ teardown() {
 
 @test '__hbl__Util__static__is_function() with insufficient arguments fails' {
 	run __hbl__Util__static__is_function
-	assert_failure $HBL_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_function() with an undefined variable fails' {
 	run __hbl__Util__static__is_function undefined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_function() with a non-function variable fails' {
 	local defined
 	run __hbl__Util__static__is_function defined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_function() with an empty variable fails' {
 	run __hbl__Util__static__is_function ''
-	assert_failure $HBL_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -82,38 +82,38 @@ teardown() {
 
 @test '__hbl__Util__static__is_associative_array() with an undefined variable fails' {
 	run __hbl__Util__static__is_associative_array undefined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 
 	# Try again forcing BASH4 compatability
 	FORCE_BASH4=1 run __hbl__Util__static__is_associative_array undefined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_associative_array() with a normal variable fails' {
 	declare defined
 	run __hbl__Util__static__is_associative_array defined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_associative_array() with a normal array fails' {
 	declare -a defined
 	run __hbl__Util__static__is_associative_array defined
-	assert_failure $HBL_ERROR
+	assert_failure $__hbl__rc__error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_associative_array() with insufficent arguments fails' {
 	run __hbl__Util__static__is_associative_array
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Util__static__is_associative_array() with an empty variable fails' {
 	run __hbl__Util__static__is_associative_array ''
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
@@ -140,19 +140,19 @@ teardown() {
 
 @test '__hbl__Util__static__dump_associative_array() with insufficient arguments fails' {
 	run __hbl__Util__static__dump_associative_array
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Util__static__dump_associative_array() with an empty array name fails' {
 	run __hbl__Util__static__dump_associative_array ''
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 
 @test '__hbl__Util__static__dump_associative_array() with a non-array fails' {
 	run __hbl__Util__static__dump_associative_array undefined
-	assert_failure $HBL_ERR_ARGUMENT
+	assert_failure $__hbl__rc__argument_error
 	refute_output
 }
 

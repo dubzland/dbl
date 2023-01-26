@@ -14,15 +14,15 @@
 #@test 'hbl__command__usage__description() validates its arguments' {
 #	# insufficient arguments
 #	run hbl__command__usage__description
-#	assert_failure $HBL_ERR_INVOCATION
+#	assert_failure $__hbl__rc__argument_error
 
 #	# too many arguments
 #	run hbl__command__usage__description '__test_command' 'extra'
-#	assert_failure $HBL_ERR_INVOCATION
+#	assert_failure $__hbl__rc__argument_error
 
 #	# empty command id
 #	run hbl__command__usage__description ''
-#	assert_failure $HBL_ERR_ARGUMENT
+#	assert_failure $__hbl__rc__argument_error
 
 #	# invalid command
 #	function hbl__command__ensure_command() { return 1; }
@@ -69,15 +69,15 @@
 #@test 'hbl__command__usage__examples() validates its arguments' {
 #	# insufficient arguments
 #	run hbl__command__usage__examples
-#	assert_failure $HBL_ERR_INVOCATION
+#	assert_failure $__hbl__rc__argument_error
 
 #	# too many arguments
 #	run hbl__command__usage__examples '__test_command' 'extra'
-#	assert_failure $HBL_ERR_INVOCATION
+#	assert_failure $__hbl__rc__argument_error
 
 #	# empty command id
 #	run hbl__command__usage__examples ''
-#	assert_failure $HBL_ERR_ARGUMENT
+#	assert_failure $__hbl__rc__argument_error
 
 #	# invalid command
 #	function hbl__command__ensure_command() { return 1; }
@@ -132,15 +132,15 @@
 #@test 'hbl__command__usage__subcommands() validates its arguments' {
 #	# insufficient arguments
 #	run hbl__command__usage__subcommands
-#	assert_failure $HBL_ERR_INVOCATION
+#	assert_failure $__hbl__rc__argument_error
 
 #	# too many arguments
 #	run hbl__command__usage__subcommands '__test_command' 'extra'
-#	assert_failure $HBL_ERR_INVOCATION
+#	assert_failure $__hbl__rc__argument_error
 
 #	# empty command id
 #	run hbl__command__usage__subcommands ''
-#	assert_failure $HBL_ERR_ARGUMENT
+#	assert_failure $__hbl__rc__argument_error
 
 #	# invalid command
 #	function hbl__command__ensure_command() { return 1; }

@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+function __hbl__Error__static__argument_error() {
+	return $__hbl__rc__argument_error
+}
+
+function __hbl__Error__static__undefined_method_error() {
+	return $__hbl__rc__undefined_method
+}
+
+function __hbl__Error__static__illegal_instruction_error() {
+	return $__hbl__rc__illegal_instruction
+}
+
 # function Error__static__invocation() {
 # 	[[ $# -ge 1 ]] || exit 99
 

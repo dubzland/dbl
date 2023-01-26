@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 function __hbl__Command__init() {
-	[[ $# -eq 3 && -n "$2" && -n "$3" ]]  || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$2" && -n "$3" ]]  || $Error.argument || return
 
 	local -n this="$1"
 	local examples options subcommands
 
-	$this.super
+	$this.super || return
 
 	this[name]="$2"
 	this[entrypoint]="$3"
@@ -20,7 +20,7 @@ function __hbl__Command__init() {
 	__hbl__Object__assign_reference "$1" options "$options"
 	__hbl__Object__assign_reference "$1" subcommands "$subcommands"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Command__add_example() {
@@ -28,7 +28,7 @@ function __hbl__Command__add_example() {
 
 	$this.examples.push "$2"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Command__add_option() {
@@ -37,11 +37,9 @@ function __hbl__Command__add_option() {
 	opt="$2"
 
 	$opt.assign_reference command "$this" || return
-	$opt.get_name opt_name
+	$opt.get_name opt_name                || return
 
 	$this.options.set "$opt_name" "$opt"
-
-	return $HBL_SUCCESS
 }
 
 function __hbl__Command__add_subcommand() {
@@ -49,6 +47,4 @@ function __hbl__Command__add_subcommand() {
 	local sub subcommands
 
 	$this.subcommands.push "$2"
-
-	return $HBL_SUCCESS
 }

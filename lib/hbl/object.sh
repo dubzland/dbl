@@ -32,7 +32,8 @@ function dump_array_() {
 }
 
 function __hbl__Object__get_method_() {
-	[[ $# -eq 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
+		$Error.argument || return
 	local dobj dmeth
 	dobj="$1" dmeth="$2"
 	local -n dcls__ref="$3" dfunc__ref="$4"
@@ -43,32 +44,33 @@ function __hbl__Object__get_method_() {
 		if [[ -v dmethods__ref[$dmeth] ]]; then
 			dcls__ref="${dobj__ref[__class__]}"
 			dfunc__ref="${dmethods__ref[$dmeth]}"
-			return $HBL_SUCCESS
+			return 0
 		fi
 	fi
 
 	__hbl__Class__get_prototype_method_ "${dobj__ref[__class__]}" "$dmeth" \
 		"${!dcls__ref}" "${!dfunc__ref}" || return
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Object__dispatch_function_() {
-	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] || return $HBL_ERR_ARGUMENT
-	local dcls dfunc dobj
+	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
+		$Error.argument || return
+	local dcls dfunc dobj rc
 	dsel="$1" dcls="$2" dfunc="$3" dobj="$4"; shift 4
 
 	# push to the stack
 	__hbl__stack+=("$dobj $dsel $dcls $dfunc")
-	rc=$HBL_SUCCESS
+	rc=0
 	"$dfunc" "$dobj" "$@" || rc=$?
 	unset __hbl__stack[-1]
 	return $rc
 }
 
 function __hbl__Object__dispatch_() {
-	[[ $# -ge 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
-	[[ "$2" =~ ^\. ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -ge 2 && -n "$1" && -n "$2" && "$2" =~ ^\. ]] ||
+		$Error.argument || return
 	local dobj dsel dcls dfunc dsuper head tail
 	local -a dargs
 	dobj="$1" dsel="${2#\.}" dcls='' dfunc='' dargs=()
@@ -81,11 +83,11 @@ function __hbl__Object__dispatch_() {
 	if [[ "$head" = 'super' ]]; then
 		[[ ${#__hbl__stack[@]} -gt 0 ]] || {
 			printf "no previous function call to execute super.\n";
-			return $HBL_ERR_ILLEGAL_INSTRUCTION;
+			$Error.illegal_instruction || return
 		}
 		[[ -z "$tail" ]] || {
 			printf "super cannot be chained\n";
-			return $HBL_ERR_ILLEGAL_INSTRUCTION;
+			$Error.illegal_instruction || return
 		}
 		local -a stack_head=(${__hbl__stack[-1]})
 		if [[ "$dobj" = "${stack_head[0]}" && "${FUNCNAME[1]}" = "${stack_head[3]}" ]]; then
@@ -95,7 +97,7 @@ function __hbl__Object__dispatch_() {
 				"${stack_head[1]}" dcls dfunc || return
 		else
 			printf "bad\n"
-			return $HBL_ILLEGAL_INSTRUCTION
+			$Error.illegal_instruction || return
 		fi
 	elif [[ "$head" = 'class' ]]; then
 		return 0
@@ -104,7 +106,7 @@ function __hbl__Object__dispatch_() {
 	fi
 
 	if [[ -n "$dfunc" ]]; then
-		rc=$HBL_SUCCESS
+		rc=0
 		__hbl__Object__dispatch_function_ "$head" "$dcls" "$dfunc" "$dobj" "${dargs[@]}" || rc=$?
 		return $rc
 	fi
@@ -115,7 +117,7 @@ function __hbl__Object__dispatch_() {
 		# call the function
 		${dfunc} "$@"
 	else
-		return $HBL_ERR_UNDEFINED_METHOD
+		$Error.undefined_method || return
 	fi
 }
 
@@ -130,7 +132,7 @@ function __hbl__Object__inspect() {
 }
 
 function __hbl__Object__get_methods() {
-	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 	local mobj mcls meth emeth
 	mobj="$1" mcls="$1" meth=""
 	local -n meths__ref="$2"
@@ -165,7 +167,7 @@ function __hbl__Object__get_methods() {
 		mcls=""
 	done
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Object__add_method() {
@@ -176,11 +178,11 @@ function __hbl__Object__add_method() {
 
 	omethods__ref[$2]="$3"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Object__add_getter() {
-	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local attr="$2"
 	local -n this="$1"
@@ -197,7 +199,7 @@ function __hbl__Object__add_getter() {
 }
 
 function __hbl__Object__add_setter() {
-	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local -n this="$1"
 	local attr="$2"
@@ -214,7 +216,7 @@ function __hbl__Object__add_setter() {
 }
 
 function __hbl__Object__add_reference() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local ref="$2"
 	local -n this="$1"
@@ -230,7 +232,8 @@ function __hbl__Object__add_reference() {
 }
 
 function __hbl__Object__read_attribute() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
+		$Error.argument || return
 
 	local -n obj__ref="$1"
 
@@ -238,21 +241,21 @@ function __hbl__Object__read_attribute() {
 
 	ret__ref="${obj__ref[$2]}"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Object__write_attribute() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
 
 	local -n this="$1"
 
 	this[$2]="$3"
 
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Object__assign_reference() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
 
 	local -n this="$1"
 
@@ -267,7 +270,7 @@ function __hbl__Object__assign_reference() {
 }
 
 function __hbl__Object__delegate_to_reference() {
-	[[ $# -ge 3 && -n "$1" && -n "$2" && -n "$3" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -ge 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
 
 	# TODO: Add some sanity checking
 	local -n this="$1"
@@ -281,11 +284,11 @@ function __hbl__Object__get_id_() {
 }
 
 function __hbl__Object__init() {
-	return $HBL_SUCCESS
+	return 0
 }
 
 function __hbl__Object__new_() {
-	[[ $# -eq 1 && -n "$1" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
 	local -n obj__ref="$1"
 
@@ -298,11 +301,13 @@ function __hbl__Object__new_() {
 	obj_methods__ref=()
 	__hbl__object__id=$((__hbl__object__id+1))
 
-	return $HBL_SUCCESS
+	__hbl__objects+=("${!obj__ref}")
+
+	return 0
 }
 
 function __hbl__Object__new() {
-	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || return $HBL_ERR_ARGUMENT
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
 	local cls
 	cls="$1"
@@ -313,5 +318,5 @@ function __hbl__Object__new() {
 	declare -Ag "$id__ref"
 	__hbl__Object__new_ "$id__ref" || return
 
-	return $HBL_SUCCESS
+	return 0
 }
