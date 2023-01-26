@@ -63,7 +63,7 @@ function trace_key() {
 
 	printf -v hash "%s:%s:%s" "$file" "$line" "$cmd"
 
-	if [[ -v trace_key_cache[${hash}] ]]; then
+	if [[ -v trace_key_cache['$hash'] ]]; then
 		key_var__ref="${trace_key_cache[$hash]}"
 	fi
 
