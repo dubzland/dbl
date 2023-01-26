@@ -59,8 +59,8 @@ function __hbl__Object__dispatch_function_() {
 	dsel="$1" dcls="$2" dfunc="$3" dobj="$4"; shift 4
 
 	# push to the stack
-	__hbl__stack+=("$dsel $dcls $dfunc $dobj")
-	rc=0
+	__hbl__stack+=("$dobj $dsel $dcls $dfunc")
+	rc=$HBL_SUCCESS
 	"$dfunc" "$dobj" "$@" || rc=$?
 	unset __hbl__stack[-1]
 	return $rc
@@ -88,11 +88,11 @@ function __hbl__Object__dispatch_() {
 			return $HBL_ERR_ILLEGAL_INSTRUCTION;
 		}
 		local -a stack_head=(${__hbl__stack[-1]})
-		if [[ "$dobj" = "${stack_head[3]}" && "${FUNCNAME[1]}" = "${stack_head[2]}" ]]; then
+		if [[ "$dobj" = "${stack_head[0]}" && "${FUNCNAME[1]}" = "${stack_head[3]}" ]]; then
 			# look for a prototype method for the parent class
-			local -n dobj__ref="$dobj"
-			__hbl__Class__get_prototype_method_ "${dobj__ref[__class__]}" \
-				"${stack_head[0]}" dcls dfunc 1 || return
+			local -n dcls__ref="${stack_head[2]}"
+			__hbl__Class__get_prototype_method_ "${dcls__ref[__superclass__]}" \
+				"${stack_head[1]}" dcls dfunc || return
 		else
 			printf "bad\n"
 			return $HBL_ILLEGAL_INSTRUCTION

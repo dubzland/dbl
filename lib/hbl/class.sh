@@ -63,13 +63,6 @@ function __hbl__Class__get_prototype_method_() {
 	mcls="$1" meth="$2"
 	local -n mcls__ref="$3" mfunc__ref="$4"
 
-	if [[ $# -gt 4 ]]; then
-		for ((i=0; i < $5; i++)); do
-			local -n pcls__ref="$mcls"
-			mcls="${pcls__ref[__superclass__]}"
-		done
-	fi
-
 	while [[ -n "$mcls" ]]; do
 		local -n pcls__ref="$mcls"
 		if [[ -v pcls__ref[__prototype__] ]]; then
