@@ -1,5 +1,31 @@
 #!/usr/bin/env bash
 
+function __hbl__Class__resolve_method_() {
+	local mcls
+	local -n _disp="__hbl__dispatcher"
+
+	mcls="${_disp[obj]}"
+	while [[ -n "$mcls" ]]; do
+		local -n mcls__ref="$mcls"
+		if [[ -v mcls__ref[__static_methods__] ]]; then
+			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
+			if [[ -v cmethods__ref[${_disp[head]}] ]]; then
+				_disp[func]="${cmethods__ref[${_disp[head]}]}"
+				_disp[resolved]=1
+				break
+			fi
+		fi
+
+		if [[ -v mcls__ref[__superclass__] && "${mcls__ref[__superclass__]}" != "$mcls" ]]; then
+			mcls="${mcls__ref[__superclass__]}"
+			continue
+		fi
+		mcls=""
+	done
+
+	return 0
+}
+
 function __hbl__Class__static__define() {
 	local name
 	name="$1"
@@ -26,63 +52,6 @@ function __hbl__Class__static__define() {
 			cls__ref[__references__]="${classdef__ref[references]}"
 		fi
 	fi
-
-	return 0
-}
-
-function __hbl__Class__get_method_() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
-	local mcls meth
-	mcls="$1" meth="$2"
-	local -n mfunc__ref="$3"
-
-	while [[ -n "$mcls" ]]; do
-		local -n mcls__ref="$mcls"
-		if [[ -v mcls__ref[__static_methods__] ]]; then
-			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
-			if [[ -v cmethods__ref[$meth] ]]; then
-				mfunc__ref="${cmethods__ref[$meth]}"
-				return 0
-			fi
-		fi
-
-		if [[ -v mcls__ref[__superclass__] && "${mcls__ref[__superclass__]}" != "$mcls" ]]; then
-			mcls="${mcls__ref[__superclass__]}"
-			continue
-		fi
-		mcls=""
-	done
-
-	return 1
-}
-
-function __hbl__Class__get_prototype_method_() {
-	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
-		$Error.argument || return
-
-	local mcls meth i
-	mcls="$1" meth="$2"
-	local -n mcls__ref="$3" mfunc__ref="$4"
-
-	while [[ -n "$mcls" ]]; do
-		local -n pcls__ref="$mcls"
-		if [[ -v pcls__ref[__prototype__] ]]; then
-			local -n cproto__ref="${pcls__ref[__prototype__]}"
-			if [[ -v cproto__ref[__methods__] ]]; then
-				local -n pmethods__ref="${cproto__ref[__methods__]}"
-				if [[ -v pmethods__ref[$meth] ]]; then
-					mcls__ref="$mcls"
-					mfunc__ref="${pmethods__ref[$meth]}"
-					return 0
-				fi
-			fi
-		fi
-		if [[ -n pcls__ref[__superclass__] && "${pcls__ref[__superclass__]}" != "$mcls" ]]; then
-			mcls="${pcls__ref[__superclass__]}"
-			continue
-		fi
-		mcls=""
-	done
 
 	return 0
 }

@@ -1,6 +1,7 @@
 ##!/usr/bin/env bash
 
 function __hbl__Dict__init() {
+	$Error.argument
 	[[ $# -eq 1 ]] || $Error.argument || return
 	local -n this="$1"
 	$this.super || return

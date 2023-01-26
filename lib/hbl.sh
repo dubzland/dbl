@@ -24,6 +24,8 @@ declare -igr __hbl__attr__both=3
 
 declare -g __hbl__object__id=0
 
+declare -Ag __hbl__dispatcher=()
+
 declare -ag __hbl__objects=()
 
 declare -ag __hbl__stack=()
@@ -83,7 +85,6 @@ unset __hbl__Class__classdef
 declare -Agr __hbl__Object__prototype__methods=(
 	[__init]=__hbl__Object__init
 	[inspect]=__hbl__Object__inspect
-	[methods]=__hbl__Object__get_methods
 	[method]=__hbl__Object__add_method
 	[read_attribute]=__hbl__Object__read_attribute
 	[write_attribute]=__hbl__Object__write_attribute
@@ -160,6 +161,7 @@ declare -Agr __hbl__Util__static_methods=(
 	[is_function]=__hbl__Util__static__is_function
 	[is_associative_array]=__hbl__Util__static__is_associative_array
 	[dump_associative_array]=__hbl__Util__static__dump_associative_array
+	[dump_object]=__hbl__Util__static__dump_object
 )
 
 declare -A __hbl__Util__classdef=(
@@ -284,6 +286,40 @@ declare -A __hbl__Dict__classdef=(
 __hbl__Class__extend Object Dict __hbl__Dict__classdef || exit
 
 unset __hbl__Dict__classdef
+
+function __hbl__dump_object_() {
+	local -n this="$1"
+	printf "=== %s ===\n" "$1"
+	for key in "${!this[@]}"; do
+		printf "%-20s %s\n" "${key}:" "${this[$key]}"
+	done
+}
+
+function __hbl__dump_entry_() {
+	printf "*** %s ***\n" "${FUNCNAME[1]}"
+	printf "args: %s\n" "${@}"
+	printf "**********\n"
+}
+
+function __hbl__dump_stack_() {
+	printf "\n* * * * * S T A C K * * * * *\n"
+	for item in "${__hbl__stack[@]}"; do
+		printf "%s\n" "$item"
+	done
+	printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
+}
+
+function __hbl__dump_array_() {
+	local item
+	local -n this="$1"
+
+	printf "\n* * * * * %s * * * * *\n" "$1"
+	for item in "${this[@]}"; do
+		printf "%s\n" "$item"
+	done
+
+	printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
+}
 
 declare -g __hbl__imported
 __hbl__imported=1
