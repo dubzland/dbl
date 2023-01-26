@@ -34,7 +34,7 @@ function dump_array_() {
 function __hbl__Object__get_prototype_method_() {
 	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
 		return $HBL_ERR_ARGUMENT
-	local mcls meth
+	local mcls meth i
 	mcls="$1" meth="$2"
 	local -n mcls__ref="$3" mfunc__ref="$4"
 
@@ -291,7 +291,13 @@ function __hbl__Object__assign_reference() {
 
 	local -n this="$1"
 
-	this[__ref_$2]="$3"
+	if [[ "$3" =~ ^__hbl__Object__dispatch_ ]]; then
+		local obj_id
+		$3._get_id_ obj_id
+		this[__ref_$2]="$obj_id"
+	else
+		this[__ref_$2]="$3"
+	fi
 
 }
 
@@ -301,6 +307,12 @@ function __hbl__Object__delegate_to_reference() {
 	# TODO: Add some sanity checking
 	local -n this="$1"
 	__hbl__Object__dispatch_ "${this[__ref_$2]}" "$3" "${@:4}"
+}
+
+function __hbl__Object__get_id_() {
+	local -n this="$1"
+	local -n val__ref="$2"
+	val__ref="${this[__id__]}"
 }
 
 function __hbl__Object__init() {
@@ -313,7 +325,7 @@ function __hbl__Object__new_() {
 	local -n obj__ref="$1"
 
 	obj__ref[0]="__hbl__Object__dispatch_ $1 "
-	obj__ref[__id__]=${__hbl__object__id}
+	obj__ref[__id__]=$1
 	obj__ref[__methods__]="${1}__methods"
 
 	declare -Ag "${obj__ref[__methods__]}"

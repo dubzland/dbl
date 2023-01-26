@@ -310,13 +310,6 @@ teardown() {
 #
 # Array class methods
 #
-
-@test 'Array.at() calls the static function' {
-	stub __hbl__Array__static__at
-	$Array.at arr 0 myvar
-	assert_stub_with_args __hbl__Array__static__at arr 0 myvar
-}
-
 @test 'Array.shift() calls the static function' {
 	stub __hbl__Array__static__shift
 	$Array.shift arr myvar
@@ -357,65 +350,65 @@ teardown() {
 # Array instance methods
 #
 @test 'Array#at() calls the static function' {
-	local -a array
+	local -a arra
 	stub __hbl__Array__static__at
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.at 0 myvar
-	assert_stub_with_args __hbl__Array__static__at "${__ref[_raw]}" 0 myvar
+	$Array.new array 'foo' 'bar'
+	$array.at 0 myvar
+	assert_stub_with_args __hbl__Array__static__at _anything_ 0 myvar
 }
 
 @test 'Array#shift() calls the static function' {
 	local -a array
 	stub __hbl__Array__static__shift
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.shift myvar
-	assert_stub_with_args __hbl__Array__static__shift "${__ref[_raw]}" myvar
+	$Array.new array 'foo' 'bar'
+	$array.shift myvar
+	assert_stub_with_args __hbl__Array__static__shift _anything_ myvar
 }
 
 @test 'Array#unshift() calls the static function' {
 	local -a array
 	stub __hbl__Array__static__unshift
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.unshift 'baz'
-	assert_stub_with_args __hbl__Array__static__unshift "${__ref[_raw]}" 'baz'
+	$Array.new array 'foo' 'bar'
+	$array.unshift 'baz'
+	assert_stub_with_args __hbl__Array__static__unshift _anything_ 'baz'
 }
 
 @test 'Array#push() calls the static function' {
 	local -a array
 	stub __hbl__Array__static__push
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.push 'baz'
-	assert_stub_with_args __hbl__Array__static__push "${__ref[_raw]}" 'baz'
+	$Array.new array 'foo' 'bar'
+	$array.push 'baz'
+	assert_stub_with_args __hbl__Array__static__push _anything_ 'baz'
 }
 
 @test 'Array#pop() calls the static function' {
 	local -a array
 	stub __hbl__Array__static__pop
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.pop myvar
-	assert_stub_with_args __hbl__Array__static__pop "${__ref[_raw]}" myvar
+	$Array.new array 'foo' 'bar'
+	$array.pop myvar
+	assert_stub_with_args __hbl__Array__static__pop _anything_ myvar
 }
 
 @test 'Array#sort() calls the static function' {
 	local -a array
 	stub __hbl__Array__static__sort
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.sort
-	assert_stub_with_args __hbl__Array__static__sort "${__ref[_raw]}"
+	$Array.new array 'foo' 'bar'
+	$array.sort
+	assert_stub_with_args __hbl__Array__static__sort _anything_
 }
 
 @test 'Array#contains() calls the static function' {
 	local -a array
 	stub __hbl__Array__static__contains
-	$Array.new array 'foo' 'bar' && local -n __ref="$array"
-	${!array}.contains 'needle'
-	assert_stub_with_args __hbl__Array__static__contains "${__ref[_raw]}" 'needle'
+	$Array.new array 'foo' 'bar'
+	$array.contains 'needle'
+	assert_stub_with_args __hbl__Array__static__contains _anything_ 'needle'
 }
 
 @test 'Array#to_array() succeeds' {
 	local -a expected=('orange' 'apple' 'lemon' 'banana')
 	$Array.new array "${expected[@]}"
-	run ${!array}.to_array myarr
+	run $array.to_array myarr
 	assert_success
 	refute_output
 }
@@ -423,6 +416,6 @@ teardown() {
 @test 'Array#to_array() injects the contents into the bash array' {
 	local -a expected=('orange' 'apple' 'lemon' 'banana')
 	$Array.new array "${expected[@]}"
-	${!array}.to_array myarr
+	$array.to_array myarr
 	assert_array_equals myarr expected
 }

@@ -215,7 +215,8 @@ function __hbl__Class__new() {
 		cls=""
 	done
 
-	id__ref="$obj"
+	# Return the dispatcher
+	id__ref="${!obj}"
 	${!obj}.__init "$@"
 	return $HBL_SUCCESS
 }

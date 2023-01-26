@@ -7,6 +7,7 @@ function __hbl__Command__init() {
 	local examples options subcommands
 
 	$this.super
+
 	this[name]="$2"
 	this[entrypoint]="$3"
 	this[description]=""
@@ -35,8 +36,8 @@ function __hbl__Command__add_option() {
 	local opt opt_name options
 	opt="$2"
 
-	${!opt}._set_reference command "$this"
-	${!opt}.get_name opt_name
+	$opt._set_reference command "$this"
+	$opt.get_name opt_name
 
 	$this.options.set "$opt_name" "$opt"
 

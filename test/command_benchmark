@@ -16,16 +16,16 @@ function build_simple_command() {
 
 	$Command.new _cmd 'backup-client' backup_client_run
 
-	${!_cmd}.set_description 'Manage backup jobs.'
-	${!_cmd}.add_example     '-d /etc/jobs.d <options>'
+	$_cmd.set_description 'Manage backup jobs.'
+	$_cmd.add_example     '-d /etc/jobs.d <options>'
 
 	$Option.new opt 'job_directory'
-	${!opt}.set_type        'dir'
-	${!opt}.set_short_flag  'd'
-	${!opt}.set_long_flag   'job_directory'
-	${!opt}.set_description 'Backup job directory.'
+	$opt.set_type        'dir'
+	$opt.set_short_flag  'd'
+	$opt.set_long_flag   'job_directory'
+	$opt.set_description 'Backup job directory.'
 
-	${!_cmd}.add_option "$opt"
+	$_cmd.add_option "$opt"
 }
 
 declare -A command_samples
@@ -35,6 +35,7 @@ command_samples=(
 )
 
 function run_sample() {
+	local i
 	_msg ">>> %s <<<\n" "$1"
 	for (( i=0; i<$2; i++)); do
 		if ! ${command_samples[$1]}; then
