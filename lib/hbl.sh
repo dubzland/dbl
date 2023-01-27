@@ -94,6 +94,7 @@ declare -Agr __hbl__Object__prototype__methods=(
 	[assign_reference]=__hbl__Object__assign_reference
 	[delegate_to_reference]=__hbl__Object__delegate_to_reference
 	[_get_id_]=__hbl__Object__get_id_
+	[_get_class_]=__hbl__Object__get_class_
 )
 
 declare -Agr __hbl__Object__prototype=(

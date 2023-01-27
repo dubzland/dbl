@@ -6,87 +6,16 @@ function __hbl__Object__get_id_() {
 	val__ref="${this[__id__]}"
 }
 
-function __hbl__Object__resolve_method_() {
-	local lcls lfunc
-	local -a stack
-	local -n _disp="__hbl__dispatcher"
-	local -n dobj__ref="${_disp[obj]}"
-
-	_disp[head]="${_disp[sel]#\.}"
-	_disp[head]="${_disp[head]%%.*}"
-	_disp[tail]="${_disp[sel]#\.}"
-	_disp[tail]="${_disp[tail]#${_disp[head]}}"
-	_disp[cls]="${dobj__ref[__class__]}"
-
-	case "${_disp[head]}" in
-		super)
-			[[ ${#__hbl__stack[@]} -gt 0 ]] || {
-				printf "no previous function call to execute super.\n";
-				$Error.illegal_instruction || return
-			}
-			[[ -z "${_disp[tail]}" ]] || {
-				printf "super cannot be chained\n";
-				$Error.illegal_instruction || return
-			}
-
-			stack=(${__hbl__stack[-1]})
-
-			[[ "${_disp[obj]}" = "${stack[0]}" ]] || return
-			[[ "${FUNCNAME[2]}" = "${stack[3]}" ]] || return
-
-			# We're still in the last function we called.
-			# Grab a reference to the last class we dispatched to and move
-			# to its superclass.
-			local -n dcls__ref="${stack[2]}"
-
-			_disp[cls]="${dcls__ref[__superclass__]}"
-			_disp[head]="${stack[1]}"
-			;;
-		class)
-			;;
-		*)
-			if [[ -v dobj__ref[__methods__] ]]; then
-				local -n dmethods__ref="${dobj__ref[__methods__]}"
-				if [[ -v dmethods__ref[${_disp[head]}] ]]; then
-					_disp[cls]="${dobj__ref[__class__]}"
-					_disp[func]="${dmethods__ref[${_disp[head]}]}"
-					_disp[resolved]=1
-				fi
-			fi
-			;;
-	esac
-
-	if [[ ${_disp[resolved]} -ne 1 ]]; then
-		lcls="${_disp[cls]}"
-		while [[ -n "$lcls" ]]; do
-			local -n pcls__ref="$lcls"
-			if [[ -v pcls__ref[__prototype__] ]]; then
-				local -n cproto__ref="${pcls__ref[__prototype__]}"
-				if [[ -v cproto__ref[__methods__] ]]; then
-					local -n pmethods__ref="${cproto__ref[__methods__]}"
-					if [[ -v pmethods__ref[${_disp[head]}] ]]; then
-						_disp[cls]="${lcls}"
-						_disp[func]="${pmethods__ref[${_disp[head]}]}"
-						_disp[resolved]=1
-						break
-					fi
-				fi
-			fi
-			if [[ -n pcls__ref[__superclass__] && "${pcls__ref[__superclass__]}" != "$lcls" ]]; then
-				lcls="${pcls__ref[__superclass__]}"
-				continue
-			fi
-			lcls=""
-		done
-	fi
-
-	return 0
+function __hbl__Object__get_class_() {
+	[[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+	local -n this="$1" val__ref="$2"
+	val__ref="${this[__class__]}"
 }
 
 function __hbl__Object__dispatch_function_() {
 	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
 		$Error.argument || return
-	local dcls dfunc dobj rc
+	local dsel dcls dfunc dobj rc
 	dsel="$1" dcls="$2" dfunc="$3" dobj="$4" rc=0; shift 4
 
 	# push to the stack
@@ -105,34 +34,130 @@ function __hbl__Object__dispatch_() {
 	[[ $# -ge 2 && -n "$1" && -n "$2" && "$2" =~ ^\. ]] ||
 		$Error.argument || return
 
-	local -n _disp="__hbl__dispatcher"
+	local lcls lfunc
+	local -a stack
+	local -A dispatch=()
 
-	_disp[obj]="$1" _disp[sel]="$2" _disp[head]="" _disp[tail]="" _disp[cls]=""
-	_disp[func]="" _disp[resolved]=0
+	dispatch[obj]="$1" dispatch[sel]="$2" dispatch[head]="" dispatch[tail]=""
+	dispatch[cls]="" dispatch[func]="" dispatch[resolved]=0
+	lcls="" lfunc=""
 
 	shift 2
 
-	__hbl__Object__resolve_method_ || return
+	dispatch[head]="${dispatch[sel]#\.}"
+	dispatch[head]="${dispatch[head]%%.*}"
+	dispatch[tail]="${dispatch[sel]#\.}"
+	dispatch[tail]="${dispatch[tail]#${dispatch[head]}}"
 
-	if [[ ${_disp[resolved]} -eq 1 ]]; then
-		if [[ -n "${_disp[tail]}" ]]; then
-			set -- "${_disp[tail]}" "$@"
+	local -n __obj__ref="${dispatch[obj]}"
+	lcls="${__obj__ref[__class__]}"
+	dispatch[cls]="${lcls}"
+
+	if [[ "${dispatch[head]}" = super ]]; then
+		[[ ${#__hbl__stack[@]} -gt 0 ]] || {
+			printf "no previous function call to execute super.\n";
+			$Error.illegal_instruction || return
+		}
+		[[ -z "${dispatch[tail]}" ]] || {
+			printf "super cannot be chained\n";
+			$Error.illegal_instruction || return
+		}
+
+		stack=(${__hbl__stack[-1]})
+
+		[[ "${dispatch[obj]}" = "${stack[0]}" ]] || return
+		[[ "${FUNCNAME[1]}" = "${stack[3]}" ]] || return
+
+		# We're still in the last function we called.
+		# Grab a reference to the last class we dispatched to and move
+		# to its superclass.
+		local -n scls__ref="${stack[2]}"
+
+		dispatch[cls]="${scls__ref[__superclass__]}"
+		dispatch[head]="${stack[1]}"
+	else
+		if [[ "${dispatch[head]}" = class ]]; then
+			# set the object to this object's class
+			dispatch[obj]="${dispatch[cls]}"
+			local -n ccls__ref="${dispatch[obj]}"
+			dispatch[cls]="${ccls__ref[__class__]}"
+			dispatch[head]="${dispatch[tail]#\.}"
+			dispatch[tail]="${dispatch[head]}"
+			dispatch[head]="${dispatch[head]%%.*}"
+			dispatch[tail]="${dispatch[tail]#${dispatch[head]}}"
+		fi
+
+		local -n dobj__ref="${dispatch[obj]}"
+		if [[ -v dobj__ref[__methods__] ]]; then
+			local -n dmethods__ref="${dobj__ref[__methods__]}"
+			if [[ -v dmethods__ref[${dispatch[head]}] ]]; then
+				dispatch[func]="${dmethods__ref[${dispatch[head]}]}"
+				dispatch[resolved]=1
+			fi
+		fi
+	fi
+
+	if [[ ${dispatch[resolved]} -ne 1 ]]; then
+		lcls="${dispatch[cls]}"
+		while [[ -n "$lcls" ]]; do
+			local -n pcls__ref="$lcls"
+			if [[ -v pcls__ref[__prototype__] ]]; then
+				local -n cproto__ref="${pcls__ref[__prototype__]}"
+				if [[ -v cproto__ref[__methods__] ]]; then
+					local -n pmethods__ref="${cproto__ref[__methods__]}"
+					if [[ -v pmethods__ref[${dispatch[head]}] ]]; then
+						dispatch[cls]="${lcls}"
+						dispatch[func]="${pmethods__ref[${dispatch[head]}]}"
+						dispatch[resolved]=1
+						break
+					fi
+				fi
+			fi
+			if [[ -n pcls__ref[__superclass__] &&
+				"${pcls__ref[__superclass__]}" != "$lcls" ]]; then
+				lcls="${pcls__ref[__superclass__]}"
+				continue
+			fi
+			lcls=""
+		done
+	fi
+
+	if [[ ${dispatch[resolved]} -eq 1 ]]; then
+		if [[ -n "${dispatch[tail]}" ]]; then
+			set -- "${dispatch[tail]}" "$@"
 		fi
 		__hbl__Object__dispatch_function_ \
-			"${_disp[head]}" \
-			"${_disp[cls]}" \
-			"${_disp[func]}" \
-			"${_disp[obj]}" \
+			"${dispatch[head]}" \
+			"${dispatch[cls]}" \
+			"${dispatch[func]}" \
+			"${dispatch[obj]}" \
 			"$@"
 		return
 	fi
 
-	__hbl__Class__resolve_method_ || return
+	lcls="${dispatch[obj]}"
+	while [[ -n "$lcls" ]]; do
+		local -n mcls__ref="$lcls"
+		if [[ -v mcls__ref[__static_methods__] ]]; then
+			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
+			if [[ -v cmethods__ref[${dispatch[head]}] ]]; then
+				dispatch[func]="${cmethods__ref[${dispatch[head]}]}"
+				dispatch[resolved]=1
+				break
+			fi
+		fi
 
+		if [[ -v mcls__ref[__superclass__] &&
+			"${mcls__ref[__superclass__]}" != "$lcls" ]]; then
+			lcls="${mcls__ref[__superclass__]}"
+			continue
+		fi
+		lcls=""
+	done
 
-	if [[ ${_disp[resolved]} -eq 1 ]]; then
+	if [[ ${dispatch[resolved]} -eq 1 ]]; then
 		# call the function
-		${_disp[func]} "$@"
+		${dispatch[func]} "$@"
 		return
 	fi
 

@@ -1,31 +1,5 @@
 #!/usr/bin/env bash
 
-function __hbl__Class__resolve_method_() {
-	local mcls
-	local -n _disp="__hbl__dispatcher"
-
-	mcls="${_disp[obj]}"
-	while [[ -n "$mcls" ]]; do
-		local -n mcls__ref="$mcls"
-		if [[ -v mcls__ref[__static_methods__] ]]; then
-			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
-			if [[ -v cmethods__ref[${_disp[head]}] ]]; then
-				_disp[func]="${cmethods__ref[${_disp[head]}]}"
-				_disp[resolved]=1
-				break
-			fi
-		fi
-
-		if [[ -v mcls__ref[__superclass__] && "${mcls__ref[__superclass__]}" != "$mcls" ]]; then
-			mcls="${mcls__ref[__superclass__]}"
-			continue
-		fi
-		mcls=""
-	done
-
-	return 0
-}
-
 function __hbl__Class__static__define() {
 	local name
 	name="$1"
@@ -232,5 +206,5 @@ function __hbl__Class__extend() {
 function __hbl__Class__inspect() {
 	local -n this="$1"
 
-	printf "<%s:%s>\n" "$1" "${this[__id__]}"
+	printf "<Class:%s>\n" "${this[__id__]}"
 }
