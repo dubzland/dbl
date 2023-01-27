@@ -12,6 +12,14 @@ function __hbl__Object__get_class_() {
 	val__ref="${this[__class__]}"
 }
 
+function __hbl__Object__delegate_to_reference_() {
+	[[ $# -ge 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
+
+	# TODO: Add some sanity checking
+	local -n this="$1"
+	__hbl__Object__dispatch_ "${this[__ref_$2]}" "$3" "${@:4}"
+}
+
 function __hbl__Object__push_frame_() {
 	[[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
 
@@ -46,18 +54,71 @@ function __hbl__Object__dispatch_() {
 	[[ $# -ge 2 && -n "$1" && -n "$2" && "$2" =~ ^\. ]] ||
 		$Error.argument || return
 
-	local selector lcls lfunc
+	###########################################################################
+	#
+	# This is where we process all methods called on "objects" within the
+	# system.  As an example, imagine we have the following Classes:
+	#
+	#   class Person
+	#     attributes
+	#       first_name
+	#       last_name
+	#     methods
+	#       say_hello
+	#     static_methods
+	#       person_count
+	#
+	#   class Student
+	#     references
+	#       grades
+	#     methods
+	#       say_hello
+	#
+	# If we have a student john, we can expect the following method calls
+	# and their resultant arguments to this function:
+	#
+	# $john.get_first_name first_name
+	#
+	#   $1: __hbl__Student_982
+	#   $2: .get_first_name
+	#   $3 first_name
+	#
+	# $john.grades.push 100
+	#
+	#   $1: __hbl__Student_982
+	#   $2: .grades.push
+	#   $3: 100
+	#
+	# $john.say_hello
+	#
+	#   $1: __hbl__Student_982
+	#   $2: .grades.push
+	#   $3: 100
+	#
+	# stored in a variable named `car`.
+	#
+	#   $car.set_color 'red'
+	#
+	# Will result in the following arguments:
+	#
+	#   $1: __hbl__Car__12345
+	#   $2: .set_color
+	#   $3: red
+	#
+
+	local selector lcls lfunc rc
 	local -i resolved
 	local -a pframe
 	local -A frame
 
-	selector="${2#\.}" lcls="" lfunc=""
-	pframe=() frame=() resolved=0
-
 	frame[object]="$1" frame[method]="" frame[class]="" frame[function]=""
-
+	selector="${2#\.}" lcls="" lfunc="" pframe=() resolved=0 rc=0
 	shift 2
-
+	# `selector` is whatever was specified as the "action" (ex. `.inspect`)
+	# with the leading '.' removed.
+	#
+	# We need to split it into the method to be called and any trailing methods
+	# that are part of a chain (for 
 	frame[method]="${selector%%.*}"
 	if [[ -n "${selector#${frame[method]}}" ]]; then
 		set -- "${selector#${frame[method]}}" "$@"
@@ -250,7 +311,7 @@ function __hbl__Object__add_reference() {
 
 	source /dev/stdin <<-EOF
 		function ${ref_func}() {
-			__hbl__Object__delegate_to_reference "\$1" "$ref" "\${@:2}";
+			__hbl__Object__delegate_to_reference_ "\$1" "$ref" "\${@:2}";
 		};
 	EOF
 
@@ -291,14 +352,6 @@ function __hbl__Object__assign_reference() {
 		this[__ref_$2]="$3"
 	fi
 
-}
-
-function __hbl__Object__delegate_to_reference() {
-	[[ $# -ge 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
-
-	# TODO: Add some sanity checking
-	local -n this="$1"
-	__hbl__Object__dispatch_ "${this[__ref_$2]}" "$3" "${@:4}"
 }
 
 function __hbl__Object__init() {

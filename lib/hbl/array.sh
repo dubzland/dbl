@@ -274,7 +274,8 @@ function __hbl__Array__push() {
 	local -n this="$1"; shift
 	local -n _raw="${this[_raw]}"
 
-	__hbl__Array__static__push ${this[_raw]} "$@" || return
+	__hbl__Array__static__push _raw "$@" || return
+
 
 	this[size]=${#_raw[@]}
 

@@ -22,6 +22,10 @@ function __hbl__Class__static__define() {
 			cls__ref[__static_methods__]="${classdef__ref[static_methods]}"
 		fi
 
+		if [[ -v classdef__ref[static_references] ]]; then
+			cls__ref[__static_references__]="${classdef__ref[static_references]}"
+		fi
+
 		if [[ -v classdef__ref[references] ]]; then
 			cls__ref[__references__]="${classdef__ref[references]}"
 		fi
@@ -40,6 +44,14 @@ function __hbl__Class__add_static_method() {
 
 	local -n smethods__ref="${cls__ref[__static_methods__]}"
 	smethods__ref[$2]="$3"
+
+	return 0
+}
+
+function __hbl__Class__add_static_reference() {
+	local -n cls__ref="$1"
+
+	$cls__ref.add_reference "$2" "$3"
 
 	return 0
 }
@@ -173,7 +185,8 @@ function __hbl__Class__new() {
 				done
 			fi
 		fi
-		if [[ -n cls__ref[__superclass__] && "${cls__ref[__superclass__]}" != "$cls" ]]; then
+
+		if [[ -v cls__ref[__superclass__] && "${cls__ref[__superclass__]}" != "$cls" ]]; then
 			cls="${cls__ref[__superclass__]}"
 			continue
 		fi

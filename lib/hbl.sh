@@ -58,8 +58,10 @@ declare -Agr __hbl__Class__prototype__methods=(
 	[extend]=__hbl__Class__extend
 	[inspect]=__hbl__Class__inspect
 	[static_method]=__hbl__Class__add_static_method
-	[prototype_method]=__hbl__Class__add_prototype_method
+	[static_reference]=__hbl__Class__add_static_reference
+	[method]=__hbl__Class__add_prototype_method
 	[attribute]=__hbl__Class__add_prototype_attribute
+	[reference]=__hbl__Class__add_prototype_reference
 )
 
 declare -Agr __hbl__Class__prototype=(
@@ -85,14 +87,13 @@ unset __hbl__Class__classdef
 declare -Agr __hbl__Object__prototype__methods=(
 	[__init]=__hbl__Object__init
 	[inspect]=__hbl__Object__inspect
-	[method]=__hbl__Object__add_method
 	[read_attribute]=__hbl__Object__read_attribute
 	[write_attribute]=__hbl__Object__write_attribute
-	[getter]=__hbl__Object__add_getter
-	[setter]=__hbl__Object__add_setter
+	[add_method]=__hbl__Object__add_method
 	[add_reference]=__hbl__Object__add_reference
+	[add_getter]=__hbl__Object__add_getter
+	[add_setter]=__hbl__Object__add_setter
 	[assign_reference]=__hbl__Object__assign_reference
-	[delegate_to_reference]=__hbl__Object__delegate_to_reference
 	[_get_id_]=__hbl__Object__get_id_
 	[_get_class_]=__hbl__Object__get_class_
 )
