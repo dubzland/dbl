@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+source "${BASH_SOURCE%/*}/../../lib/hbl.sh" || exit
+source "${BASH_SOURCE%/*}/person.bash" || exit
+source "${BASH_SOURCE%/*}/teacher.bash" || exit
+source "${BASH_SOURCE%/*}/student.bash" || exit
+
+###############################################################################
+# Main logic
+###############################################################################
+
+function load_records() {
+  $Teacher.from_records <<-EOF
+  1,Mary Smith
+  2,Joan Rogers
+EOF
+
+  [[ $? -eq 0 ]] || return
+
+  $Student.from_records <<-EOF
+  1,John Smith,1
+  2,Lindsey Spears,1
+  3,Judith Allison,2
+  4,Jaime Stanley,2
+  5,Rowan Petty,1
+  6,Meredith Woodward,2
+EOF
+}
+
+load_records || exit
+
+declare teacher student
+
+$Teacher.teachers.get 2 teacher
+
+$teacher.students.get 3 student
+
+$student.say_hello
+
