@@ -30,10 +30,10 @@ declare -ag __hbl__objects=()
 
 declare -ag __hbl__stack=()
 
-# shellcheck source=lib/hbl/class.sh
-source "${__hbl__path}/hbl/class.sh"   &&
-# shellcheck source=lib/hbl/object.sh
-source "${__hbl__path}/hbl/object.sh"  &&
+# shellcheck source=lib/hbl/core/class.sh
+source "${__hbl__path}/hbl/core/class.sh"   &&
+# shellcheck source=lib/hbl/core/object.sh
+source "${__hbl__path}/hbl/core/object.sh"  &&
 # shellcheck source=lib/hbl/error.sh
 source "${__hbl__path}/hbl/error.sh"   &&
 # shellcheck source=lib/hbl/array.sh

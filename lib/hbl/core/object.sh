@@ -12,20 +12,32 @@ function __hbl__Object__get_class_() {
 	val__ref="${this[__class__]}"
 }
 
-function __hbl__Object__dispatch_function_() {
-	[[ $# -ge 4 && -n "$1" && -n "$2" && -n "$3" && -n "$4" ]] ||
-		$Error.argument || return
-	local dsel dcls dfunc dobj rc
-	dsel="$1" dcls="$2" dfunc="$3" dobj="$4" rc=0; shift 4
+function __hbl__Object__push_frame_() {
+	[[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
 
-	# push to the stack
-	__hbl__stack+=("$dobj $dsel $dcls $dfunc")
+	local rc=0
+	local -n frame__ref="$1" && shift
 
-	# run the function
-	"$dfunc" "$dobj" "$@" || rc=$?
+	if [[ -n "${frame[object]}" ]]; then
+		# push a frame to the stack
+		local frame_str
+		printf -v frame_str "%q %q %q %q" \
+			"${frame__ref[object]}" \
+			"${frame__ref[method]}" \
+			"${frame__ref[class]}" \
+			"${frame__ref[function]}"
 
-	# pop the stack
-	unset __hbl__stack[-1]
+		__hbl__stack+=("${frame_str}")
+
+		# run the function
+		${frame__ref[function]} "${frame__ref[object]}" "$@" || rc=$?
+
+		# pop the stack
+		unset __hbl__stack[-1]
+	else
+		# static methods don't need anything on the stack
+		${frame__ref[function]} "$@" || rc=$?
+	fi
 
 	return $rc
 }
@@ -34,81 +46,79 @@ function __hbl__Object__dispatch_() {
 	[[ $# -ge 2 && -n "$1" && -n "$2" && "$2" =~ ^\. ]] ||
 		$Error.argument || return
 
-	local lcls lfunc
-	local -a stack
-	local -A dispatch=()
+	local selector lcls lfunc
+	local -i resolved
+	local -a pframe
+	local -A frame
 
-	dispatch[obj]="$1" dispatch[sel]="$2" dispatch[head]="" dispatch[tail]=""
-	dispatch[cls]="" dispatch[func]="" dispatch[resolved]=0
-	lcls="" lfunc=""
+	selector="${2#\.}" lcls="" lfunc=""
+	pframe=() frame=() resolved=0
+
+	frame[object]="$1" frame[method]="" frame[class]="" frame[function]=""
 
 	shift 2
 
-	dispatch[head]="${dispatch[sel]#\.}"
-	dispatch[head]="${dispatch[head]%%.*}"
-	dispatch[tail]="${dispatch[sel]#\.}"
-	dispatch[tail]="${dispatch[tail]#${dispatch[head]}}"
+	frame[method]="${selector%%.*}"
+	if [[ -n "${selector#${frame[method]}}" ]]; then
+		set -- "${selector#${frame[method]}}" "$@"
+	fi
 
-	local -n __obj__ref="${dispatch[obj]}"
+	local -n __obj__ref="${frame[object]}"
 	lcls="${__obj__ref[__class__]}"
-	dispatch[cls]="${lcls}"
+	frame[class]="${lcls}"
 
-	if [[ "${dispatch[head]}" = super ]]; then
+	if [[ "${frame[method]}" = super ]]; then
 		[[ ${#__hbl__stack[@]} -gt 0 ]] || {
 			printf "no previous function call to execute super.\n";
 			$Error.illegal_instruction || return
 		}
-		[[ -z "${dispatch[tail]}" ]] || {
-			printf "super cannot be chained\n";
-			$Error.illegal_instruction || return
-		}
 
-		stack=(${__hbl__stack[-1]})
+		pframe=(${__hbl__stack[-1]})
 
-		[[ "${dispatch[obj]}" = "${stack[0]}" ]] || return
-		[[ "${FUNCNAME[1]}" = "${stack[3]}" ]] || return
+		[[ "${frame[object]}" = "${pframe[0]}" ]] || return
+		[[ "${FUNCNAME[1]}" = "${pframe[3]}" ]] || return
+
 
 		# We're still in the last function we called.
 		# Grab a reference to the last class we dispatched to and move
 		# to its superclass.
-		local -n scls__ref="${stack[2]}"
-
-		dispatch[cls]="${scls__ref[__superclass__]}"
-		dispatch[head]="${stack[1]}"
+		local -n scls__ref="${pframe[2]}"
+		frame[class]="${scls__ref[__superclass__]}"
+		frame[method]="${pframe[1]}"
 	else
-		if [[ "${dispatch[head]}" = class ]]; then
+		if [[ "${frame[method]}" = class ]]; then
 			# set the object to this object's class
-			dispatch[obj]="${dispatch[cls]}"
-			local -n ccls__ref="${dispatch[obj]}"
-			dispatch[cls]="${ccls__ref[__class__]}"
-			dispatch[head]="${dispatch[tail]#\.}"
-			dispatch[tail]="${dispatch[head]}"
-			dispatch[head]="${dispatch[head]%%.*}"
-			dispatch[tail]="${dispatch[tail]#${dispatch[head]}}"
+			frame[object]="${frame[class]}"
+			local -n ccls__ref="${frame[object]}"
+			frame[class]="${ccls__ref[__class__]}"
+			frame[method]="$1"
+			frame[method]="${frame[method]%%.*}"
+			set -- "${1#${frame[method]}}" "${@:2}"
+			frame[method]="${frame[method]#\.}"
 		fi
 
-		local -n dobj__ref="${dispatch[obj]}"
+		local -n dobj__ref="${frame[object]}"
 		if [[ -v dobj__ref[__methods__] ]]; then
 			local -n dmethods__ref="${dobj__ref[__methods__]}"
-			if [[ -v dmethods__ref[${dispatch[head]}] ]]; then
-				dispatch[func]="${dmethods__ref[${dispatch[head]}]}"
-				dispatch[resolved]=1
+			if [[ -v dmethods__ref[${frame[method]}] ]]; then
+				frame[function]="${dmethods__ref[${frame[method]}]}"
+				resolved=1
 			fi
 		fi
 	fi
 
-	if [[ ${dispatch[resolved]} -ne 1 ]]; then
-		lcls="${dispatch[cls]}"
+	if [[ $resolved -ne 1 ]]; then
+		lcls="${frame[class]}"
 		while [[ -n "$lcls" ]]; do
 			local -n pcls__ref="$lcls"
 			if [[ -v pcls__ref[__prototype__] ]]; then
 				local -n cproto__ref="${pcls__ref[__prototype__]}"
 				if [[ -v cproto__ref[__methods__] ]]; then
 					local -n pmethods__ref="${cproto__ref[__methods__]}"
-					if [[ -v pmethods__ref[${dispatch[head]}] ]]; then
-						dispatch[cls]="${lcls}"
-						dispatch[func]="${pmethods__ref[${dispatch[head]}]}"
-						dispatch[resolved]=1
+					if [[ -v pmethods__ref[${frame[method]}] ]]; then
+						frame[class]="${lcls}"
+						frame[function]="${pmethods__ref[${frame[method]}]}"
+						resolved=1
 						break
 					fi
 				fi
@@ -122,27 +132,19 @@ function __hbl__Object__dispatch_() {
 		done
 	fi
 
-	if [[ ${dispatch[resolved]} -eq 1 ]]; then
-		if [[ -n "${dispatch[tail]}" ]]; then
-			set -- "${dispatch[tail]}" "$@"
-		fi
-		__hbl__Object__dispatch_function_ \
-			"${dispatch[head]}" \
-			"${dispatch[cls]}" \
-			"${dispatch[func]}" \
-			"${dispatch[obj]}" \
-			"$@"
+	if [[ $resolved -eq 1 ]]; then
+		__hbl__Object__push_frame_ frame "$@"
 		return
 	fi
 
-	lcls="${dispatch[obj]}"
+	lcls="${frame[object]}"
 	while [[ -n "$lcls" ]]; do
 		local -n mcls__ref="$lcls"
 		if [[ -v mcls__ref[__static_methods__] ]]; then
 			local -n cmethods__ref="${mcls__ref[__static_methods__]}"
-			if [[ -v cmethods__ref[${dispatch[head]}] ]]; then
-				dispatch[func]="${cmethods__ref[${dispatch[head]}]}"
-				dispatch[resolved]=1
+			if [[ -v cmethods__ref[${frame[method]}] ]]; then
+				frame[function]="${cmethods__ref[${frame[method]}]}"
+				resolved=1
 				break
 			fi
 		fi
@@ -155,9 +157,10 @@ function __hbl__Object__dispatch_() {
 		lcls=""
 	done
 
-	if [[ ${dispatch[resolved]} -eq 1 ]]; then
+	if [[ $resolved -eq 1 ]]; then
 		# call the function
-		${dispatch[func]} "$@"
+		frame[object]=''
+		__hbl__Object__push_frame_ frame "$@"
 		return
 	fi
 

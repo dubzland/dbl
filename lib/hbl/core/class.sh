@@ -184,7 +184,15 @@ function __hbl__Class__new() {
 	id__ref="${!obj}"
 
 	if [[ -n "$init" ]]; then
-		__hbl__Object__dispatch_function_ __init $icls $init "$obj" "$@"
+		local -A frame
+		frame=(
+			[object]="${obj}"
+			[method]='__init'
+			[class]="${icls}"
+			[function]="${init}"
+		)
+
+		__hbl__Object__push_frame_ frame "$@"
 	else
 		return 0
 	fi
