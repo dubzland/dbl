@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "./lib/hbl.sh"
+source "${BASH_SOURCE%/*}/../lib/hbl.sh" || exit
 
 function _msg() {
 	[[ $quiet -eq 1 ]] && return
