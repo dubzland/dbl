@@ -3,78 +3,62 @@ setup() {
 	common_setup
 }
 
-# @test 'Class.define() succeeds' {
-# 	run $Class.define Tester
-# 	assert_success
-# 	refute_output
-# }
+@test 'Class.define() succeeds' {
+	run $Class.define Tester
+	assert_success
+	refute_output
+}
 
-# @test 'Class.define() creates the global object' {
-# 	$Class.define Tester
-# 	assert_dict Tester
-# }
+@test 'Class.define() creates the global object' {
+	$Class.define Tester
+	assert_dict Tester
+}
 
-# @test 'Class.define() assigns the __name' {
-# 	$Class.define Tester
-# 	assert_equal "${Tester[__name]}" Tester
-# }
+@test 'Class.define() assigns the __id__' {
+	$Class.define Tester
+	assert_equal "${Tester[__id__]}" Tester
+}
 
-# @test 'Class.define() assigns the __base' {
-# 	$Class.define Tester
-# 	assert_equal "${Tester[__base]}" Class
-# }
+@test 'Class.define() assigns the __class__' {
+	$Class.define Tester
+	assert_equal "${Tester[__class__]}" Class
+}
 
-# @test 'Class.define() assigns the __methods' {
-# 	$Class.define Tester
-# 	assert_equal "${Tester[__methods]}" Tester__methods
-# }
+@test 'Class.define() assigns the __methods__' {
+	$Class.define Tester
+	assert_equal "${Tester[__methods__]}" Tester__methods
+}
 
-# @test 'Class.define() creates the __methods global object' {
-# 	$Class.define Tester
-# 	assert_dict Tester__methods
-# }
+@test 'Class.define() creates the __methods__ global object' {
+	$Class.define Tester
+	assert_dict Tester__methods
+}
 
-# @test 'Class.define() initializes the methods to empty' {
-# 	$Class.define Tester
-# 	assert_equal ${#Tester__methods[@]} 0
-# }
+@test 'Class.define() initializes the methods to empty' {
+	$Class.define Tester
+	assert_equal ${#Tester__methods__[@]} 0
+}
 
-# @test 'Class.define() assigns the __prototype' {
-# 	$Class.define Tester
-# 	assert_equal "${Tester[__prototype]}" Tester__prototype
-# }
+@test 'Class.define() assigns the __superclass__' {
+	$Class.define Tester
+	assert_equal "${Tester[__superclass__]}" Object
+}
 
-# @test 'Class.define() creates the __prototype global object' {
-# 	$Class.define Tester
-# 	assert_dict Tester__prototype
-# }
+@test 'Class.static_method() succeeds' {
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	run $Tester.static_method test Tester_test
+	assert_success
+	refute_output
+}
 
-# @test 'Class.define() initializes the prototype to empty' {
-# 	$Class.define Tester
-# 	assert_equal ${#Tester__prototype[@]} 0
-# }
-
-# @test 'Class.define() accepts an initializer' {
-# 	function Tester__init() { return 0; }
-# 	$Class.define Tester Tester_init
-# 	assert_equal "${Tester__prototype[__init]}" "$HBL_SELECTOR_METHOD Tester_init"
-# }
-
-# @test 'Class.static_method() succeeds' {
-# 	function Tester_test() { return 0; }
-# 	$Class.define Tester
-# 	run $Tester.static_method test Tester_test
-# 	assert_success
-# 	refute_output
-# }
-
-# @test 'Class.static_method() assigns the method to the class' {
-# 	function Tester_test() { printf "I am the Tester class.\n"; }
-# 	$Class.define Tester
-# 	$Tester.static_method test Tester_test
-# 	assert_dict_has_key Tester__methods test
-# 	assert_equal "${Tester__methods[test]}" Tester_test
-# }
+@test 'Class.static_method() assigns the method to the prototype' {
+	function Tester_test() { printf "I am the Tester class.\n"; }
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	assert_dict_has_key Tester__static_methods test
+	assert_equal "${Tester__static_methods[test]}" Tester_test
+}
 
 # @test 'Class.static_method() prevents overriding an existing method' {
 # 	function Tester_test() { return 0; }
@@ -89,20 +73,20 @@ setup() {
 # 	assert_failure $HBL_ERR_ARGUMENT
 # }
 
-# @test 'Class.method() succeeds' {
-# 	function Tester_test() { return 0; }
-# 	$Class.define Tester
-# 	run $Tester.method test Tester_test
-# 	assert_success
-# 	refute_output
-# }
+@test 'Class.method() succeeds' {
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	run $Tester.method test Tester_test
+	assert_success
+	refute_output
+}
 
-# @test 'Class.method() assigns the method to the prototype' {
-# 	function Tester_test() { return 0; }
-# 	$Class.define Tester
-# 	$Tester.method test Tester_test
-# 	assert_equal "${Tester__prototype[test]}" "$HBL_SELECTOR_METHOD Tester_test"
-# }
+@test 'Class.method() assigns the method to the prototype' {
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	$Tester.method test Tester_test
+	assert_equal "${Tester__prototype__methods[test]}" "Tester_test"
+}
 
 # @test 'Class.method() prevents overriding an existing method' {
 # 	function Tester_test() { return 0; }
@@ -118,39 +102,40 @@ setup() {
 # 	assert_failure $HBL_ERR_ARGUMENT
 # }
 
-# @test 'Class.reference() succeeds' {
-# 	$Class.define Tester
-# 	run $Tester.reference children Array
-# 	assert_success
-# 	refute_output
-# }
+@test 'Class.reference() succeeds' {
+	$Class.define Tester
+	run $Tester.reference children Array
+	assert_success
+	refute_output
+}
 
-# @test 'Class.reference() assigns the reference to the prototype' {
-# 	$Class.define Tester
-# 	$Tester.reference children Array
-# 	assert_dict_has_key Tester__prototype children
-# 	assert_equal "${Tester__prototype[children]}" "$HBL_SELECTOR_REFERENCE Array"
-# }
+@test 'Class.reference() assigns the reference to the prototype' {
+	$Class.define Tester
+	$Tester.reference children Array
+	assert_dict_has_key Tester__prototype__references children
+	assert_equal "${Tester__prototype__references[children]}" Array
+}
 
-# @test 'Class.new() succeeds' {
-# 	$Class.define Tester
-# 	run $Tester.new obj
-# 	assert_success
-# 	refute_output
-# }
+@test 'Class.new() succeeds' {
+	$Class.define Tester
+	run $Tester.new obj
+	assert_success
+	refute_output
+}
 
-# @test 'Class.new() calls the initializer' {
-# 	local tester
-# 	function Tester__init() {
-# 		printf "I am the tester initializer\n"
-# 		local -n this="$1"
-# 		$this.super
-# 	}
-# 	$Class.define Tester Tester__init
-# 	run $Tester.new tester
-# 	assert_success
-# 	assert_output 'I am the tester initializer'
-# }
+@test 'Class.new() calls the initializer' {
+	local tester
+	function Tester__init() {
+		printf "I am the tester initializer\n"
+		local -n this="$1"
+		$this.super
+	}
+	$Class.define Tester
+	$Tester.method __init Tester__init
+	run $Tester.new tester
+	assert_success
+	assert_output 'I am the tester initializer'
+}
 
 # @test 'Class.new() creates the global object' {
 # 	$Class.define Tester
@@ -163,7 +148,7 @@ setup() {
 # 	$Tester.new obj
 # 	assert_dict_has_key "$obj" 0
 # 	local -n obj__ref="$obj"
-# 	assert_equal "${obj__ref[0]}" "Object__dispatch_ $obj "
+# 	assert_equal "${obj__ref[0]}" "__hbl__Object__dispatch_ $obj "
 # }
 
 # @test 'Class.new() assigns the __id' {
@@ -182,33 +167,33 @@ setup() {
 # 	assert_equal "${obj__ref[__class]}" Tester
 # }
 
-# @test 'calling a static method succeeds' {
-# 	function Tester_test() { return 0; }
-# 	$Class.define Tester
-# 	$Tester.static_method test Tester_test
-# 	run $Tester.test
-# 	assert_success
-# }
+@test 'calling a static method succeeds' {
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	run $Tester.test
+	assert_success
+}
 
-# @test 'calling a static method passes the proper arguments' {
-# 	function Tester_test() {
-# 		assert_equal $# 1
-# 		assert_equal "$1" 'foo'
-# 	}
-# 	$Class.define Tester
-# 	$Tester.static_method test Tester_test
-# 	$Tester.test 'foo'
-# }
+@test 'calling a static method passes the proper arguments' {
+	function Tester_test() {
+		assert_equal $# 1
+		assert_equal "$1" 'foo'
+	}
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	$Tester.test 'foo'
+}
 
-# @test 'calling a static method returns the function return code' {
-# 	function Tester_test() {
-# 		return 123
-# 	}
-# 	$Class.define Tester
-# 	$Tester.static_method test Tester_test
-# 	run $Tester.test
-# 	assert_failure 123
-# }
+@test 'calling a static method returns the function return code' {
+	function Tester_test() {
+		return 123
+	}
+	$Class.define Tester
+	$Tester.static_method test Tester_test
+	run $Tester.test
+	assert_failure 123
+}
 
 # @test 'retrieving system class attributes succeeds' {
 # 	local var
@@ -272,77 +257,78 @@ setup() {
 # 	assert_equal "${Tester[color]}" 'blue'
 # }
 
-# @test 'calling an instance method succeeds' {
-# 	function Tester_test() { return 0; }
-# 	$Class.define Tester
-# 	$Tester.method test Tester_test
-# 	$Tester.new obj
-# 	run ${!obj}.test
-# 	assert_success
-# }
+@test 'calling an instance method succeeds' {
+	local new_obj
+	function Tester_test() { return 0; }
+	$Object.extend Tester
+	$Tester.method test Tester_test
+	$Tester.new new_obj
+	run $new_obj.test
+	assert_success
+}
 
-# @test 'calling an instance method passes the arguments' {
-# 	function Tester_test() {
-# 		assert_equal $# 2
-# 		assert_equal "$1" "$obj"
-# 		assert_equal "$2" 'foo'
-# 	}
-# 	$Class.define Tester
-# 	$Tester.method test Tester_test
-# 	$Tester.new obj
-# 	${!obj}.test 'foo'
-# }
+@test 'calling an instance method passes the arguments' {
+	local new_obj
+	function Tester_test() {
+		assert_equal $# 2
+		assert_equal "$1" "$obj"
+		assert_equal "$2" 'foo'
+	}
+	$Class.define Tester
+	$Tester.method test Tester_test
+	$Tester.new new_obj
+	$new_obj.test 'foo'
+}
 
-# @test 'calling an instance method adds an item to the stack' {
-# 	function Tester_test() {
-# 		assert_equal "${#__hbl__stack[@]}" 1
-# 		assert_equal "${__hbl__stack[0]}" "$1 Tester test Tester_test"
-# 	}
-# 	$Class.define Tester
-# 	$Tester.method test Tester_test
-# 	$Tester.new obj
-# 	local -n obj__ref="$obj"
-# 	$obj__ref.test
-# }
+@test 'calling an instance method adds an item to the stack' {
+	local new_obj
+	function Tester_test() {
+		assert_equal "${#__hbl__stack[@]}" 1
+		assert_equal "${__hbl__stack[0]}" "$1 test Tester Tester_test"
+	}
+	$Class.define Tester
+	$Tester.method test Tester_test
+	$Tester.new new_obj
+	$new_obj.test
+}
 
-# @test 'calling an instance method pops the stack when complete' {
-# 	function Tester_test() { return 0; }
-# 	$Class.define Tester
-# 	$Tester.method test Tester_test
-# 	$Tester.new obj
-# 	local -n obj__ref="$obj"
-# 	$obj__ref.test
-# 	assert_equal "${#__hbl__stack[@]}" 0
-# }
+@test 'calling an instance method pops the stack when complete' {
+	local new_obj
+	function Tester_test() { return 0; }
+	$Class.define Tester
+	$Tester.method test Tester_test
+	$Tester.new new_obj
+	$new_obj.test
+	assert_equal "${#__hbl__stack[@]}" 0
+}
 
-# @test 'Class#super() within an instance method succeeds' {
-# 	function Tester_inspect() {
-# 		local -n this="$1"
-# 		$this.super
-# 	}
-# 	$Class.define Tester
-# 	$Tester.method inspect Tester_inspect
-# 	$Tester.new obj
-# 	run ${!obj}.inspect
-# 	assert_success
-# }
+@test 'Class#super() within an instance method succeeds' {
+	local new_obj
+	function Tester_inspect() {
+		local -n this="$1"
+		$this.super
+	}
+	$Class.define Tester
+	$Tester.method inspect Tester_inspect
+	$Tester.new new_obj
+	run $new_obj.inspect
+	assert_success
+}
 
-# @test 'Class#super() within an instance method calls both methods' {
-# 	function Tester_inspect() {
-# 		local -n this="$1"
-# 		printf "Tester_inspect()\n"
-# 		$this.super
-# 	}
-# 	$Class.define Tester
-# 	$Tester.method inspect Tester_inspect
-# 	$Tester.new obj
-# 	local -n obj__ref="$obj"
-# 	obj__ref[attrA]='red'
-# 	obj__ref[attrB]='blue'
-# 	run $obj__ref.inspect
-# 	assert_line --index 0 "Tester_inspect()"
-# 	assert_line --index 1 "<${obj} attrA='red' attrB='blue'>"
-# }
+@test 'Class#super() within an instance method calls both methods' {
+	local new_obj
+	function Tester_inspect() {
+		local -n this="$1"
+		printf "Tester_inspect()\n"
+		$this.super
+	}
+	$Class.define Tester
+	$Tester.method inspect Tester_inspect
+	$Tester.new new_obj
+	run $new_obj.inspect
+	assert_line --index 0 "Tester_inspect()"
+	assert_line --index 1 -p "<__hbl__Tester_"
+}
 
 # @test 'Class#get_attr() for a valid attribute succeeds' {
 # 	function Tester__init() {
@@ -403,47 +389,37 @@ setup() {
 # 	assert_failure $HBL_ERR_UNDEFINED_METHOD
 # }
 
-# @test 'Class#_set_reference() within an instance method succeeds' {
-# 	function Tester__init() {
-# 		local -n this="$1"
-# 		local children
-# 		$Array.new children
-# 		run $this._set_reference children "$children"
-# 		assert_success
-# 		refute_output
-# 	}
-# 	$Class.define Tester Tester__init
-# 	$Tester.reference children Array
-# 	$Tester.new tester
-# }
+@test 'Class#assign_reference() within an instance method succeeds' {
+	local tester
+	function Tester__init() {
+		local -n this="$1"
+		local children
+		$Array.new children
+		run $this.assign_reference children "$children"
+		assert_success
+		refute_output
+	}
+	$Object.extend Tester Tester__init
+	$Tester.method __init Tester__init
+	$Tester.reference children Array
+	$Tester.new tester
+}
 
-# @test 'Class#_set_reference() within an instance method assigns the reference' {
-# 	function Tester__init() {
-# 		local -n this="$1"
-# 		local children
-# 		$Array.new children
-# 		$this._set_reference children "$children"
-# 	}
-# 	$Class.define Tester Tester__init
-# 	$Tester.reference children Array
-# 	$Tester.new tester
-# 	local -n t__ref="$tester"
-# 	assert_dict_has_key "$tester" '_children'
-# }
-
-# @test 'Class#reference() provides access to the referenced object' {
-# 	function Tester__init() {
-# 		local -n this="$1"
-# 		local children
-# 		$Array.new children
-# 		${!children}.push 'foo'
-# 		$this._set_reference children "$children"
-# 	}
-# 	$Class.define Tester Tester__init
-# 	$Tester.reference children Array
-# 	$Tester.new tester
-# 	run ${!tester}.children.contains 'foo'
-# 	assert_success
-# 	run ${!tester}.children.contains 'bar'
-# 	assert_failure "$HBL_ERROR"
-# }
+@test 'Class#reference() provides access to the referenced object' {
+	local tester
+	function Tester__init() {
+		local -n this="$1"
+		local children
+		$Array.new children
+		$children.push 'foo'
+		$this.assign_reference children "$children"
+	}
+	$Object.extend Tester
+	$Tester.method __init Tester__init
+	$Tester.reference children Array
+	$Tester.new tester
+	run $tester.children.contains 'foo'
+	assert_success
+	run $tester.children.contains 'bar'
+	assert_failure 1
+}
