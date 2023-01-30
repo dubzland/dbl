@@ -1,7 +1,4 @@
 ---
-image:
-  name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/debian:bullseye-slim
-
 services:
   - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:20.10-dind
     alias: docker
@@ -10,6 +7,36 @@ test4.4:
   stage: test
   image:
     name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:4.4
+  before_script:
+    - git submodule init
+    - git submodule sync && git submodule update --init
+  script:
+    - make test
+
+test5.0:
+  stage: test
+  image:
+    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:5.0
+  before_script:
+    - git submodule init
+    - git submodule sync && git submodule update --init
+  script:
+    - make test
+
+test5.1:
+  stage: test
+  image:
+    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:5.1
+  before_script:
+    - git submodule init
+    - git submodule sync && git submodule update --init
+  script:
+    - make test
+
+test5.2:
+  stage: test
+  image:
+    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:5.2
   before_script:
     - git submodule init
     - git submodule sync && git submodule update --init
