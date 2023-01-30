@@ -9,4 +9,4 @@
 	url = https://github.com/bats-core/bats-assert.git
 [submodule "test/test_helper/hbl-stubs"]
 	path = test/test_helper/hbl-stubs
-	url = git@git.dubzland.net:holodekk/hbl-stubs.git
+	url = https://git.dubzland.net/holodekk/hbl-stubs.git
