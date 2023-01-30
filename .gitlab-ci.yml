@@ -6,14 +6,12 @@ services:
   - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:20.10-dind
     alias: docker
 
-test:
+test4.4:
   stage: test
+  image:
+    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:4.4
   before_script:
-    - apt update
-    - apt install -y make git
-    - bash --version
     - git submodule init
-    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.dubzland.net/".insteadOf "git@git.dubzland.net:"
     - git submodule sync && git submodule update --init
   script:
     - make test
