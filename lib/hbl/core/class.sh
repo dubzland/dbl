@@ -1,231 +1,233 @@
 #!/usr/bin/env bash
 
 function __hbl__Class__static__define() {
-	local name
-	name="$1"
+  local name
+  name="$1"
 
-	declare -Ag "$name"
+  declare -Ag "$name"
 
-	__hbl__Object__new_ "$name" || return
+  __hbl__Object__new_ "$name" || return
 
-	local -n cls__ref="${name}"
-	cls__ref[__class__]=Class
-	cls__ref[__superclass__]=Object
+  local -n cls__ref="${name}"
+  cls__ref[__class__]=Class
+  cls__ref[__superclass__]=Object
 
-	if [[ $# -gt 1 ]]; then
-		local -n classdef__ref="$2"
-		if [[ -v classdef__ref[prototype] ]]; then
-			cls__ref[__prototype__]="${classdef__ref[prototype]}"
-		fi
+  if [[ $# -gt 1 ]]; then
+    local -n classdef__ref="$2"
+    if [[ -v classdef__ref[prototype] ]]; then
+      cls__ref[__prototype__]="${classdef__ref[prototype]}"
+    fi
 
-		if [[ -v classdef__ref[static_methods] ]]; then
-			cls__ref[__static_methods__]="${classdef__ref[static_methods]}"
-		fi
+    if [[ -v classdef__ref[static_methods] ]]; then
+      cls__ref[__static_methods__]="${classdef__ref[static_methods]}"
+    fi
 
-		if [[ -v classdef__ref[static_references] ]]; then
-			cls__ref[__static_references__]="${classdef__ref[static_references]}"
-		fi
+    if [[ -v classdef__ref[static_references] ]]; then
+      cls__ref[__static_references__]="${classdef__ref[static_references]}"
+    fi
 
-		if [[ -v classdef__ref[references] ]]; then
-			cls__ref[__references__]="${classdef__ref[references]}"
-		fi
-	fi
+    if [[ -v classdef__ref[references] ]]; then
+      cls__ref[__references__]="${classdef__ref[references]}"
+    fi
+  fi
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__add_static_method() {
-	local -n cls__ref="$1"
+  local -n cls__ref="$1"
 
-	if [[ ! -v cls__ref[__static_methods__] ]]; then
-		cls__ref[__static_methods__]="$1__static_methods"
-		declare -Ag "${cls__ref[__static_methods__]}"
-	fi
+  if [[ ! -v cls__ref[__static_methods__] ]]; then
+    cls__ref[__static_methods__]="$1__static_methods"
+    declare -Ag "${cls__ref[__static_methods__]}"
+  fi
 
-	local -n smethods__ref="${cls__ref[__static_methods__]}"
-	smethods__ref[$2]="$3"
+  local -n smethods__ref="${cls__ref[__static_methods__]}"
+  smethods__ref[$2]="$3"
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__add_static_reference() {
-	local -n cls__ref="$1"
+  local -n cls__ref="$1"
 
-	$cls__ref.add_reference "$2" "$3"
+  $cls__ref.add_reference "$2" "$3"
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__add_prototype_method() {
-	local -n cls__ref="$1"
+  local -n cls__ref="$1"
 
-	if [[ ! -v cls__ref[__prototype__] ]]; then
-		cls__ref[__prototype__]="$1__prototype"
-		declare -Ag "${cls__ref[__prototype__]}"
-	fi
+  if [[ ! -v cls__ref[__prototype__] ]]; then
+    cls__ref[__prototype__]="$1__prototype"
+    declare -Ag "${cls__ref[__prototype__]}"
+  fi
 
-	local -n cproto__ref="${cls__ref[__prototype__]}"
+  local -n cproto__ref="${cls__ref[__prototype__]}"
 
-	if [[ ! -v cproto__ref[__methods__] ]]; then
-		cproto__ref[__methods__]="${!cproto__ref}__methods"
-		declare -Ag "${cproto__ref[__methods__]}"
-	fi
+  if [[ ! -v cproto__ref[__methods__] ]]; then
+    cproto__ref[__methods__]="${!cproto__ref}__methods"
+    declare -Ag "${cproto__ref[__methods__]}"
+  fi
 
-	local -n pmethods__ref="${cproto__ref[__methods__]}"
-	pmethods__ref[$2]="$3"
+  local -n pmethods__ref="${cproto__ref[__methods__]}"
+  pmethods__ref[$2]="$3"
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__add_prototype_attribute() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument
+  [[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument
 
-	local -n cls__ref="$1"
+  local -n cls__ref="$1"
 
-	if [[ ! -v cls__ref[__prototype__] ]]; then
-		cls__ref[__prototype__]="$1__prototype"
-		declare -Ag "${cls__ref[__prototype__]}"
-	fi
+  if [[ ! -v cls__ref[__prototype__] ]]; then
+    cls__ref[__prototype__]="$1__prototype"
+    declare -Ag "${cls__ref[__prototype__]}"
+  fi
 
-	local -n cproto__ref="${cls__ref[__prototype__]}"
+  local -n cproto__ref="${cls__ref[__prototype__]}"
 
-	if [[ ! -v cproto__ref[__attributes__] ]]; then
-		cproto__ref[__attributes__]="${!cproto__ref}__attributes"
-		declare -Ag "${cproto__ref[__attributes__]}"
-	fi
+  if [[ ! -v cproto__ref[__attributes__] ]]; then
+    cproto__ref[__attributes__]="${!cproto__ref}__attributes"
+    declare -Ag "${cproto__ref[__attributes__]}"
+  fi
 
-	local -n pattributes__ref="${cproto__ref[__attributes__]}"
-	pattributes__ref["$2"]="$3"
+  local -n pattributes__ref="${cproto__ref[__attributes__]}"
+  pattributes__ref["$2"]="$3"
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__add_prototype_reference() {
-	[[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
+  [[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
 
-	local -n cls__ref="$1"
+  local -n cls__ref="$1"
 
-	if [[ ! -v cls__ref[__prototype__] ]]; then
-		cls__ref[__prototype__]="$1__prototype"
-		declare -Ag "${cls__ref[__prototype__]}"
-	fi
+  if [[ ! -v cls__ref[__prototype__] ]]; then
+    cls__ref[__prototype__]="$1__prototype"
+    declare -Ag "${cls__ref[__prototype__]}"
+  fi
 
-	local -n cproto__ref="${cls__ref[__prototype__]}"
+  local -n cproto__ref="${cls__ref[__prototype__]}"
 
-	if [[ ! -v cproto__ref[__references__] ]]; then
-		cproto__ref[__references__]="${!cproto__ref}__references"
-		declare -Ag "${cproto__ref[__references__]}"
-	fi
+  if [[ ! -v cproto__ref[__references__] ]]; then
+    cproto__ref[__references__]="${!cproto__ref}__references"
+    declare -Ag "${cproto__ref[__references__]}"
+  fi
 
-	local -n preferences__ref="${cproto__ref[__references__]}"
-	preferences__ref["$2"]="$3"
+  local -n preferences__ref="${cproto__ref[__references__]}"
+  preferences__ref["$2"]="$3"
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__new() {
-	local self obj attr meth cls init icls ref
-	self="$1" obj="" init="" icls=""
-	local -n id__ref="$2"
-	shift 2
+  local self obj attr meth cls init icls ref
+  self="$1" obj="" init="" icls=""
+  local -n id__ref="$2"
+  shift 2
 
-	# Build the object
-	__hbl__Object__new "$self" obj || return
+  # Build the object
+  __hbl__Object__new "$self" obj || return
 
-	local -n obj__ref="$obj"
-	obj__ref[__class__]="$self"
+  local -n obj__ref="$obj"
+  obj__ref[__class__]="$self"
 
-	local -n omethods__ref="${obj__ref[__methods__]}"
+  local -n omethods__ref="${obj__ref[__methods__]}"
 
-	cls="$self"
+  cls="$self"
 
-	while [[ -n "$cls" ]]; do
-		local -n cls__ref="$cls"
+  while [[ -n "$cls" ]]; do
+    local -n cls__ref="$cls"
 
-		if [[ -v cls__ref[__prototype__] ]]; then
-			local -n cproto__ref="${cls__ref[__prototype__]}"
+    if [[ -v cls__ref[__prototype__] ]]; then
+      local -n cproto__ref="${cls__ref[__prototype__]}"
 
-			if [[ -v cproto__ref[__methods__] ]]; then
-				local -n cmethods__ref="${cproto__ref[__methods__]}"
+      if [[ -v cproto__ref[__methods__] ]]; then
+        local -n cmethods__ref="${cproto__ref[__methods__]}"
 
-				for meth in "${!cmethods__ref[@]}"; do
-					if [[ ! -v omethods__ref[$meth] ]]; then
-						omethods__ref[$meth]="${cmethods__ref[$meth]}"
-					fi
+        for meth in "${!cmethods__ref[@]}"; do
+          if [[ ! -v omethods__ref[$meth] ]]; then
+            omethods__ref[$meth]="${cmethods__ref[$meth]}"
+          fi
 
-					if [[ "$meth" = '__init' && -z "$init" ]]; then
-						init="${omethods__ref[$meth]}"
-						icls="$cls"
-					fi
-				done
-			fi
+          if [[ "$meth" = '__init' && -z "$init" ]]; then
+            init="${omethods__ref[$meth]}"
+            icls="$cls"
+          fi
+        done
+      fi
 
-			if [[ -v cproto__ref[__attributes__] ]]; then
-				local -n cattrs__ref="${cproto__ref[__attributes__]}"
+      if [[ -v cproto__ref[__attributes__] ]]; then
+        local -n cattrs__ref="${cproto__ref[__attributes__]}"
 
-				for attr in "${!cattrs__ref[@]}"; do
-					local attr_flag="${cattrs__ref[$attr]}"
-					if [[ $((attr_flag & __hbl__attr__getter)) -gt 0 ]]; then
-						__hbl__Object__add_getter "$obj" "$attr"
-					fi
+        for attr in "${!cattrs__ref[@]}"; do
+          local attr_flag="${cattrs__ref[$attr]}"
+          if [[ $((attr_flag & __hbl__attr__getter)) -gt 0 ]]; then
+            __hbl__Object__add_getter "$obj" "$attr"
+          fi
 
-					if [[ $((attr_flag & __hbl__attr__setter)) -gt 0 ]]; then
-						__hbl__Object__add_setter "$obj" "$attr"
-					fi
+          if [[ $((attr_flag & __hbl__attr__setter)) -gt 0 ]]; then
+            __hbl__Object__add_setter "$obj" "$attr"
+          fi
 
-					obj__ref[$attr]=''
-				done
-			fi
+          obj__ref[$attr]=''
+        done
+      fi
 
-			if [[ -v cproto__ref[__references__] ]]; then
-				local -n creferences__ref="${cproto__ref[__references__]}"
-				for ref in "${!creferences__ref[@]}"; do
-					local ref_class="${creferences__ref[$ref]}"
-					__hbl__Object__add_reference "$obj" "$ref" "$ref_class" || return
-				done
-			fi
-		fi
+      if [[ -v cproto__ref[__references__] ]]; then
+        local -n creferences__ref="${cproto__ref[__references__]}"
+        for ref in "${!creferences__ref[@]}"; do
+          local ref_class="${creferences__ref[$ref]}"
+          __hbl__Object__add_reference "$obj" "$ref" "$ref_class" || return
+        done
+      fi
+    fi
 
-		if [[ -v cls__ref[__superclass__] && "${cls__ref[__superclass__]}" != "$cls" ]]; then
-			cls="${cls__ref[__superclass__]}"
-			continue
-		fi
-		cls=""
-	done
+    if [[ -v cls__ref[__superclass__] && "${cls__ref[__superclass__]}" != "$cls" ]]; then
+      cls="${cls__ref[__superclass__]}"
+      continue
+    fi
+    cls=""
+  done
 
-	# Return the dispatcher
-	id__ref="${!obj}"
+  # Return the dispatcher
+  id__ref="${!obj}"
 
-	if [[ -n "$init" ]]; then
-		local -A frame
-		frame=(
-			[object]="${obj}"
-			[method]='__init'
-			[class]="${icls}"
-			[function]="${init}"
-		)
+  if [[ -n "$init" ]]; then
+    local -A frame
+    frame=(
+      [object]="${obj}"
+      [method]='__init'
+      [class]="${icls}"
+      [function]="${init}"
+    )
 
-		__hbl__Object__push_frame_ frame "$@"
-	else
-		return 0
-	fi
+    __hbl__Object__push_frame_ frame "$@"
+  else
+    return 0
+  fi
 }
 
 function __hbl__Class__extend() {
-	local base="$1"; shift
+  local base="$1"; shift
 
-	__hbl__Class__static__define "$@"
+  __hbl__Class__static__define "$@"
 
-	if [[ "$base" != Class ]]; then
-		local -n cls__ref="$1"
-		cls__ref[__superclass__]="$base"
-	fi
+  if [[ "$base" != Class ]]; then
+    local -n cls__ref="$1"
+    cls__ref[__superclass__]="$base"
+  fi
 
-	return 0
+  return 0
 }
 
 function __hbl__Class__inspect() {
-	local -n this="$1"
+  local -n this="$1"
 
-	printf "<Class:%s>\n" "${this[__id__]}"
+  printf "<Class:%s>\n" "${this[__id__]}"
 }
+
+# vim: ts=2:sw=2:expandtab

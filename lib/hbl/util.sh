@@ -15,9 +15,9 @@
 # @exitcode 1 If the argument is not defined
 #
 function __hbl__Util__static__is_defined() {
-	[[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-	declare -p "$1" >/dev/null 2>&1
+  declare -p "$1" >/dev/null 2>&1
 }
 
 ###############################################################################
@@ -32,9 +32,9 @@ function __hbl__Util__static__is_defined() {
 # @exitcode 1 If the argument is not a function.
 #
 function __hbl__Util__static__is_function() {
-	[[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-	declare -f -F "$1" >/dev/null 2>&1
+  declare -f -F "$1" >/dev/null 2>&1
 }
 
 ###############################################################################
@@ -49,13 +49,13 @@ function __hbl__Util__static__is_function() {
 # @exitcode 1 If the argument is not an associative array.
 #
 function __hbl__Util__static__is_associative_array() {
-	[[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-	if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 ]]; then
-		local -n __ref=$1; [[ ${__ref@a} = *A* ]]
-	else
-		declare -p "$1" 2>/dev/null | grep 'declare -A' >/dev/null
-	fi
+  if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 ]]; then
+    local -n __ref=$1; [[ ${__ref@a} = *A* ]]
+  else
+    declare -p "$1" 2>/dev/null | grep 'declare -A' >/dev/null
+  fi
 }
 
 
@@ -78,27 +78,29 @@ function __hbl__Util__static__is_associative_array() {
 #    ^^^^^^^^^^^^^^^^ myarr ^^^^^^^^^^^^^^^^^
 #
 function __hbl__Util__static__dump_associative_array() {
-	[[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-	local name head tail
-	local -a keys
-	local -i nlen plen hlen tlen
-	name="$1" nlen="${#name}" plen=$((40-nlen-2)) hlen=$((plen/2)) tlen=$((plen-hlen))
+  local name head tail
+  local -a keys
+  local -i nlen plen hlen tlen
+  name="$1" nlen="${#name}" plen=$((40-nlen-2)) hlen=$((plen/2)) tlen=$((plen-hlen))
 
-	__hbl__Util__static__is_defined "$name" || $Error.argument || return
+  __hbl__Util__static__is_defined "$name" || $Error.argument || return
 
-	local -n __ref="$name"
+  local -n __ref="$name"
 
-	keys=("${!__ref[@]}")
-	$Array.sort keys || return
+  keys=("${!__ref[@]}")
+  $Array.sort keys || return
 
-	printf -v head "%${hlen}s"; printf -v tail "%${tlen}s"
+  printf -v head "%${hlen}s"; printf -v tail "%${tlen}s"
 
-	printf "%s %s %s\n" "${head// /\=}" "$name" "${tail// /\=}"
-	for key in "${keys[@]}"; do
-		printf "%-15s %s\n" "${key}:" "${__ref[$key]}"
-	done
-	printf "%s %s %s\n" "${head// /\^}" "$name" "${tail// /\^}"
+  printf "%s %s %s\n" "${head// /\=}" "$name" "${tail// /\=}"
+  for key in "${keys[@]}"; do
+    printf "%-15s %s\n" "${key}:" "${__ref[$key]}"
+  done
+  printf "%s %s %s\n" "${head// /\^}" "$name" "${tail// /\^}"
 
-	return 0
+  return 0
 }
+
+# vim: noai:ts=2:sw=2:et

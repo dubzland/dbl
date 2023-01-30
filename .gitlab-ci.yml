@@ -1,44 +1,15 @@
 ---
-services:
-  - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:20.10-dind
-    alias: docker
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
 
-test4.4:
+test:
   stage: test
+  parallel:
+    matrix:
+      - BASH_VERSION: ['4.4', '5.0', '5.1', '5.2']
   image:
-    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:4.4
+    name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/bash:${BASH_VERSION}
   before_script:
-    - git submodule init
-    - git submodule sync && git submodule update --init
-  script:
-    - make test
-
-test5.0:
-  stage: test
-  image:
-    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:5.0
-  before_script:
-    - git submodule init
-    - git submodule sync && git submodule update --init
-  script:
-    - make test
-
-test5.1:
-  stage: test
-  image:
-    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:5.1
-  before_script:
-    - git submodule init
-    - git submodule sync && git submodule update --init
-  script:
-    - make test
-
-test5.2:
-  stage: test
-  image:
-    name: gitlab-registry.dubzland.net/holodekk/hbl-testing-image:5.2
-  before_script:
-    - git submodule init
-    - git submodule sync && git submodule update --init
+    - apk add --update-cache make
   script:
     - make test

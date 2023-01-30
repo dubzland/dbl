@@ -3,63 +3,63 @@
 source "${BASH_SOURCE%/*}/../lib/hbl.sh" || exit
 
 function _msg() {
-	[[ $quiet -eq 1 ]] && return
-	printf "$1" "${@:2}"
+  [[ $quiet -eq 1 ]] && return
+  printf "$1" "${@:2}"
 }
 
 function build_empty_command() {
-	local cmd
-	$Command.new cmd 'backup-client' backup_client_run || return
+  local cmd
+  $Command.new cmd 'backup-client' backup_client_run || return
 }
 
 function build_simple_command() {
-	local cmd opt
+  local cmd opt
 
-	$Command.new cmd 'backup-client' backup_client_run &&
-	$cmd.set_description 'Manage backup jobs.'         &&
-	$cmd.add_example     '-d /etc/jobs.d <options>'    || return
+  $Command.new cmd 'backup-client' backup_client_run &&
+  $cmd.set_description 'Manage backup jobs.'         &&
+  $cmd.add_example     '-d /etc/jobs.d <options>'    || return
 
-	$Command__Option.new opt 'job_directory'     &&
-	$opt.set_type        'dir'                   &&
-	$opt.set_short_flag  'd'                     &&
-	$opt.set_long_flag   'job_directory'         &&
-	$opt.set_description 'Backup job directory.' || return
+  $Command__Option.new opt 'job_directory'     &&
+  $opt.set_type        'dir'                   &&
+  $opt.set_short_flag  'd'                     &&
+  $opt.set_long_flag   'job_directory'         &&
+  $opt.set_description 'Backup job directory.' || return
 
-	$cmd.add_option "$opt"
+  $cmd.add_option "$opt"
 }
 
 declare -A command_samples
 command_samples=(
-	['build_empty']='build_empty_command'
-	['build_simple']='build_simple_command'
+  ['build_empty']='build_empty_command'
+  ['build_simple']='build_simple_command'
 )
 
 function run_sample() {
-	local i
-	_msg ">>> %s <<<\n" "$1"
-	for (( i=0; i<$2; i++)); do
-		if ! ${command_samples[$1]}; then
-			_msg "\r\033[KFAILED!\n"
-			return 1
-		fi
-		[[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"
-	done
-	_msg "\r\033[K"
+  local i
+  _msg ">>> %s <<<\n" "$1"
+  for (( i=0; i<$2; i++)); do
+    if ! ${command_samples[$1]}; then
+      _msg "\r\033[KFAILED!\n"
+      return 1
+    fi
+    [[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"
+  done
+  _msg "\r\033[K"
 }
 
 function run_samples() {
-	local sample count
-	count=$1
-	local -a samples=("${@:2}")
+  local sample count
+  count=$1
+  local -a samples=("${@:2}")
 
-	for sample in "${samples[@]}"; do
-		if [[ $quiet -eq 1 ]]; then
-			run_sample "${sample}" $count
-		else
-			time run_sample "${sample}" $count
-		fi
-		_msg "\n\n"
-	done
+  for sample in "${samples[@]}"; do
+    if [[ $quiet -eq 1 ]]; then
+      run_sample "${sample}" $count
+    else
+      time run_sample "${sample}" $count
+    fi
+    _msg "\n\n"
+  done
 }
 
 declare -i quiet
@@ -73,11 +73,11 @@ declare opt
 # Option parsing
 while getopts qc: opt
 do
-	case "$opt" in
-		q) quiet=1 ;;
-		c) count=$OPTARG ;;
-		\?) echo 'No arguments supplied'; exit 1 ;;
-	esac
+  case "$opt" in
+    q) quiet=1 ;;
+    c) count=$OPTARG ;;
+    \?) echo 'No arguments supplied'; exit 1 ;;
+  esac
 done
 
 shift $((OPTIND-1))
@@ -85,11 +85,13 @@ unset OPTIND OPTARG opt
 
 declare -a benchmark_samples
 if [[ $# -gt 0 ]]; then
-	benchmark_samples=("$@")
+  benchmark_samples=("$@")
 else
-	benchmark_samples=("${!command_samples[@]}")
+  benchmark_samples=("${!command_samples[@]}")
 fi
 
 _msg "STARTING BENCHMARK WITH %d iterations...\n" $count
 
 run_samples $count "${benchmark_samples[@]}"
+
+# vim: ts=2:sw=2:expandtab
