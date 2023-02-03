@@ -22,6 +22,10 @@ function assert_array() {
 	fi
 }
 
+function assert_function() {
+	declare -f -F "$1" >/dev/null 2>&1 || fail "not a function: $1"
+}
+
 function assert_array_contains() {
 	local haystack_string
 

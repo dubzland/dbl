@@ -3,427 +3,263 @@
 setup() {
   load '../test_helper/common'
   common_setup
+
+  stub __hbl__Object__new stubbed_new
 }
 
-@test 'Class.define() succeeds' {
-  run $Class.define Tester
+teardown() {
+  stub_teardown
+}
+
+stubbed_new() {
+  declare -Ag "$1"
+}
+
+@test '__hbl__Class__static__define() succeeds' {
+  run __hbl__Class__static__define Tester
   assert_success
   refute_output
 }
 
-@test 'Class.define() creates the global object' {
-  $Class.define Tester
-  assert_dict Tester
+@test '__hbl__Class__static__define() creates the global object' {
+  local obj_id
+  __hbl__Class__static__define Tester
+  assert_stub_with_args __hbl__Object__new Tester
 }
 
-@test 'Class.define() assigns the __id__' {
-  $Class.define Tester
-  assert_equal "${Tester[__id__]}" Tester
-}
-
-@test 'Class.define() assigns the __class__' {
-  $Class.define Tester
+@test '__hbl__Class__static__define() assigns the __class__' {
+  __hbl__Class__static__define Tester
   assert_equal "${Tester[__class__]}" Class
 }
 
-@test 'Class.define() assigns the __methods__' {
-  $Class.define Tester
-  assert_equal "${Tester[__methods__]}" Tester__methods
-}
-
-@test 'Class.define() creates the __methods__ global object' {
-  $Class.define Tester
-  assert_dict Tester__methods
-}
-
-@test 'Class.define() initializes the methods to empty' {
-  $Class.define Tester
-  assert_equal ${#Tester__methods__[@]} 0
-}
-
-@test 'Class.define() assigns the __superclass__' {
-  $Class.define Tester
+@test '__hbl__Class__static__define() assigns the __superclass__' {
+  __hbl__Class__static__define Tester
   assert_equal "${Tester[__superclass__]}" Object
 }
 
-@test 'Class.static_method() succeeds' {
-  function Tester_test() { return 0; }
-  $Class.define Tester
-  run $Tester.static_method test Tester_test
+@test '__hbl__Class__static__define() accepts a class definition' {
+  local -A classdef
+  classdef=(
+    [prototype]='_prototype'
+    [static_methods]='_static_methods'
+    [static_references]='_static_references'
+    [references]='_references'
+  )
+  __hbl__Class__static__define Tester classdef
+  assert_equal "${Tester[__prototype__]}" _prototype
+  assert_equal "${Tester[__static_methods__]}" _static_methods
+  assert_equal "${Tester[__static_references__]}" _static_references
+  assert_equal "${Tester[__references__]}" _references
+}
+
+@test '__hbl__Class__extend() succeeds' {
+  run __hbl__Class__extend Object Tester
   assert_success
   refute_output
 }
 
-@test 'Class.static_method() assigns the method to the prototype' {
-  function Tester_test() { printf "I am the Tester class.\n"; }
-  $Class.define Tester
-  $Tester.static_method test Tester_test
-  assert_dict_has_key Tester__static_methods test
-  assert_equal "${Tester__static_methods[test]}" Tester_test
+@test '__hbl__Class__extend() calls .define() to create the class' {
+  stub __hbl__Class__static__define
+  __hbl__Class__extend Object Tester
+  assert_stub_with_args __hbl__Class__static__define Tester
 }
 
-# @test 'Class.static_method() prevents overriding an existing method' {
-# function Tester_test() { return 0; }
-# $Class.define Tester
-# run $Tester.static_method define Tester_test
-# assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
-# }
+@test '__hbl__Class__extend() assigns the proper superclass' {
+  __hbl__Class__extend Object Tester
+  assert_equal "${Tester[__superclass__]}" Object
+}
 
-# @test 'Class.static_method() with a non-function argument fails' {
-# $Class.define Tester
-# run $Tester.static_method test anything
-# assert_failure $HBL_ERR_ARGUMENT
-# }
-
-@test 'Class.method() succeeds' {
-  function Tester_test() { return 0; }
-  $Class.define Tester
-  run $Tester.method test Tester_test
+@test '__hbl__Class__add_static_method() succeeds' {
+  function class__static() { return 0; }
+  local -A class
+  run __hbl__Class__add_static_method class method class__static
   assert_success
   refute_output
 }
 
-@test 'Class.method() assigns the method to the prototype' {
-  function Tester_test() { return 0; }
-  $Class.define Tester
-  $Tester.method test Tester_test
-  assert_equal "${Tester__prototype__methods[test]}" "Tester_test"
+@test '__hbl__Class__add_static_method() creates the global static_methods' {
+  function class__static() { return 0; }
+  local -A class
+  __hbl__Class__add_static_method class method class__static
+  assert_dict class__static_methods
 }
 
-# @test 'Class.method() prevents overriding an existing method' {
-# function Tester_test() { return 0; }
-# $Class.define Tester
-# $Tester.method test Tester_test
-# run $Tester.method test Tester_test
-# assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
-# }
+@test '__hbl__Class__add_static_method() assigns the static_methods' {
+  function class__static() { return 0; }
+  local -A class
+  __hbl__Class__add_static_method class method class__static
+  assert_equal "${class[__static_methods__]}" class__static_methods
+}
 
-# @test 'Class.method() with a non-function argument fails' {
-# $Class.define Tester
-# run $Tester.method test anything
-# assert_failure $HBL_ERR_ARGUMENT
-# }
+@test '__hbl__Class__add_static_method() assigns the method' {
+  function class__static() { return 0; }
+  local -A class
+  __hbl__Class__add_static_method class method class__static
+  assert_equal "${class__static_methods[method]}" class__static
+}
 
-@test 'Class.reference() succeeds' {
-  $Class.define Tester
-  run $Tester.reference children Array
+@test '__hbl__Class__add_static_method() with insufficient arguments fails' {
+  run __hbl__Class__add_static_method class method class__static
+  assert_failure $__hbl__rc__argument_error
+  refute_output
+}
+
+@test '__hbl__Class__add_static_method() with a non-function argument fails' {
+  local -A class
+  run __hbl__Class__add_static_method class method non_function
+  assert_failure $__hbl__rc__argument_error
+  refute_output
+}
+
+@test '__hbl__Class__add_static_reference() calls the object method' {
+  stub __hbl__Object__add_reference
+  __hbl__Class__add_static_reference class method reference
+  assert_stub_with_args __hbl__Object__add_reference class method reference
+}
+
+@test '__hbl__Class__add_prototype_method() succeeds' {
+  local -A class
+  function prototype__method() { return 0; }
+  run __hbl__Class__add_prototype_method class method prototype__method
   assert_success
   refute_output
 }
 
-@test 'Class.reference() assigns the reference to the prototype' {
-  $Class.define Tester
-  $Tester.reference children Array
-  assert_dict_has_key Tester__prototype__references children
-  assert_equal "${Tester__prototype__references[children]}" Array
+@test '__hbl__Class__add_prototype_method() creates the prototype' {
+  local -A class
+  function prototype__method() { return 0; }
+  __hbl__Class__add_prototype_method class method prototype__method
+  assert_dict class__prototype
 }
 
-@test 'Class.new() succeeds' {
-  $Class.define Tester
-  run $Tester.new obj
+@test '__hbl__Class__add_prototype_method() assigns the prototype' {
+  local -A class
+  function prototype__method() { return 0; }
+  __hbl__Class__add_prototype_method class method prototype__method
+  assert_equal "${class[__prototype__]}" class__prototype
+}
+
+@test '__hbl__Class__add_prototype_method() creates the prototype methods' {
+  local -A class
+  function prototype__method() { return 0; }
+  __hbl__Class__add_prototype_method class method prototype__method
+  assert_dict class__prototype__methods
+}
+
+@test '__hbl__Class__add_prototype_method() assigns the prototype methods' {
+  local -A class
+  function prototype__method() { return 0; }
+  __hbl__Class__add_prototype_method class method prototype__method
+  assert_equal "${class__prototype[__methods__]}" class__prototype__methods
+}
+
+@test '__hbl__Class__add_prototype_method() assigns the method' {
+  local -A class
+  function prototype__method() { return 0; }
+  __hbl__Class__add_prototype_method class method prototype__method
+  assert_equal "${class__prototype__methods[method]}" prototype__method
+}
+
+@test '__hbl__Class__add_prototype_method() with insufficient arguments fails' {
+  local -A class
+  run __hbl__Class__add_prototype_method class
+  assert_failure $__hbl__rc__argument_error
+  refute_output
+}
+
+@test '__hbl__Class__add_prototype_method() with a non-function argument fails' {
+  local -A class
+  run __hbl__Class__add_prototype_method class method non_function
+  assert_failure $__hbl__rc__argument_error
+  refute_output
+}
+
+@test '__hbl__Class__add_prototype_attribute() succeeds' {
+  local -A class
+  run __hbl__Class__add_prototype_attribute class attr
   assert_success
   refute_output
 }
 
-@test 'Class.new() calls the initializer' {
-  local tester
-  function Tester__init() {
-    printf "I am the tester initializer\n"
-    local -n this="$1"
-    $this.super
-  }
-  $Class.define Tester
-  $Tester.method __init Tester__init
-  run $Tester.new tester
+@test '__hbl__Class__add_prototype_attribute() creates the prototype' {
+  local -A class
+  __hbl__Class__add_prototype_attribute class attr
+  assert_dict class__prototype
+}
+
+@test '__hbl__Class__add_prototype_attribute() assigns the prototype' {
+  local -A class
+  __hbl__Class__add_prototype_attribute class attr
+  assert_equal "${class[__prototype__]}" class__prototype
+}
+
+@test '__hbl__Class__add_prototype_attribute() creates the prototype attributes' {
+  local -A class
+  __hbl__Class__add_prototype_attribute class attr
+  assert_dict class__prototype__attributes
+}
+
+@test '__hbl__Class__add_prototype_attribute() assigns the prototype attributes' {
+  local -A class
+  __hbl__Class__add_prototype_attribute class attr
+  assert_equal "${class__prototype[__attributes__]}" class__prototype__attributes
+}
+
+@test '__hbl__Class__add_prototype_attribute() assigns the attribute' {
+  local -A class
+  __hbl__Class__add_prototype_attribute class attr
+  [[ -v class__prototype__attributes[attr] ]]
+}
+
+@test '__hbl__Class__add_prototype_attribute() with insufficient arguments fails' {
+  local -A class
+  run __hbl__Class__add_prototype_attribute class
+  assert_failure $__hbl__rc__argument_error
+  refute_output
+}
+
+@test '__hbl__Class__add_prototype_reference() succeeds' {
+  local -A class
+  run __hbl__Class__add_prototype_reference class ref Object
   assert_success
-  assert_output 'I am the tester initializer'
+  refute_output
 }
 
-# @test 'Class.new() creates the global object' {
-# $Class.define Tester
-# $Tester.new obj
-# assert_dict "${obj}"
-# }
-
-# @test 'Class.new() assigns the dispatcher' {
-# $Class.define Tester
-# $Tester.new obj
-# assert_dict_has_key "$obj" 0
-# local -n obj__ref="$obj"
-# assert_equal "${obj__ref[0]}" "__hbl__Object__dispatch_ $obj "
-# }
-
-# @test 'Class.new() assigns the __id' {
-# $Class.define Tester
-# $Tester.new obj
-# assert_dict_has_key "$obj" __id
-# local -n obj__ref="$obj"
-# assert_equal "${obj__ref[__id]}" "$obj"
-# }
-
-# @test 'Class.new() assigns the __class' {
-# $Class.define Tester
-# $Tester.new obj
-# assert_dict_has_key "$obj" __class
-# local -n obj__ref="$obj"
-# assert_equal "${obj__ref[__class]}" Tester
-# }
-
-@test 'calling a static method succeeds' {
-  function Tester_test() { return 0; }
-  $Class.define Tester
-  $Tester.static_method test Tester_test
-  run $Tester.test
-  assert_success
+@test '__hbl__Class__add_prototype_reference() creates the prototype' {
+  local -A class
+  __hbl__Class__add_prototype_reference class ref Object
+  assert_dict class__prototype
 }
 
-@test 'calling a static method passes the proper arguments' {
-  function Tester_test() {
-    assert_equal $# 1
-    assert_equal "$1" 'foo'
-  }
-  $Class.define Tester
-  $Tester.static_method test Tester_test
-  $Tester.test 'foo'
+@test '__hbl__Class__add_prototype_reference() assigns the prototype' {
+  local -A class
+  __hbl__Class__add_prototype_reference class ref Object
+  assert_equal "${class[__prototype__]}" class__prototype
 }
 
-@test 'calling a static method returns the function return code' {
-  function Tester_test() {
-    return 123
-  }
-  $Class.define Tester
-  $Tester.static_method test Tester_test
-  run $Tester.test
-  assert_failure 123
+@test '__hbl__Class__add_prototype_reference() creates the prototype references' {
+  local -A class
+  __hbl__Class__add_prototype_reference class ref Object
+  assert_dict class__prototype__references
 }
 
-# @test 'retrieving system class attributes succeeds' {
-# local var
-# $Class.define Tester
-
-# for attr in "${!Tester[@]}"; do
-#   [[ "$attr" =~ ^__* ]] || continue
-#   run $Tester.get_$attr var
-#   assert_success
-#   refute_output
-
-#   $Tester.get_$attr var
-#   assert_equal "$var" "${Tester[$attr]}"
-# done
-# }
-
-# @test 'retrieving normal class attributes succeeds' {
-# local var
-# $Class.define Tester
-# Tester[myvar]='red'
-# run $Tester.get_myvar var
-# assert_success
-# refute_output
-# }
-
-# @test 'retrieving non existent class attributes fails' {
-# local var
-# $Class.define Tester
-# run $Tester.get_myvar var
-# assert_failure $HBL_ERR_UNDEFINED_METHOD
-# }
-
-# @test 'assigning system class attributes fails' {
-# $Class.define Tester
-
-# for attr in "${!Tester[@]}"; do
-#   [[ "$attr" =~ ^__* ]] || continue
-#   run $Tester.set_$attr 'value'
-#   assert_failure $HBL_ERR_ILLEGAL_INSTRUCTION
-# done
-# }
-
-# @test 'assigning non-existent class attributes fails' {
-# $Class.define Tester
-# run $Tester.set_var 'test'
-# assert_failure $HBL_ERR_UNDEFINED_METHOD
-# }
-
-# @test 'assigning a class attribute succeeds' {
-# $Class.define Tester
-# Tester[color]='red'
-# run $Tester.set_color 'blue'
-# assert_success
-# refute_output
-# }
-
-# @test 'assigning a class attribute sets the value' {
-# $Class.define Tester
-# Tester[color]='red'
-# $Tester.set_color 'blue'
-# assert_equal "${Tester[color]}" 'blue'
-# }
-
-@test 'calling an instance method succeeds' {
-  local new_obj
-  function Tester_test() { return 0; }
-  $Object.extend Tester
-  $Tester.method test Tester_test
-  $Tester.new new_obj
-  run $new_obj.test
-  assert_success
+@test '__hbl__Class__add_prototype_reference() assigns the prototype references' {
+  local -A class
+  __hbl__Class__add_prototype_reference class ref Object
+  assert_equal "${class__prototype[__references__]}" class__prototype__references
 }
 
-@test 'calling an instance method passes the arguments' {
-  local new_obj
-  function Tester_test() {
-    assert_equal $# 2
-    assert_equal "$1" "$obj"
-    assert_equal "$2" 'foo'
-  }
-  $Class.define Tester
-  $Tester.method test Tester_test
-  $Tester.new new_obj
-  $new_obj.test 'foo'
+@test '__hbl__Class__add_prototype_reference() assigns the reference' {
+  local -A class
+  __hbl__Class__add_prototype_reference class ref Object
+  assert_equal "${class__prototype__references[ref]}" Object
 }
 
-@test 'calling an instance method adds an item to the stack' {
-  local new_obj
-  function Tester_test() {
-    assert_equal "${#__hbl__stack[@]}" 1
-    assert_equal "${__hbl__stack[0]}" "$1 test Tester Tester_test"
-  }
-  $Class.define Tester
-  $Tester.method test Tester_test
-  $Tester.new new_obj
-  $new_obj.test
-}
-
-@test 'calling an instance method pops the stack when complete' {
-  local new_obj
-  function Tester_test() { return 0; }
-  $Class.define Tester
-  $Tester.method test Tester_test
-  $Tester.new new_obj
-  $new_obj.test
-  assert_equal "${#__hbl__stack[@]}" 0
-}
-
-@test 'Class#super() within an instance method succeeds' {
-  local new_obj
-  function Tester_inspect() {
-    local -n this="$1"
-    $this.super
-  }
-  $Class.define Tester
-  $Tester.method inspect Tester_inspect
-  $Tester.new new_obj
-  run $new_obj.inspect
-  assert_success
-}
-
-@test 'Class#super() within an instance method calls both methods' {
-  local new_obj
-  function Tester_inspect() {
-    local -n this="$1"
-    printf "Tester_inspect()\n"
-    $this.super
-  }
-  $Class.define Tester
-  $Tester.method inspect Tester_inspect
-  $Tester.new new_obj
-  run $new_obj.inspect
-  assert_line --index 0 "Tester_inspect()"
-  assert_line --index 1 -p "<__hbl__Tester_"
-}
-
-# @test 'Class#get_attr() for a valid attribute succeeds' {
-# function Tester__init() {
-#   local -n this="$1"
-#   this[_foo]='bar'
-# }
-# $Class.define Tester Tester__init
-# $Tester.new obj
-# run ${!obj}.get_foo var
-# assert_success
-# }
-
-# @test 'Class#get_attr() for a valid attribute returns the value' {
-# function Tester__init() {
-#   local -n this="$1"
-#   this[_foo]='bar'
-# }
-# $Class.define Tester Tester__init
-# $Tester.new obj
-# ${!obj}.get_foo var
-# assert_equal "$var" 'bar'
-# }
-
-# @test 'Class#get_attr() for an invalid attribute fails' {
-# $Class.define Tester
-# $Tester.new obj
-# run ${!obj}.get_foo var
-# assert_failure $HBL_ERR_UNDEFINED_METHOD
-# }
-
-# @test 'Class#set_attr() for a valid attribute succeeds' {
-# function Tester__init() {
-#   local -n this="$1"
-#   this[_foo]='bar'
-# }
-# $Class.define Tester Tester__init
-# $Tester.new obj
-# run ${!obj}.set_foo 'baz'
-# assert_success
-# }
-
-# @test 'Class#set_attr() for a valid attribute updates the value' {
-# function Tester__init() {
-#   local -n this="$1"
-#   this[_foo]='bar'
-# }
-# $Class.define Tester Tester__init
-# $Tester.new obj
-# ${!obj}.set_foo 'baz'
-# local -n objr="$obj"
-# assert_equal "${objr[_foo]}" 'baz'
-# }
-
-# @test 'Class#set_attr() for an invalid attribute fails' {
-# $Class.define Tester
-# $Tester.new obj
-# run ${!obj}.set_foo 'baz'
-# assert_failure $HBL_ERR_UNDEFINED_METHOD
-# }
-
-@test 'Class#assign_reference() within an instance method succeeds' {
-  local tester
-  function Tester__init() {
-    local -n this="$1"
-    local children
-    $Array.new children
-    run $this.assign_reference children "$children"
-    assert_success
-    refute_output
-  }
-  $Object.extend Tester Tester__init
-  $Tester.method __init Tester__init
-  $Tester.reference children Array
-  $Tester.new tester
-}
-
-@test 'Class#reference() provides access to the referenced object' {
-  local tester
-  function Tester__init() {
-    local -n this="$1"
-    local children
-    $Array.new children
-    $children.push 'foo'
-    $this.assign_reference children "$children"
-  }
-  $Object.extend Tester
-  $Tester.method __init Tester__init
-  $Tester.reference children Array
-  $Tester.new tester
-  run $tester.children.contains 'foo'
-  assert_success
-  run $tester.children.contains 'bar'
-  assert_failure 1
+@test '__hbl__Class__add_prototype_reference() with insufficient arguments fails' {
+  local -A class
+  run __hbl__Class__add_prototype_reference class
+  assert_failure $__hbl__rc__argument_error
+  refute_output
 }
 
 # vim: ts=2:sw=2:expandtab

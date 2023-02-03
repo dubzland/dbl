@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 # @name Array
 # @brief A library for interacting with Bash arrays.
 

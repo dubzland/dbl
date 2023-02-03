@@ -50,6 +50,40 @@ source "${__hbl__path}/hbl/command/option.sh"  &&
 # # shellcheck source=lib/hbl/util.sh
 source "${__hbl__path}/hbl/util.sh"    || exit
 
+function __hbl__dump_object_() {
+  local -n this="$1"
+  printf "=== %s ===\n" "$1"
+  for key in "${!this[@]}"; do
+    printf "%-20s %s\n" "${key}:" "${this[$key]}"
+  done
+}
+
+function __hbl__dump_entry_() {
+  printf "*** %s ***\n" "${FUNCNAME[1]}"
+  printf "args: %s\n" "${@}"
+  printf "**********\n"
+}
+
+function __hbl__dump_stack_() {
+  printf "\n* * * * * S T A C K * * * * *\n"
+  for item in "${__hbl__stack[@]}"; do
+    printf "%s\n" "$item"
+  done
+  printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
+}
+
+function __hbl__dump_array_() {
+  local item
+  local -n this="$1"
+
+  printf "\n* * * * * %s * * * * *\n" "$1"
+  for item in "${this[@]}"; do
+    printf "%s\n" "$item"
+  done
+
+  printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
+}
+
 #################################################################################
 ## Class
 #################################################################################
@@ -107,7 +141,6 @@ declare -A __hbl__Object__classdef=(
 )
 
 __hbl__Class__static__define Object __hbl__Object__classdef &&
-__hbl__Object__add_method Object new __hbh__Object__new     || exit
 
 unset __hbl__Object__classdef
 
@@ -288,40 +321,6 @@ declare -A __hbl__Dict__classdef=(
 __hbl__Class__extend Object Dict __hbl__Dict__classdef || exit
 
 unset __hbl__Dict__classdef
-
-function __hbl__dump_object_() {
-  local -n this="$1"
-  printf "=== %s ===\n" "$1"
-  for key in "${!this[@]}"; do
-    printf "%-20s %s\n" "${key}:" "${this[$key]}"
-  done
-}
-
-function __hbl__dump_entry_() {
-  printf "*** %s ***\n" "${FUNCNAME[1]}"
-  printf "args: %s\n" "${@}"
-  printf "**********\n"
-}
-
-function __hbl__dump_stack_() {
-  printf "\n* * * * * S T A C K * * * * *\n"
-  for item in "${__hbl__stack[@]}"; do
-    printf "%s\n" "$item"
-  done
-  printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
-}
-
-function __hbl__dump_array_() {
-  local item
-  local -n this="$1"
-
-  printf "\n* * * * * %s * * * * *\n" "$1"
-  for item in "${this[@]}"; do
-    printf "%s\n" "$item"
-  done
-
-  printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
-}
 
 declare -g __hbl__imported
 __hbl__imported=1
