@@ -11,23 +11,21 @@ function __hbl__Object__static__generate_id() {
 }
 
 function __hbl__Object__get_id_() {
-  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
-  local -n this="$1" val__ref="$2"
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+  local -n val__ref="$1"
   val__ref="${this[__id__]}"
 }
 
 function __hbl__Object__get_class_() {
-  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
-  local -n this="$1" val__ref="$2"
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+  local -n val__ref="$2"
   val__ref="${this[__class__]}"
 }
 
 function __hbl__Object__delegate_to_reference_() {
-  [[ $# -ge 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
+  [[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
-  # TODO: Add some sanity checking
-  local -n this="$1"
-  __hbl__Object__dispatch_ "${this[__ref_$2]}" "$3" "${@:4}"
+  __hbl__Object__dispatch_ "${this[__ref_$1]}" "$2" "${@:3}"
 }
 
 function __hbl__Object__push_frame_() {
@@ -46,9 +44,10 @@ function __hbl__Object__push_frame_() {
       "${frame__ref[function]}"
 
     __hbl__stack+=("${frame_str}")
+    local -n this="${frame__ref[object]}"
 
     # run the function
-    ${frame__ref[function]} "${frame__ref[object]}" "$@" || rc=$?
+    ${frame__ref[function]} "$@" || rc=$?
 
     # pop the stack
     unset __hbl__stack[-1]
@@ -266,8 +265,8 @@ function __hbl__Object__new() {
 # @exitcode 0 If successful.
 #
 function __hbl__Object__inspect() {
-  local -n this="$1"
-  printf "<%s" "$1"
+  [[ $# -eq 0 ]] || $Error.argument || return
+  printf "<%s" "${this[__id__]}"
   for attr in "${!this[@]}"; do
     [[ "$attr" =~ ^__ || "$attr" = "0" ]] && continue
     printf " %s='%s'" "$attr" "${this[$attr]}"
@@ -275,19 +274,37 @@ function __hbl__Object__inspect() {
   printf ">\n"
 }
 
-function __hbl__Object__has_method() {
-  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+function __hbl__Object__has_method_() {
+  local -n self="$1"
 
-  local -n this="$1"
-
-  if [[ -v this[__methods__] ]]; then
-    local -n methods="${this[__methods__]}"
+  if [[ -v self[__methods__] ]]; then
+    local -n methods="${self[__methods__]}"
     [[ -v methods["$2"] ]]; return
   fi
 
   return 1
 }
 
+function __hbl__Object__has_method() {
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+
+  __hbl__Object__has_method_ "${!this}" "$1"
+}
+
+function __hbl__Object__add_method_() {
+  local -n self="$1"
+
+  if [[ ! -v self[__methods__] ]]; then
+    self[__methods__]="${self[__id__]}__methods"
+    declare -Ag "${self[__methods__]}"
+  fi
+
+  local -n omethods__ref="${self[__methods__]}"
+
+  omethods__ref[$2]="$3"
+
+  return 0
+}
 ###############################################################################
 # @description Add a method directly to an object.
 #
@@ -301,21 +318,36 @@ function __hbl__Object__has_method() {
 # @exitcode 0 If successful.
 #
 function __hbl__Object__add_method() {
-  [[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
-  __hbl__Util__static__is_function "$3" || $Error.argument || return
+  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+  __hbl__Util__static__is_function "$2" || $Error.argument || return
 
-  local -n this="$1"
+  __hbl__Object__add_method_ "${!this}" "$1" "$2"
 
-  if [[ ! -v this[__methods__] ]]; then
-    this[__methods__]="${this[__id__]}__methods"
-    declare -Ag "${this[__methods__]}"
-  fi
+#   if [[ ! -v this[__methods__] ]]; then
+#     this[__methods__]="${this[__id__]}__methods"
+#     declare -Ag "${this[__methods__]}"
+#   fi
 
-  local -n omethods__ref="${this[__methods__]}"
+#   local -n omethods__ref="${this[__methods__]}"
 
-  omethods__ref[$2]="$3"
+#   omethods__ref[$1]="$2"
 
-  return 0
+#   return 0
+}
+
+function __hbl__Object__add_getter_() {
+  local -n self="$1"
+
+  local obj attr getter
+  attr="$2" getter=""
+
+  # make getter function
+  getter="${self[__id__]}__get_${attr}"
+  source /dev/stdin <<-EOF
+${getter}() { __hbl__Object__read_attribute "$attr" "\$1"; };
+EOF
+
+  __hbl__Object__add_method_ "${!self}"  "get_$attr" "$getter"
 }
 
 ###############################################################################
@@ -324,24 +356,29 @@ function __hbl__Object__add_method() {
 # @example
 #    $obj.add_getter attr
 #
-# @arg $1 string An object id (this)
-# @arg $2 string Name of the attribute
+# @arg $1 string Name of the attribute
 #
 # @exitcode 0 If successful.
 #
 function __hbl__Object__add_getter() {
-  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  local obj attr getter
-  obj="$1" attr="$2" getter=""
+  __hbl__Object__add_getter_ "${!this}" "$1"
+}
 
-  # make getter function
-  getter="${obj}__get_${attr}"
+function __hbl__Object__add_setter_() {
+  local -n self="$1"
+
+  local obj attr setter
+  attr="$2" setter=""
+
+  # make setter function
+  setter="${self[__id__]}__set_${attr}"
   source /dev/stdin <<-EOF
-${getter}() { __hbl__Object__read_attribute "\$1" "$attr" "\${@:2}"; };
+${setter}() { __hbl__Object__write_attribute "${attr}" "\$1"; };
 EOF
 
-  __hbl__Object__add_method "${obj}" "get_$attr" "$getter"
+  __hbl__Object__add_method_ "${!self}" "set_${attr}" "${setter}"
 }
 
 ###############################################################################
@@ -350,24 +387,29 @@ EOF
 # @example
 #    $obj.add_setter attr
 #
-# @arg $1 string An object id (this)
-# @arg $2 string Name of the attribute
+# @arg $1 string Name of the attribute
 #
 # @exitcode 0 If successful.
 #
 function __hbl__Object__add_setter() {
-  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  local obj attr setter
-  obj="$1" attr="$2" setter=""
+  __hbl__Object__add_setter_ "${!this}" "$1"
+}
 
-  # make setter function
-  setter="${obj}__set_${attr}"
+function __hbl__Object__add_reference_() {
+  local -n self="$1"
+
+  local ref ref_func
+  ref="$2"
+
+  ref_func="${self[__id__]}__ref__${ref}"
+
   source /dev/stdin <<-EOF
-${setter}() { __hbl__Object__write_attribute "\$1" "${attr}" "\${@:2}"; };
+${ref_func}() { __hbl__Object__delegate_to_reference_ "$ref" "\$@"; };
 EOF
 
-  __hbl__Object__add_method "${obj}" "set_${attr}" "${setter}"
+  __hbl__Object__add_method_ "${!self}" "$ref" "$ref_func"
 }
 
 ###############################################################################
@@ -376,25 +418,25 @@ EOF
 # @example
 #    $obj.add_refrerence child
 #
-# @arg $1 string An object id (this)
-# @arg $2 string Name of the sub-object
+# @arg $1 string Name of the sub-object
 #
 # @exitcode 0 If successful.
 #
 function __hbl__Object__add_reference() {
-  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  local ref ref_func
-  ref="$2"
-  local -n this="$1"
+  __hbl__Object__add_reference_ "${!this}" "$1"
 
-  ref_func="${!this}__ref__${ref}"
+#   local ref ref_func
+#   ref="$1"
 
-  source /dev/stdin <<-EOF
-${ref_func}() { __hbl__Object__delegate_to_reference_ "\$1" "$ref" "\${@:2}"; };
-EOF
+#   ref_func="${this[__id__]}__ref__${ref}"
 
-  __hbl__Object__add_method "${!this}" "$ref" "$ref_func"
+#   source /dev/stdin <<-EOF
+# ${ref_func}() { __hbl__Object__delegate_to_reference_ "$ref" "\$@"; };
+# EOF
+
+#   __hbl__Object__add_method "$ref" "$ref_func"
 }
 
 ###############################################################################
@@ -403,19 +445,18 @@ EOF
 # @example
 #    $obj.read_attribute color myvar
 #
-# @arg $1 string An object id (this)
-# @arg $2 string Name of the attribute
+# @arg $1 string Name of the attribute
 # @arg $2 string Name of the variable to hold the value
 #
 # @exitcode 0 If successful.
 #
 function __hbl__Object__read_attribute() {
-  [[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] ||
+  [[ $# -eq 2 && -n "$1" && -n "$2" ]] ||
     $Error.argument || return
 
-  local -n obj__ref="$1" ret__ref="$3"
+  local -n ret__ref="$2"
 
-  ret__ref="${obj__ref[$2]}"
+  ret__ref="${this[$1]}"
 
   return 0
 }
@@ -426,20 +467,31 @@ function __hbl__Object__read_attribute() {
 # @example
 #    $obj.write_attribute color red
 #
-# @arg $1 string An object id (this)
-# @arg $2 string Name of the attribute
+# @arg $1 string Name of the attribute
 # @arg $2 string Value to be stored
 #
 # @exitcode 0 If successful.
 #
 function __hbl__Object__write_attribute() {
-  [[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
+  [[ $# -eq 2 && -n "$1" ]] || $Error.argument || return
 
-  local -n this="$1"
-
-  this[$2]="$3"
+  this[$1]="$2"
 
   return 0
+}
+
+function __hbl__Object__assign_reference_() {
+  local -n self="$1"
+
+  local obj_id
+
+  if [[ "$3" =~ ^__hbl__Object__dispatch_ ]]; then
+    $3._get_id_ obj_id
+    self[__ref_$2]="$obj_id"
+  else
+    self[__ref_$2]="$3"
+  fi
+
 }
 
 ###############################################################################
@@ -448,24 +500,24 @@ function __hbl__Object__write_attribute() {
 # @example
 #    $obj.assign_reference child thechild
 #
-# @arg $1 string An object id (this)
-# @arg $2 string Name of the reference
+# @arg $1 string Name of the reference
 # @arg $2 string Id of the referenced object
 #
 # @exitcode 0 If successful.
 #
 function __hbl__Object__assign_reference() {
-  [[ $# -eq 3 && -n "$1" && -n "$2" && -n "$3" ]] || $Error.argument || return
+  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
-  local obj_id
-  local -n this="$1"
+  __hbl__Object__assign_reference_ "${!this}" "$@"
 
-  if [[ "$3" =~ ^__hbl__Object__dispatch_ ]]; then
-    $3._get_id_ obj_id
-    this[__ref_$2]="$obj_id"
-  else
-    this[__ref_$2]="$3"
-  fi
+#   local obj_id
+
+#   if [[ "$2" =~ ^__hbl__Object__dispatch_ ]]; then
+#     $2._get_id_ obj_id
+#     this[__ref_$1]="$obj_id"
+#   else
+#     this[__ref_$1]="$2"
+#   fi
 
 }
 

@@ -88,14 +88,14 @@ function __hbl__dump_array_() {
 ## Class
 #################################################################################
 declare -Agr __hbl__Class__prototype__methods=(
-  [new]=__hbl__Class__new
-  [extend]=__hbl__Class__extend
   [inspect]=__hbl__Class__inspect
+  [extend]=__hbl__Class__extend
   [static_method]=__hbl__Class__add_static_method
   [static_reference]=__hbl__Class__add_static_reference
-  [method]=__hbl__Class__add_prototype_method
-  [attribute]=__hbl__Class__add_prototype_attribute
-  [reference]=__hbl__Class__add_prototype_reference
+  [prototype_method]=__hbl__Class__add_prototype_method
+  [prototype_attribute]=__hbl__Class__add_prototype_attribute
+  [prototype_reference]=__hbl__Class__add_prototype_reference
+  [new]=__hbl__Class__new
 )
 
 declare -Agr __hbl__Class__prototype=(
@@ -123,6 +123,7 @@ declare -Agr __hbl__Object__prototype__methods=(
   [inspect]=__hbl__Object__inspect
   [read_attribute]=__hbl__Object__read_attribute
   [write_attribute]=__hbl__Object__write_attribute
+  [has_method]=__hbl__Object__has_method
   [add_method]=__hbl__Object__add_method
   [add_reference]=__hbl__Object__add_reference
   [add_getter]=__hbl__Object__add_getter
@@ -136,11 +137,16 @@ declare -Agr __hbl__Object__prototype=(
   [__methods__]=__hbl__Object__prototype__methods
 )
 
-declare -A __hbl__Object__classdef=(
-  [prototype]=__hbl__Object__prototype
+declare -Agr __hbl__Object__static_methods=(
+  [generate_id]=__hbl__Object__static__generate_id
 )
 
-__hbl__Class__static__define Object __hbl__Object__classdef &&
+declare -A __hbl__Object__classdef=(
+  [prototype]=__hbl__Object__prototype
+  [static_methods]=__hbl__Object__static_methods
+)
+
+__hbl__Class__static__define Object __hbl__Object__classdef || exit
 
 unset __hbl__Object__classdef
 
@@ -169,6 +175,7 @@ declare -Agr __hbl__Array__prototype=(
 )
 
 declare -Agr __hbl__Array__static_methods=(
+  [is_array]=__hbl__Array__static__is_array
   [at]=__hbl__Array__static__at
   [shift]=__hbl__Array__static__shift
   [unshift]=__hbl__Array__static__unshift
@@ -184,7 +191,8 @@ declare -A __hbl__Array__classdef=(
   [static_methods]=__hbl__Array__static_methods
 )
 
-__hbl__Class__extend Object Array __hbl__Array__classdef || exit
+$Object.extend Array __hbl__Array__classdef || exit
+# __hbl__Class__extend Object Array __hbl__Array__classdef || exit
 
 unset __hbl__Array__classdef
 
@@ -256,7 +264,8 @@ declare -A __hbl__Command__classdef=(
   [prototype]=__hbl__Command__prototype
 )
 
-__hbl__Class__extend Object Command __hbl__Command__classdef || exit
+$Object.extend Command __hbl__Command__classdef || exit
+# __hbl__Class__extend Object Command __hbl__Command__classdef || exit
 
 unset __hbl__Command__classdef
 
@@ -289,7 +298,8 @@ declare -A __hbl__Command__Option__classdef=(
   [prototype]=__hbl__Command__Option__prototype
 )
 
-__hbl__Class__extend Object Command__Option __hbl__Command__Option__classdef || exit
+$Object.extend Command__Option __hbl__Command__Option__classdef || exit
+# __hbl__Class__extend Object Command__Option __hbl__Command__Option__classdef || exit
 
 unset __hbl__Command__Option__classdef
 
@@ -318,7 +328,8 @@ declare -A __hbl__Dict__classdef=(
   [prototype]=__hbl__Dict__prototype
 )
 
-__hbl__Class__extend Object Dict __hbl__Dict__classdef || exit
+$Object.extend Dict __hbl__Dict__classdef || exit
+# __hbl__Class__extend Object Dict __hbl__Dict__classdef || exit
 
 unset __hbl__Dict__classdef
 

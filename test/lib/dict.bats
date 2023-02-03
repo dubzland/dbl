@@ -18,7 +18,7 @@ setup() {
   refute_output
 }
 
-@test 'Dict#set()  succeeds' {
+@test 'Dict#set() succeeds' {
   $Dict.new dict
   run $dict.set 'foo' 'bar'
   assert_success

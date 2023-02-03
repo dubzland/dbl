@@ -227,26 +227,22 @@ function __hbl__Array__static__contains() {
 }
 
 function __hbl__Array__init() {
-  [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"
   $this.super || return
 
-  this[_raw]="$1__raw_array"
+  this[_raw]="${this[__id__]}__raw_array"
   declare -ag "${this[_raw]}"
   local -n _raw="${this[_raw]}"
-  _raw=("${@:2}")
+  _raw=("$@")
   this[size]=${#_raw[@]}
 }
 
 function __hbl__Array__at() {
-  [[ $# -ge 3 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
+  [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
+
   __hbl__Array__static__at "${this[_raw]}" "$@"
 }
 
 function __hbl__Array__shift() {
-  [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
   local -n _raw="${this[_raw]}"
 
   __hbl__Array__static__shift "${this[_raw]}" "$@" || return
@@ -257,8 +253,7 @@ function __hbl__Array__shift() {
 }
 
 function __hbl__Array__unshift() {
-  [[ $# -ge 2 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
+  [[ $# -ge 1 ]] || $Error.argument || return
   local -n _raw="${this[_raw]}"
 
   __hbl__Array__static__unshift "${this[_raw]}" "$@" || return
@@ -269,11 +264,9 @@ function __hbl__Array__unshift() {
 }
 
 function __hbl__Array__push() {
-  [[ $# -ge 2 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
+  [[ $# -ge 1 ]] || $Error.argument || return
 
   __hbl__Array__static__push "${this[_raw]}" "$@" || return
-
 
   this[size]=${#_raw[@]}
 
@@ -281,8 +274,6 @@ function __hbl__Array__push() {
 }
 
 function __hbl__Array__pop() {
-  [[ $# -ge 2 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
   local -n _raw="${this[_raw]}"
 
   __hbl__Array__static__pop "${this[_raw]}" "$@" || return
@@ -293,8 +284,7 @@ function __hbl__Array__pop() {
 }
 
 function __hbl__Array__sort() {
-  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
+  [[ $# -eq 0 ]] || $Error.argument || return
 
   __hbl__Array__static__sort "${this[_raw]}" || return
 
@@ -302,20 +292,16 @@ function __hbl__Array__sort() {
 }
 
 function __hbl__Array__contains() {
-  [[ $# -ge 2 && -n "$1" ]] || $Error.argument || return
-  local -n this="$1"; shift
+  [[ $# -ge 1 ]] || $Error.argument || return
 
   __hbl__Array__static__contains "${this[_raw]}" "$@"
 }
 
 function __hbl__Array__to_array() {
-  [[ $# -eq 2 && -n "$1" ]] || $Error.argument || return
-
-  local -n this=$1
-  local tgt="$2"
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   local -n _raw="${this[_raw]}"
-  local -n tgt__ref="$tgt"
+  local -n tgt__ref="$1"
   tgt__ref=("${_raw[@]}")
 
   return 0
