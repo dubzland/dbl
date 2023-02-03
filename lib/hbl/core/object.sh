@@ -266,8 +266,14 @@ function __hbl__Object__new() {
 #
 function __hbl__Object__inspect() {
   [[ $# -eq 0 ]] || $Error.argument || return
+  local -a attrs
+  local attr
   printf "<%s" "${this[__id__]}"
   for attr in "${!this[@]}"; do
+    attrs+=("$attr")
+  done
+  __hbl__Array__static__sort attrs
+  for attr in "${attrs[@]}"; do
     [[ "$attr" =~ ^__ || "$attr" = "0" ]] && continue
     printf " %s='%s'" "$attr" "${this[$attr]}"
   done
