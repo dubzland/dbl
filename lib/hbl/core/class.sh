@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
+# @name Class
+# @brief A pseudo-class system for Bash 4.4+
 
+###############################################################################
+# @description Create a Class with no base
+#
+# @example
+#    $Class.define Person
+#
+# @arg $1 string The name of the new class
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__static__define() {
   local name new_cls new_cls_id
   name="$1" new_cls="" new_cls_id=""
@@ -32,6 +44,16 @@ function __hbl__Class__static__define() {
   return 0
 }
 
+###############################################################################
+# @description Create a Class derived from a base
+#
+# @example
+#    $Object.extend Person
+#
+# @arg $1 string The name of the new class
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__extend() {
   __hbl__Class__static__define "$@"
 
@@ -43,11 +65,20 @@ function __hbl__Class__extend() {
   return 0
 }
 
+###############################################################################
+# @description Add a static class method
+#
+# @example
+#    $Person.static_method person_count Person__static__count
+#
+# @arg $1 string The name of the method
+# @arg $2 string The name of the function to be invoked
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__add_static_method() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
   __hbl__Util__static__is_function "$2" || $Error.argument || return
-
-  # local -n cls__ref="$1"
 
   if [[ ! -v this[__static_methods__] ]]; then
     this[__static_methods__]="${this[__id__]}__static_methods"
@@ -60,12 +91,31 @@ function __hbl__Class__add_static_method() {
   return 0
 }
 
+###############################################################################
+# @description Add a static class reference
+#
+# @example
+#    $Person.static_reference people
+#
+# @arg $1 string The name of the reference
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__add_static_reference() {
-  __hbl__Object__add_reference "${this[__id__]}" "$1" "$2"
-
-  return 0
+  __hbl__Object__add_reference "${this[__id__]}" "$1"
 }
 
+###############################################################################
+# @description Add a prototype method to a class
+#
+# @example
+#    $Dog.prototype_method speak Dog__bark
+#
+# @arg $1 string The name of the method
+# @arg $2 string The name of the function to be invoked
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__add_prototype_method() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
   __hbl__Util__static__is_function "$2" || $Error.argument || return
@@ -88,6 +138,17 @@ function __hbl__Class__add_prototype_method() {
   return 0
 }
 
+###############################################################################
+# @description Add a prototype attribute to a class
+#
+# @example
+#    $Dog.prototype_attribute breed $__hbl__attr__getter
+#
+# @arg $1 string The name of the attribute
+# @arg $2 number Flag indicating accessor to be created
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__add_prototype_attribute() {
   [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
 
@@ -117,6 +178,17 @@ function __hbl__Class__add_prototype_attribute() {
   return 0
 }
 
+###############################################################################
+# @description Add a prototype reference to a class
+#
+# @example
+#    $Teacher.prototype_reference children Array
+#
+# @arg $1 string The name of the reference
+# @arg $2 string The type of reference being added
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Class__add_prototype_reference() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
@@ -145,16 +217,16 @@ function __hbl__Class__new_() {
   local -n id__ref="$2"
   shift 2
 
-  # Build the object
+  # build the object
   __hbl__Object__static__generate_id "${self[__id__]}" obj
   __hbl__Object__new "$obj" || return
-
 
   local -n obj__ref="$obj"
   obj__ref[__class__]="${self[__id__]}"
 
   cls="${obj__ref[__class__]}"
 
+  # copy prototype members
   while [[ -n "$cls" ]]; do
     local -n cls__ref="$cls"
 

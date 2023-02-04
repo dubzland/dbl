@@ -66,55 +66,25 @@ function __hbl__Object__dispatch_() {
   ###########################################################################
   #
   # This is where we process all methods called on "objects" within the
-  # system.  As an example, imagine we have the following Classes:
+  # system.
   #
-  #   class Person
-  #     attributes
-  #       first_name
-  #       last_name
-  #     methods
-  #       say_hello
-  #     static_methods
-  #       person_count
+  # Given a Teacher class with a 'name' attribute and a 'students' reference:
   #
-  #   class Student
-  #     references
-  #       grades
-  #     methods
-  #       say_hello
+  # $Teacher.new teacher
+  #   $1: Teacher
+  #   $2: .new
+  #   $3: teacher
   #
-  # If we have a student john, we can expect the following method calls
-  # and their resultant arguments to this function:
+  # $teacher.set_name 'Jane Smith'
+  #   $1: __hbl__Teacher_0
+  #   $2: .set_name
+  #   $3: 'Jane Smith'
   #
-  # $john.get_first_name first_name
+  # $teacher.students.push "$student"
+  #   $1: __hbl__Teacher_0
+  #   $2: .students.push
+  #   $3: __hbl__Student_0
   #
-  #   $1: __hbl__Student_982
-  #   $2: .get_first_name
-  #   $3 first_name
-  #
-  # $john.grades.push 100
-  #
-  #   $1: __hbl__Student_982
-  #   $2: .grades.push
-  #   $3: 100
-  #
-  # $john.say_hello
-  #
-  #   $1: __hbl__Student_982
-  #   $2: .grades.push
-  #   $3: 100
-  #
-  # stored in a variable named `car`.
-  #
-  #   $car.set_color 'red'
-  #
-  # Will result in the following arguments:
-  #
-  #   $1: __hbl__Car__12345
-  #   $2: .set_color
-  #   $3: red
-  #
-
   local selector lcls lfunc rc
   local -i resolved
   local -a pframe
@@ -123,21 +93,28 @@ function __hbl__Object__dispatch_() {
   frame[object]="$1" frame[method]="" frame[class]="" frame[function]=""
   selector="${2#\.}" lcls="" lfunc="" pframe=() resolved=0 rc=0
   shift 2
-  # `selector` is whatever was specified as the "action" (ex. `.inspect`)
-  # with the leading '.' removed.
+
   #
   # We need to split it into the method to be called and any trailing methods
-  # that are part of a chain (for 
+  # that are part of a chain (for references)
+  #
   frame[method]="${selector%%.*}"
   if [[ -n "${selector#${frame[method]}}" ]]; then
     set -- "${selector#${frame[method]}}" "$@"
   fi
 
+  #
+  # Get the class for the object we're acting on
+  #
   local -n __obj__ref="${frame[object]}"
   lcls="${__obj__ref[__class__]}"
   frame[class]="${lcls}"
 
   if [[ "${frame[method]}" = super ]]; then
+    #
+    # If .super was invoked (for example, fron within an initializer or member
+    # function), we have to be sure we're in a valid context.
+    #
     [[ ${#__hbl__stack[@]} -gt 0 ]] || {
       printf "no previous function call to execute super.\n";
       $Error.illegal_instruction || return
@@ -145,13 +122,21 @@ function __hbl__Object__dispatch_() {
 
     pframe=(${__hbl__stack[-1]})
 
+    #
+    # Make sure super was invoked from the last function we dispatched.
+    #
+    # This ensures we're only processing super from within a member function,
+    # and prevents calling super on another object.
+    #
     [[ "${frame[object]}" = "${pframe[0]}" ]] || return
     [[ "${FUNCNAME[1]}" = "${pframe[3]}" ]] || return
 
 
+    #
     # We're still in the last function we called.
     # Grab a reference to the last class we dispatched to and move
     # to its superclass.
+    #
     local -n scls__ref="${pframe[2]}"
     frame[class]="${scls__ref[__superclass__]}"
     frame[method]="${pframe[1]}"
@@ -167,6 +152,9 @@ function __hbl__Object__dispatch_() {
       frame[method]="${frame[method]#\.}"
     fi
 
+    #
+    # Check for a direct method on whatever object we're acting on
+    #
     local -n dobj__ref="${frame[object]}"
     if [[ -v dobj__ref[__methods__] ]]; then
       local -n dmethods__ref="${dobj__ref[__methods__]}"
@@ -178,6 +166,10 @@ function __hbl__Object__dispatch_() {
   fi
 
   if [[ $resolved -ne 1 ]]; then
+    #
+    # No direct method found.  Walk the prototype tree looking for instance
+    # methods.
+    #
     lcls="${frame[class]}"
     while [[ -n "$lcls" ]]; do
       local -n pcls__ref="$lcls"
@@ -204,10 +196,17 @@ function __hbl__Object__dispatch_() {
   fi
 
   if [[ $resolved -eq 1 ]]; then
+    #
+    # Instance method found.  Invoke it.
+    #
     __hbl__Object__push_frame_ frame "$@"
     return
   fi
 
+  #
+  # No direct or prototype method found.  Walk the superclass tree looking
+  # for a static method.
+  #
   lcls="${frame[object]}"
   while [[ -n "$lcls" ]]; do
     local -n mcls__ref="$lcls"
@@ -229,7 +228,9 @@ function __hbl__Object__dispatch_() {
   done
 
   if [[ $resolved -eq 1 ]]; then
-    # call the function
+    #
+    # call the static function
+    #
     frame[object]=''
     __hbl__Object__push_frame_ frame "$@"
     return
@@ -238,6 +239,14 @@ function __hbl__Object__dispatch_() {
   $Error.undefined_method || exit
 }
 
+###############################################################################
+# @description Instantiate a new Object
+#
+# @example
+#    $Object.new myobj
+#
+# @exitcode 0 If successful.
+#
 function __hbl__Object__new() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
@@ -285,12 +294,23 @@ function __hbl__Object__has_method_() {
 
   if [[ -v self[__methods__] ]]; then
     local -n methods="${self[__methods__]}"
-    [[ -v methods["$2"] ]]; return
+    [[ -v methods["$2"] ]]
+  else
+    return 1
   fi
-
-  return 1
 }
 
+###############################################################################
+# @description Check for a direct method on an Object instance.
+#
+# @example
+#    $obj.has_method perform
+#
+# @arg $1 string The method name to check for
+#
+# @exitcode 0 If the Object instance responds to the method
+# @exitcode 1 If the Object instance does not respond to the method
+#
 function __hbl__Object__has_method() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
@@ -311,6 +331,7 @@ function __hbl__Object__add_method_() {
 
   return 0
 }
+
 ###############################################################################
 # @description Add a method directly to an object.
 #
@@ -328,17 +349,6 @@ function __hbl__Object__add_method() {
   __hbl__Util__static__is_function "$2" || $Error.argument || return
 
   __hbl__Object__add_method_ "${!this}" "$1" "$2"
-
-#   if [[ ! -v this[__methods__] ]]; then
-#     this[__methods__]="${this[__id__]}__methods"
-#     declare -Ag "${this[__methods__]}"
-#   fi
-
-#   local -n omethods__ref="${this[__methods__]}"
-
-#   omethods__ref[$1]="$2"
-
-#   return 0
 }
 
 function __hbl__Object__add_getter_() {
@@ -432,17 +442,6 @@ function __hbl__Object__add_reference() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   __hbl__Object__add_reference_ "${!this}" "$1"
-
-#   local ref ref_func
-#   ref="$1"
-
-#   ref_func="${this[__id__]}__ref__${ref}"
-
-#   source /dev/stdin <<-EOF
-# ${ref_func}() { __hbl__Object__delegate_to_reference_ "$ref" "\$@"; };
-# EOF
-
-#   __hbl__Object__add_method "$ref" "$ref_func"
 }
 
 ###############################################################################

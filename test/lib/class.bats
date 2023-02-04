@@ -127,8 +127,8 @@ dummy_id() {
 @test 'Class#static_reference() calls the object method' {
   $Class.define Tester
   stub __hbl__Object__add_reference
-  $Tester.static_reference method reference
-  assert_stub_with_args __hbl__Object__add_reference Tester method reference
+  $Tester.static_reference children
+  assert_stub_with_args __hbl__Object__add_reference Tester children
 }
 
 @test 'Class#prototype_method() succeeds' {
