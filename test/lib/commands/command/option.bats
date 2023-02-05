@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 setup() {
-  load '../../test_helper/common'
+  load '../../../test_helper/common'
   common_setup
 }
 

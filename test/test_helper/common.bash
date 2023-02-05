@@ -6,7 +6,7 @@ common_setup() {
 	load "${TEST_ROOT}/test_helper/bats-assert/load"
 	load "${TEST_ROOT}/test_helper/hbl-stubs/load"
 	load "${TEST_ROOT}/test_helper/assertions"
-	source "${TEST_ROOT}/../lib/hbl.sh"
+	source "${TEST_ROOT}/../lib/hbl.bash"
 }
 
 function hbl_test__noop() {

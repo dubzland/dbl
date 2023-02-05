@@ -38,6 +38,25 @@ function __hbl__Util__static__is_function() {
 }
 
 ###############################################################################
+# @description Determine whether or not a variable is an integer.
+#
+# @example
+#    $Util.is_integer myvar
+#
+# @arg $1 string A value to check
+#
+# @exitcode 0 If successful.
+# @exitcode 1 If the argument is not an integer
+#
+function __hbl__Util__static__is_integer() {
+  [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
+
+  local re='^[+-]?[0-9]+([.][0-9]+)?$'
+
+  [[ $1 =~ $re ]]
+}
+
+###############################################################################
 # @description Determine whether or not a variable is an associative array.
 #
 # @example
