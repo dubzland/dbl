@@ -13,11 +13,11 @@ declare -Agr __hbl__Command__prototype__methods=(
   [add_example]=__hbl__Command__add_example
   [add_option]=__hbl__Command__add_option
   [add_subcommand]=__hbl__Command__add_subcommand
+  [usage]=__hbl__Command__usage
 )
 
 declare -Agr __hbl__Command__prototype__attributes=(
   [name]=$__hbl__attr__both
-  [entrypoint]=$__hbl__attr__both
   [description]=$__hbl__attr__both
 )
 

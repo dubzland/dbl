@@ -45,7 +45,7 @@ function __hbl__Dict__static__has_key() {
 function __hbl__Dict__init() {
   [[ $# -eq 0 ]] || $Error.argument || return
 
-  $this.super || return
+  __hbl__Object__init || return
 
   this[_raw]="${!this}__raw_dict"
   this[size]=0

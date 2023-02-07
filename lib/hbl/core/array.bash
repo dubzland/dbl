@@ -266,7 +266,7 @@ function __hbl__Array__static__contains() {
 }
 
 function __hbl__Array__init() {
-  $this.super || return
+  __hbl__Object__init || return
 
   this[_raw]="${this[__id__]}__raw_array"
   declare -ag "${this[_raw]}"

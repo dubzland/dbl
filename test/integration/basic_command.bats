@@ -3,27 +3,29 @@
 setup() {
   load '../test_helper/common'
   common_setup
+
+  $Command.extend BackupCommand
+  $BackupCommand.prototype_method __init BackupCommand__init
+}
+
+function BackupCommand__init() {
+  $this.super           'backup-client' || return
+
+  $this.set_description 'Manage backup jobs.'      || return
+  $this.examples.push   '-d /etc/jobs.d <options>' || return
+
+  $Command__Option.new opt 'job_directory'     || return
+  $opt.set_type        'dir'                   || return
+  $opt.set_short_flag  'd'                     || return
+  $opt.set_long_flag   'job_directory'         || return
+  $opt.set_description 'Backup job directory.' || return
+  $opt.assign_reference command "$this"        || return
+
+  $this.options.set 'job_directory' "$opt"
 }
 
 function create_basic_command() {
-  local _cmd cmd_var opt
-  cmd_var="$1"
-  local -n cmd_var__ref="$cmd_var"
-
-  $Command.new _cmd 'backup-client' backup_client_run
-
-  ${!_cmd}.set_description 'Manage backup jobs.'
-  ${!_cmd}.add_example     '-d /etc/jobs.d <options>'
-
-  $Option.new opt 'job_directory'
-  ${!opt}.set_type        'dir'
-  ${!opt}.set_short_flag  'd'
-  ${!opt}.set_long_flag   'job_directory'
-  ${!opt}.set_description 'Backup job directory.'
-
-  ${!_cmd}.add_option "$opt"
-  cmd_var__ref="$_cmd"
-  return 0
+  $BackupCommand.new $1
 }
 
 @test 'Creating a basic command' {
@@ -34,10 +36,9 @@ function create_basic_command() {
 }
 
 @test 'Showing basic command usage' {
-  TRACE=1
   local cmd
   create_basic_command cmd
-  run $cmd:show_usage
+  run $cmd.usage
   assert_success
   assert_output - <<-EOF
 Usage:

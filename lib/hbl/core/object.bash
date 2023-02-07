@@ -514,16 +514,6 @@ function __hbl__Object__assign_reference() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
   __hbl__Object__assign_reference_ "${!this}" "$@"
-
-#   local obj_id
-
-#   if [[ "$2" =~ ^__hbl__Object__dispatch_ ]]; then
-#     $2._get_id_ obj_id
-#     this[__ref_$1]="$obj_id"
-#   else
-#     this[__ref_$1]="$2"
-#   fi
-
 }
 
 function __hbl__Object__init() {

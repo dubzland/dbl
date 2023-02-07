@@ -1,31 +1,40 @@
 #!/usr/bin/env bash
 
-source "${BASH_SOURCE%/*}/../lib/hbl.sh" || exit
+source "${BASH_SOURCE%/*}/../lib/hbl.bash" || exit
 
 function _msg() {
   [[ $quiet -eq 1 ]] && return
   printf "$1" "${@:2}"
 }
 
+function SimpleCommand__init() {
+  $this.super 'simple-command' || return
+
+  $this.set_description 'A simple command.'             || return
+  $this.examples.push   '-c /etc/simple.conf <options>' || return
+
+  $Command__Option.new opt 'config_file'     || return
+  $opt.set_type        'file'                || return
+  $opt.set_short_flag  'c'                   || return
+  $opt.set_long_flag   'config_file'         || return
+  $opt.set_description 'Configuration file.' || return
+  $opt.assign_reference command "$this"      || return
+
+  $this.options.set 'config_file' "$opt"
+}
+
+$Command.extend SimpleCommand
+$SimpleCommand.prototype_method __init SimpleCommand__init
+
 function build_empty_command() {
   local cmd
-  $Command.new cmd 'backup-client' backup_client_run || return
+  $Command.new cmd 'empty-command'
 }
 
 function build_simple_command() {
   local cmd opt
 
-  $Command.new cmd 'backup-client' backup_client_run &&
-  $cmd.set_description 'Manage backup jobs.'         &&
-  $cmd.add_example     '-d /etc/jobs.d <options>'    || return
-
-  $Command__Option.new opt 'job_directory'     &&
-  $opt.set_type        'dir'                   &&
-  $opt.set_short_flag  'd'                     &&
-  $opt.set_long_flag   'job_directory'         &&
-  $opt.set_description 'Backup job directory.' || return
-
-  $cmd.add_option "$opt"
+  $SimpleCommand.new cmd
 }
 
 declare -A command_samples
@@ -35,11 +44,13 @@ command_samples=(
 )
 
 function run_sample() {
-  local i
+  local i rc
   _msg ">>> %s <<<\n" "$1"
   for (( i=0; i<$2; i++)); do
-    if ! ${command_samples[$1]}; then
-      _msg "\r\033[KFAILED!\n"
+    ${command_samples[$1]}
+    rc=$?
+    if [[ $rc -ne 0 ]]; then
+      _msg "\r\033[KFAILED! [$rc]\n"
       return 1
     fi
     [[ $((i%10)) -eq 0 ]] && _msg "\r%d iterations complete." "$i"

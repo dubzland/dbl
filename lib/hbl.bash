@@ -5,11 +5,6 @@
 
 declare -ir __hbl__force_bash4=${FORCE_BASH4:-0}
 
-# shellcheck source=lib/hbl/core.bash
-source "${BASH_SOURCE%/*}/hbl/core.bash"     &&
-# shellcheck source=lib/hbl/commands.bash
-source "${BASH_SOURCE%/*}/hbl/commands.bash" || exit
-
 function __hbl__dump_object_() {
   local -n this="$1"
   printf "=== %s ===\n" "$1"
@@ -43,6 +38,11 @@ function __hbl__dump_array_() {
 
   printf "^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n\n"
 }
+
+# shellcheck source=lib/hbl/core.bash
+source "${BASH_SOURCE%/*}/hbl/core.bash"     &&
+# shellcheck source=lib/hbl/commands.bash
+source "${BASH_SOURCE%/*}/hbl/commands.bash" || exit
 
 declare -g __hbl__imported
 __hbl__imported=1
