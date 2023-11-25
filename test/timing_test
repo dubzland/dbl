@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "./lib/hbl.sh"
+source "./lib/dbl.sh"
 
 function foo_init() {
 	return 0

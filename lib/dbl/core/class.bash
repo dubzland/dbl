@@ -12,11 +12,11 @@
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__static__define() {
+function __dbl__Class__static__define() {
   local name new_cls new_cls_id
   name="$1" new_cls="" new_cls_id=""
 
-  __hbl__Object__new "$name" || return
+  __dbl__Object__new "$name" || return
 
   local -n cls__ref="$name"
   cls__ref[__class__]=Class
@@ -54,8 +54,8 @@ function __hbl__Class__static__define() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__extend() {
-  __hbl__Class__static__define "$@"
+function __dbl__Class__extend() {
+  __dbl__Class__static__define "$@"
 
   if [[ "${!this}" != Class ]]; then
     local -n cls__ref="$1"
@@ -76,9 +76,9 @@ function __hbl__Class__extend() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__add_static_method() {
+function __dbl__Class__add_static_method() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
-  __hbl__Util__static__is_function "$2" || $Error.argument || return
+  __dbl__Util__static__is_function "$2" || $Error.argument || return
 
   if [[ ! -v this[__static_methods__] ]]; then
     this[__static_methods__]="${this[__id__]}__static_methods"
@@ -101,8 +101,8 @@ function __hbl__Class__add_static_method() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__add_static_reference() {
-  __hbl__Object__add_reference "${this[__id__]}" "$1"
+function __dbl__Class__add_static_reference() {
+  __dbl__Object__add_reference "${this[__id__]}" "$1"
 }
 
 ###############################################################################
@@ -116,9 +116,9 @@ function __hbl__Class__add_static_reference() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__add_prototype_method() {
+function __dbl__Class__add_prototype_method() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
-  __hbl__Util__static__is_function "$2" || $Error.argument || return
+  __dbl__Util__static__is_function "$2" || $Error.argument || return
 
   if [[ ! -v this[__prototype__] ]]; then
     this[__prototype__]="${this[__id__]}__prototype"
@@ -142,14 +142,14 @@ function __hbl__Class__add_prototype_method() {
 # @description Add a prototype attribute to a class
 #
 # @example
-#    $Dog.prototype_attribute breed $__hbl__attr__getter
+#    $Dog.prototype_attribute breed $__dbl__attr__getter
 #
 # @arg $1 string The name of the attribute
 # @arg $2 number Flag indicating accessor to be created
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__add_prototype_attribute() {
+function __dbl__Class__add_prototype_attribute() {
   [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
 
   local access
@@ -171,7 +171,7 @@ function __hbl__Class__add_prototype_attribute() {
   if [[ $# -gt 1 ]]; then
     access=$2
   else
-    access=$__hbl__attr__both
+    access=$__dbl__attr__both
   fi
   pattributes__ref["$1"]=$access
 
@@ -189,7 +189,7 @@ function __hbl__Class__add_prototype_attribute() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Class__add_prototype_reference() {
+function __dbl__Class__add_prototype_reference() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
   if [[ ! -v this[__prototype__] ]]; then
@@ -210,7 +210,7 @@ function __hbl__Class__add_prototype_reference() {
   return 0
 }
 
-function __hbl__Class__new_() {
+function __dbl__Class__new_() {
   local obj key cls init icls
   init="" icls=""
   local -n self="$1"
@@ -218,8 +218,8 @@ function __hbl__Class__new_() {
   shift 2
 
   # build the object
-  __hbl__Object__static__generate_id "${self[__id__]}" obj
-  __hbl__Object__new "$obj" || return
+  __dbl__Object__static__generate_id "${self[__id__]}" obj
+  __dbl__Object__new "$obj" || return
 
   local -n obj__ref="$obj"
   obj__ref[__class__]="${self[__id__]}"
@@ -237,8 +237,8 @@ function __hbl__Class__new_() {
         local -n cmethods__ref="${cproto__ref[__methods__]}"
 
         for key in "${!cmethods__ref[@]}"; do
-          if ! __hbl__Object__has_method_ "${!obj__ref}" "$key"; then
-            __hbl__Object__add_method_ "${!obj__ref}" "$key" "${cmethods__ref[$key]}" || return
+          if ! __dbl__Object__has_method_ "${!obj__ref}" "$key"; then
+            __dbl__Object__add_method_ "${!obj__ref}" "$key" "${cmethods__ref[$key]}" || return
           fi
 
           if [[ "$key" = '__init' && -z "$init" ]]; then
@@ -253,12 +253,12 @@ function __hbl__Class__new_() {
 
         for key in "${!cattrs__ref[@]}"; do
           local attr_flag="${cattrs__ref[$key]}"
-          if [[ $((attr_flag & __hbl__attr__getter)) -gt 0 ]]; then
-            __hbl__Object__add_getter_ "${!obj__ref}" "$key" || return
+          if [[ $((attr_flag & __dbl__attr__getter)) -gt 0 ]]; then
+            __dbl__Object__add_getter_ "${!obj__ref}" "$key" || return
           fi
 
-          if [[ $((attr_flag & __hbl__attr__setter)) -gt 0 ]]; then
-            __hbl__Object__add_setter_ "${!obj__ref}" "$key" || return
+          if [[ $((attr_flag & __dbl__attr__setter)) -gt 0 ]]; then
+            __dbl__Object__add_setter_ "${!obj__ref}" "$key" || return
           fi
 
           obj__ref[$key]=''
@@ -269,7 +269,7 @@ function __hbl__Class__new_() {
         local -n creferences__ref="${cproto__ref[__references__]}"
         for key in "${!creferences__ref[@]}"; do
           local ref_class="${creferences__ref[$key]}"
-          __hbl__Object__add_reference_ "${!obj__ref}" "$key" || return
+          __dbl__Object__add_reference_ "${!obj__ref}" "$key" || return
         done
       fi
     fi
@@ -293,19 +293,19 @@ function __hbl__Class__new_() {
       [function]="${init}"
     )
 
-    __hbl__Object__push_frame_ frame "$@"
+    __dbl__Object__push_frame_ frame "$@"
   else
     return 0
   fi
 }
 
-function __hbl__Class__new() {
+function __dbl__Class__new() {
   [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
 
-  __hbl__Class__new_ "${!this}" "$@"
+  __dbl__Class__new_ "${!this}" "$@"
 }
 
-function __hbl__Class__inspect() {
+function __dbl__Class__inspect() {
   [[ $# -eq 0 ]] || $Error.argument || return
 
   printf "<Class:%s>\n" "${this[__id__]}"

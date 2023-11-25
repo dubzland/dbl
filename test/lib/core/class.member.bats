@@ -28,9 +28,9 @@ teardown() {
 }
 
 @test 'Class#extend() calls .define() to create the class' {
-  stub __hbl__Class__static__define
+  stub __dbl__Class__static__define
   $Object.extend Tester
-  assert_stub_with_args __hbl__Class__static__define Tester
+  assert_stub_with_args __dbl__Class__static__define Tester
 }
 
 @test 'Class#extend() assigns the proper superclass' {
@@ -71,22 +71,22 @@ teardown() {
 @test 'Class#static_method() with insufficient arguments fails' {
   $Class.define Tester
   run $Tester.static_method
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Class#static_method() with a non-function argument fails' {
   $Class.define Tester
   run $Tester.static_method method non_function
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Class#static_reference() calls the object method' {
   $Class.define Tester
-  stub __hbl__Object__add_reference
+  stub __dbl__Object__add_reference
   $Tester.static_reference children
-  assert_stub_with_args __hbl__Object__add_reference Tester children
+  assert_stub_with_args __dbl__Object__add_reference Tester children
 }
 
 @test 'Class#prototype_method() succeeds' {
@@ -135,14 +135,14 @@ teardown() {
 @test 'Class#prototype_method() with insufficient arguments fails' {
   $Class.define Tester
   run $Tester.prototype_method
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Class#prototype_method() with a non-function argument fails' {
   $Class.define Tester
   run $Tester.prototype_method method non_function
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -186,7 +186,7 @@ teardown() {
 @test 'Class#prototype_attribute() with insufficient arguments fails' {
   $Class.define Tester
   run $Tester.prototype_attribute
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -230,7 +230,7 @@ teardown() {
 @test 'Class#prototype_reference() with insufficient arguments fails' {
   $Class.define Tester
   run $Tester.prototype_reference
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

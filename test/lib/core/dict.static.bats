@@ -31,7 +31,7 @@ teardown() {
 # @test 'Dict.get() with insufficient arguments fails' {
 #   run $Dict.get
 
-#   assert_failure $__hbl__rc__argument_error
+#   assert_failure $__dbl__rc__argument_error
 #   refute_output
 # }
 
@@ -41,7 +41,7 @@ teardown() {
 
 #   run $Dict.get dict 'color' myvar
 
-#   assert_failure $__hbl__rc__argument_error
+#   assert_failure $__dbl__rc__argument_error
 #   refute_output
 # }
 
@@ -51,7 +51,7 @@ teardown() {
 
 #   run $Dict.get dict '' myvar
 
-#   assert_failure $__hbl__rc__argument_error
+#   assert_failure $__dbl__rc__argument_error
 #   refute_output
 # }
 
@@ -61,7 +61,7 @@ teardown() {
 
 #   run $Dict.get dict 'color' ''
 
-#   assert_failure $__hbl__rc__argument_error
+#   assert_failure $__dbl__rc__argument_error
 #   refute_output
 # }
 
@@ -85,7 +85,7 @@ teardown() {
 # @test 'Dict.set() with insufficient arguments fails' {
 #   run $Dict.set
 
-#   assert_failure $__hbl__rc__argument_error
+#   assert_failure $__dbl__rc__argument_error
 #   refute_output
 # }
 
@@ -94,7 +94,7 @@ teardown() {
 
 #   run $Dict.set dict 'color' 'red'
 
-#   assert_failure $__hbl__rc__argument_error
+#   assert_failure $__dbl__rc__argument_error
 #   refute_output
 # }
 
@@ -119,7 +119,7 @@ teardown() {
 @test 'Dict.has_key() with insufficient arguments fails' {
   run $Dict.has_key
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -128,7 +128,7 @@ teardown() {
 
   run $Dict.has_key dict 'color'
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -137,7 +137,7 @@ teardown() {
 
   run $Dict.has_key dict ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

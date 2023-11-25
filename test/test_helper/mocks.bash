@@ -19,7 +19,7 @@ function mock_object() {
 	local -n object__ref=$object_id
 
 	for method in "${object_methods__ref[@]}"; do
-		object__ref[$method]="hbl_test__noop"
+		object__ref[$method]="dbl_test__noop"
 	done
 	__mocks+=($object_id)
 }
@@ -68,10 +68,10 @@ function mock_command() {
 	local -n command_id__ref="$command_id_var"
 
 	command_index="${#__mocks[@]}"
-	command_id__ref="__hbl_command_${command_index}"
+	command_id__ref="__dbl_command_${command_index}"
 }
 
-function hbl_test__mock_option() {
+function dbl_test__mock_option() {
 	local option_id
 	option_id="$1"
 	declare -Ag "$option_id"

@@ -182,7 +182,7 @@ function sort_timings() {
 
 function print_timing_data() {
 	local  summary_index summary_key shortened_file prefix
-	prefix="/home/jdubz/code/gitlab/holodekk/hbl/"
+	prefix="/home/jdubz/code/gitlab/dubzland/dbl/"
 
 	printf "%-10s %-10s %-10s %-30s %s\n" \
 		"AVERAGE" "TOTAL" "COUNT" "FILE" "CMD"

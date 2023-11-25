@@ -33,47 +33,47 @@ teardown() {
 @test 'Dict#get() calls the static function' {
   local dict val
 
-  stub __hbl__Dict__static__get_
+  stub __dbl__Dict__static__get_
 
   $Dict.new dict
   $dict.get 'color' val
 
-  assert_stub_with_args __hbl__Dict__static__get_ _anything_ 'color' val
+  assert_stub_with_args __dbl__Dict__static__get_ _anything_ 'color' val
 }
 
 @test 'Dict#get() with insufficient arguments fails' {
   local dict
 
-  stub __hbl__Dict__static__get_
+  stub __dbl__Dict__static__get_
 
   $Dict.new dict
   run $dict.get
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Dict#get() with a blank key fails' {
   local dict val
 
-  stub __hbl__Dict__static__get_
+  stub __dbl__Dict__static__get_
 
   $Dict.new dict
   run $dict.get '' val
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Dict#get() with an empty target variable fails' {
   local dict
 
-  stub __hbl__Dict__static__get_
+  stub __dbl__Dict__static__get_
 
   $Dict.new dict
   run $dict.get 'color' ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -82,7 +82,7 @@ teardown() {
 
   function failure() { return 99; }
 
-  stub __hbl__Dict__static__get_ failure
+  stub __dbl__Dict__static__get_ failure
 
   $Dict.new dict
   run $dict.get 'color' val
@@ -94,35 +94,35 @@ teardown() {
 @test 'Dict#set() calls the static function' {
   local dict
 
-  stub __hbl__Dict__static__set_
+  stub __dbl__Dict__static__set_
 
   $Dict.new dict
   $dict.set 'color' 'red'
 
-  assert_stub_with_args __hbl__Dict__static__set_ _anything_ 'color' 'red'
+  assert_stub_with_args __dbl__Dict__static__set_ _anything_ 'color' 'red'
 }
 
 @test 'Dict#set() with insufficient arguments fails' {
   local dict
 
-  stub __hbl__Dict__static__set_
+  stub __dbl__Dict__static__set_
 
   $Dict.new dict
   run $dict.set
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Dict#set() with a blank key fails' {
   local dict
 
-  stub __hbl__Dict__static__set_
+  stub __dbl__Dict__static__set_
 
   $Dict.new dict
   run $dict.set '' 'red'
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -131,7 +131,7 @@ teardown() {
 
   function failure() { return 99; }
 
-  stub __hbl__Dict__static__set_ failure
+  stub __dbl__Dict__static__set_ failure
 
   $Dict.new dict
   run $dict.set 'color' 'red'
@@ -143,35 +143,35 @@ teardown() {
 @test 'Dict#has_key() calls the static function' {
   local dict
 
-  stub __hbl__Dict__static__has_key_
+  stub __dbl__Dict__static__has_key_
 
   $Dict.new dict
   $dict.has_key 'color'
 
-  assert_stub_with_args __hbl__Dict__static__has_key_ _anything_ 'color'
+  assert_stub_with_args __dbl__Dict__static__has_key_ _anything_ 'color'
 }
 
 @test 'Dict#has_key() with insufficient arguments fails' {
   local dict
 
-  stub __hbl__Dict__static__has_key_
+  stub __dbl__Dict__static__has_key_
 
   $Dict.new dict
   run $dict.has_key
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Dict#has_key() with a blank key fails' {
   local dict
 
-  stub __hbl__Dict__static__has_key_
+  stub __dbl__Dict__static__has_key_
 
   $Dict.new dict
   run $dict.has_key ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -180,7 +180,7 @@ teardown() {
 
   function failure() { return 99; }
 
-  stub __hbl__Dict__static__has_key_ failure
+  stub __dbl__Dict__static__has_key_ failure
 
   $Dict.new dict
   run $dict.has_key 'color'
@@ -218,7 +218,7 @@ teardown() {
   $Dict.new dict
   run $dict.to_associative_array
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -228,7 +228,7 @@ teardown() {
   $Dict.new dict
   run $dict.to_associative_array ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

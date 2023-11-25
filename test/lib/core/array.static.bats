@@ -23,7 +23,7 @@ teardown() {
 
   run $Array.is_array
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -32,7 +32,7 @@ teardown() {
   run $Array.is_array undefined
   set -u
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -41,7 +41,7 @@ teardown() {
 
   run $Array.is_array defined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
@@ -50,7 +50,7 @@ teardown() {
 
   run $Array.is_array defined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
@@ -100,7 +100,7 @@ teardown() {
 
   run $Array.at arr 0
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.at() with a non-array fails' {
@@ -109,7 +109,7 @@ teardown() {
 
   run $Array.at arr 0 val
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.at() with an empty array fails' {
@@ -118,7 +118,7 @@ teardown() {
 
   run $Array.at arr 0 val
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.at() with an invalid index fails' {
@@ -127,7 +127,7 @@ teardown() {
 
   run $Array.at arr 10 val
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.at() with a non-integer index fails' {
@@ -136,7 +136,7 @@ teardown() {
 
   run $Array.at arr 'four' val
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.at() with an empty target variable fails' {
@@ -145,7 +145,7 @@ teardown() {
 
   run $Array.at arr 0 ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.shift() succeeds' {
@@ -188,7 +188,7 @@ teardown() {
 
   run $Array.shift
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -197,7 +197,7 @@ teardown() {
 
   run $Array.shift arr
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -207,7 +207,7 @@ teardown() {
 
   run $Array.shift arr
 
-  assert_failure $__hbl__rc__illegal_instruction
+  assert_failure $__dbl__rc__illegal_instruction
   refute_output
 }
 
@@ -216,7 +216,7 @@ teardown() {
 
   run $Array.shift arr ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.unshift() succeeds' {
@@ -261,7 +261,7 @@ teardown() {
 
   run $Array.unshift arr
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -305,7 +305,7 @@ teardown() {
 
   run $Array.push
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -314,7 +314,7 @@ teardown() {
 
   run $Array.push arr
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array.push() with a non-array fails' {
@@ -322,7 +322,7 @@ teardown() {
 
   run $Array.push arr 'four'
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -365,7 +365,7 @@ teardown() {
 @test 'Array.pop() with insufficient arguments fails' {
   run $Array.pop
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -374,7 +374,7 @@ teardown() {
 
   run $Array.pop arr
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -383,7 +383,7 @@ teardown() {
 
   run $Array.pop arr
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -392,7 +392,7 @@ teardown() {
 
   run $Array.pop arr ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -427,7 +427,7 @@ teardown() {
 @test 'Array.sort() with insufficient arguments fails' {
   run $Array.sort
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -436,7 +436,7 @@ teardown() {
 
   run $Array.sort arr
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -454,14 +454,14 @@ teardown() {
 
   run $Array.contains arr 'four'
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
 @test 'Array.contains() with insufficient arguments fails' {
   run $Array.contains
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -470,7 +470,7 @@ teardown() {
 
   run $Array.contains arr 'two'
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

@@ -14,7 +14,7 @@
 # @exitcode 0 If successful.
 # @exitcode 1 If the argument is not defined
 #
-function __hbl__Util__static__is_defined() {
+function __dbl__Util__static__is_defined() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   declare -p "$1" >/dev/null 2>&1
@@ -31,7 +31,7 @@ function __hbl__Util__static__is_defined() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the argument is not a function.
 #
-function __hbl__Util__static__is_function() {
+function __dbl__Util__static__is_function() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   declare -f -F "$1" >/dev/null 2>&1
@@ -48,7 +48,7 @@ function __hbl__Util__static__is_function() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the argument is not an integer
 #
-function __hbl__Util__static__is_integer() {
+function __dbl__Util__static__is_integer() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   local re='^[+-]?[0-9]+([.][0-9]+)?$'
@@ -67,7 +67,7 @@ function __hbl__Util__static__is_integer() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the argument is not an associative array.
 #
-function __hbl__Util__static__is_associative_array() {
+function __dbl__Util__static__is_associative_array() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   if [[ ${BASH_VERSINFO[0]} -ge 5 && $FORCE_BASH4 -ne 1 ]]; then
@@ -96,7 +96,7 @@ function __hbl__Util__static__is_associative_array() {
 #    size:           large
 #    ^^^^^^^^^^^^^^^^ myarr ^^^^^^^^^^^^^^^^^
 #
-function __hbl__Util__static__dump_associative_array() {
+function __dbl__Util__static__dump_associative_array() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   local name head tail
@@ -104,7 +104,7 @@ function __hbl__Util__static__dump_associative_array() {
   local -i nlen plen hlen tlen
   name="$1" nlen="${#name}" plen=$((40-nlen-2)) hlen=$((plen/2)) tlen=$((plen-hlen))
 
-  __hbl__Util__static__is_defined "$name" || $Error.argument || return
+  __dbl__Util__static__is_defined "$name" || $Error.argument || return
 
   local -n __ref="$name"
 

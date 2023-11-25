@@ -2,33 +2,33 @@
 # @name Object
 # @brief Object related functions
 
-function __hbl__Object__static__generate_id() {
+function __dbl__Object__static__generate_id() {
   local cls
   cls="$1"
   local -n obj_id__ref="$2"
-  obj_id__ref="__hbl__${cls}__${__hbl__object__id}"
-  __hbl__object__id=$((__hbl__object__id+1))
+  obj_id__ref="__dbl__${cls}__${__dbl__object__id}"
+  __dbl__object__id=$((__dbl__object__id+1))
 }
 
-function __hbl__Object__get_id_() {
+function __dbl__Object__get_id_() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
   local -n val__ref="$1"
   val__ref="${this[__id__]}"
 }
 
-function __hbl__Object__get_class_() {
+function __dbl__Object__get_class_() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
   local -n val__ref="$2"
   val__ref="${this[__class__]}"
 }
 
-function __hbl__Object__delegate_to_reference_() {
+function __dbl__Object__delegate_to_reference_() {
   [[ $# -ge 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
-  __hbl__Object__dispatch_ "${this[__ref_$1]}" "$2" "${@:3}"
+  __dbl__Object__dispatch_ "${this[__ref_$1]}" "$2" "${@:3}"
 }
 
-function __hbl__Object__push_frame_() {
+function __dbl__Object__push_frame_() {
   [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
 
   local rc=0
@@ -43,14 +43,14 @@ function __hbl__Object__push_frame_() {
       "${frame__ref[class]}" \
       "${frame__ref[function]}"
 
-    __hbl__stack+=("${frame_str}")
+    __dbl__stack+=("${frame_str}")
     local -n this="${frame__ref[object]}"
 
     # run the function
     ${frame__ref[function]} "$@" || rc=$?
 
     # pop the stack
-    unset __hbl__stack[-1]
+    unset __dbl__stack[-1]
   else
     # static methods don't need anything on the stack
     ${frame__ref[function]} "$@" || rc=$?
@@ -59,7 +59,7 @@ function __hbl__Object__push_frame_() {
   return $rc
 }
 
-function __hbl__Object__dispatch_() {
+function __dbl__Object__dispatch_() {
   [[ $# -ge 2 && -n "$1" && -n "$2" && "$2" =~ ^\. ]] ||
     $Error.argument || return
 
@@ -76,14 +76,14 @@ function __hbl__Object__dispatch_() {
   #   $3: teacher
   #
   # $teacher.set_name 'Jane Smith'
-  #   $1: __hbl__Teacher_0
+  #   $1: __dbl__Teacher_0
   #   $2: .set_name
   #   $3: 'Jane Smith'
   #
   # $teacher.students.push "$student"
-  #   $1: __hbl__Teacher_0
+  #   $1: __dbl__Teacher_0
   #   $2: .students.push
-  #   $3: __hbl__Student_0
+  #   $3: __dbl__Student_0
   #
   local selector lcls lfunc rc
   local -i resolved
@@ -115,12 +115,12 @@ function __hbl__Object__dispatch_() {
     # If .super was invoked (for example, fron within an initializer or member
     # function), we have to be sure we're in a valid context.
     #
-    [[ ${#__hbl__stack[@]} -gt 0 ]] || {
+    [[ ${#__dbl__stack[@]} -gt 0 ]] || {
       printf "no previous function call to execute super.\n";
       $Error.illegal_instruction || return
     }
 
-    pframe=(${__hbl__stack[-1]})
+    pframe=(${__dbl__stack[-1]})
 
     #
     # Make sure super was invoked from the last function we dispatched.
@@ -199,7 +199,7 @@ function __hbl__Object__dispatch_() {
     #
     # Instance method found.  Invoke it.
     #
-    __hbl__Object__push_frame_ frame "$@"
+    __dbl__Object__push_frame_ frame "$@"
     return
   fi
 
@@ -232,7 +232,7 @@ function __hbl__Object__dispatch_() {
     # call the static function
     #
     frame[object]=''
-    __hbl__Object__push_frame_ frame "$@"
+    __dbl__Object__push_frame_ frame "$@"
     return
   fi
 
@@ -247,7 +247,7 @@ function __hbl__Object__dispatch_() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__new() {
+function __dbl__Object__new() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   local id
@@ -257,10 +257,10 @@ function __hbl__Object__new() {
 
   local -n obj__ref="$id"
 
-  obj__ref[0]="__hbl__Object__dispatch_ ${id} "
+  obj__ref[0]="__dbl__Object__dispatch_ ${id} "
   obj__ref[__id__]="$id"
 
-  __hbl__objects+=("${!obj__ref}")
+  __dbl__objects+=("${!obj__ref}")
 
   return 0
 }
@@ -273,7 +273,7 @@ function __hbl__Object__new() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__inspect() {
+function __dbl__Object__inspect() {
   [[ $# -eq 0 ]] || $Error.argument || return
   local -a attrs
   local attr
@@ -281,7 +281,7 @@ function __hbl__Object__inspect() {
   for attr in "${!this[@]}"; do
     attrs+=("$attr")
   done
-  __hbl__Array__static__sort attrs
+  __dbl__Array__static__sort attrs
   for attr in "${attrs[@]}"; do
     [[ "$attr" =~ ^__ || "$attr" = "0" ]] && continue
     printf " %s='%s'" "$attr" "${this[$attr]}"
@@ -289,7 +289,7 @@ function __hbl__Object__inspect() {
   printf ">\n"
 }
 
-function __hbl__Object__has_method_() {
+function __dbl__Object__has_method_() {
   local -n self="$1"
 
   if [[ -v self[__methods__] ]]; then
@@ -311,13 +311,13 @@ function __hbl__Object__has_method_() {
 # @exitcode 0 If the Object instance responds to the method
 # @exitcode 1 If the Object instance does not respond to the method
 #
-function __hbl__Object__has_method() {
+function __dbl__Object__has_method() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  __hbl__Object__has_method_ "${!this}" "$1"
+  __dbl__Object__has_method_ "${!this}" "$1"
 }
 
-function __hbl__Object__add_method_() {
+function __dbl__Object__add_method_() {
   local -n self="$1"
 
   if [[ ! -v self[__methods__] ]]; then
@@ -344,14 +344,14 @@ function __hbl__Object__add_method_() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__add_method() {
+function __dbl__Object__add_method() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
-  __hbl__Util__static__is_function "$2" || $Error.argument || return
+  __dbl__Util__static__is_function "$2" || $Error.argument || return
 
-  __hbl__Object__add_method_ "${!this}" "$1" "$2"
+  __dbl__Object__add_method_ "${!this}" "$1" "$2"
 }
 
-function __hbl__Object__add_getter_() {
+function __dbl__Object__add_getter_() {
   local -n self="$1"
 
   local obj attr getter
@@ -360,10 +360,10 @@ function __hbl__Object__add_getter_() {
   # make getter function
   getter="${self[__id__]}__get_${attr}"
   source /dev/stdin <<-EOF
-${getter}() { __hbl__Object__read_attribute "$attr" "\$1"; };
+${getter}() { __dbl__Object__read_attribute "$attr" "\$1"; };
 EOF
 
-  __hbl__Object__add_method_ "${!self}"  "get_$attr" "$getter"
+  __dbl__Object__add_method_ "${!self}"  "get_$attr" "$getter"
 }
 
 ###############################################################################
@@ -376,13 +376,13 @@ EOF
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__add_getter() {
+function __dbl__Object__add_getter() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  __hbl__Object__add_getter_ "${!this}" "$1"
+  __dbl__Object__add_getter_ "${!this}" "$1"
 }
 
-function __hbl__Object__add_setter_() {
+function __dbl__Object__add_setter_() {
   local -n self="$1"
 
   local obj attr setter
@@ -391,10 +391,10 @@ function __hbl__Object__add_setter_() {
   # make setter function
   setter="${self[__id__]}__set_${attr}"
   source /dev/stdin <<-EOF
-${setter}() { __hbl__Object__write_attribute "${attr}" "\$1"; };
+${setter}() { __dbl__Object__write_attribute "${attr}" "\$1"; };
 EOF
 
-  __hbl__Object__add_method_ "${!self}" "set_${attr}" "${setter}"
+  __dbl__Object__add_method_ "${!self}" "set_${attr}" "${setter}"
 }
 
 ###############################################################################
@@ -407,13 +407,13 @@ EOF
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__add_setter() {
+function __dbl__Object__add_setter() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  __hbl__Object__add_setter_ "${!this}" "$1"
+  __dbl__Object__add_setter_ "${!this}" "$1"
 }
 
-function __hbl__Object__add_reference_() {
+function __dbl__Object__add_reference_() {
   local -n self="$1"
 
   local ref ref_func
@@ -422,10 +422,10 @@ function __hbl__Object__add_reference_() {
   ref_func="${self[__id__]}__ref__${ref}"
 
   source /dev/stdin <<-EOF
-${ref_func}() { __hbl__Object__delegate_to_reference_ "$ref" "\$@"; };
+${ref_func}() { __dbl__Object__delegate_to_reference_ "$ref" "\$@"; };
 EOF
 
-  __hbl__Object__add_method_ "${!self}" "$ref" "$ref_func"
+  __dbl__Object__add_method_ "${!self}" "$ref" "$ref_func"
 }
 
 ###############################################################################
@@ -438,10 +438,10 @@ EOF
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__add_reference() {
+function __dbl__Object__add_reference() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  __hbl__Object__add_reference_ "${!this}" "$1"
+  __dbl__Object__add_reference_ "${!this}" "$1"
 }
 
 ###############################################################################
@@ -455,7 +455,7 @@ function __hbl__Object__add_reference() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__read_attribute() {
+function __dbl__Object__read_attribute() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] ||
     $Error.argument || return
 
@@ -477,7 +477,7 @@ function __hbl__Object__read_attribute() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__write_attribute() {
+function __dbl__Object__write_attribute() {
   [[ $# -eq 2 && -n "$1" ]] || $Error.argument || return
 
   this[$1]="$2"
@@ -485,12 +485,12 @@ function __hbl__Object__write_attribute() {
   return 0
 }
 
-function __hbl__Object__assign_reference_() {
+function __dbl__Object__assign_reference_() {
   local -n self="$1"
 
   local obj_id
 
-  if [[ "$3" =~ ^__hbl__Object__dispatch_ ]]; then
+  if [[ "$3" =~ ^__dbl__Object__dispatch_ ]]; then
     $3._get_id_ obj_id
     self[__ref_$2]="$obj_id"
   else
@@ -510,13 +510,13 @@ function __hbl__Object__assign_reference_() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Object__assign_reference() {
+function __dbl__Object__assign_reference() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
 
-  __hbl__Object__assign_reference_ "${!this}" "$@"
+  __dbl__Object__assign_reference_ "${!this}" "$@"
 }
 
-function __hbl__Object__init() {
+function __dbl__Object__init() {
   return 0
 }
 

@@ -15,7 +15,7 @@ setup() {
 @test 'Command.new() requires a name' {
   local cmd
   run $Command.new cmd ''
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

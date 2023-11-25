@@ -1,31 +1,31 @@
 #!/usr/bin/env bash
 
-function __hbl__Command__init() {
+function __dbl__Command__init() {
   [[ $# -eq 1 && -n "$1" ]]  || $Error.argument || return
 
   local examples options subcommands
 
-  __hbl__Object__init || return
+  __dbl__Object__init || return
   # $this.super || return
 
   this[name]="$1"
   this[description]=""
 
-  __hbl__Class__new_ Array examples    || return
-  __hbl__Class__new_ Dict options      || return
-  __hbl__Class__new_ Array subcommands || return
+  __dbl__Class__new_ Array examples    || return
+  __dbl__Class__new_ Dict options      || return
+  __dbl__Class__new_ Array subcommands || return
 
-  __hbl__Object__assign_reference_ \
+  __dbl__Object__assign_reference_ \
     "${!this}" examples "$examples" || return
-  __hbl__Object__assign_reference_ \
+  __dbl__Object__assign_reference_ \
     "${!this}" options "$options" || return
-  __hbl__Object__assign_reference_ \
+  __dbl__Object__assign_reference_ \
     "${!this}" subcommands "$subcommands" || return
 
   return 0
 }
 
-function __hbl__Command__add_example() {
+function __dbl__Command__add_example() {
   [[ $# -eq 1 && -n "$1" ]]  || $Error.argument || return
 
   $this.examples.push "$1"
@@ -33,7 +33,7 @@ function __hbl__Command__add_example() {
   return 0
 }
 
-function __hbl__Command__add_option() {
+function __dbl__Command__add_option() {
   local opt opt_name options
   opt="$1"
 
@@ -43,13 +43,13 @@ function __hbl__Command__add_option() {
   $this.options.set "$opt_name" "$opt" || return
 }
 
-function __hbl__Command__add_subcommand() {
+function __dbl__Command__add_subcommand() {
   local sub subcommands
 
   $this.subcommands.push "$1"
 }
 
-function __hbl__Command__usage() {
+function __dbl__Command__usage() {
   local command_name example_count i
   local -a command_examples
   command_name="" command_examples=()

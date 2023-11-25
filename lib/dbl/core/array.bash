@@ -2,8 +2,8 @@
 # @name Array
 # @brief A library for interacting with Bash arrays.
 
-function __hbl__Array__static__is_array_() {
-  if [[ ${BASH_VERSINFO[0]} -ge 5 && $__hbl__force_bash4 -ne 1 && -z ${-//[^u]/} ]]; then
+function __dbl__Array__static__is_array_() {
+  if [[ ${BASH_VERSINFO[0]} -ge 5 && $__dbl__force_bash4 -ne 1 && -z ${-//[^u]/} ]]; then
     local -n __ref="$1"
     [[ "${__ref@a}" = *a* ]]
   else
@@ -22,14 +22,14 @@ function __hbl__Array__static__is_array_() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the argument is not an array
 #
-function __hbl__Array__static__is_array() {
+function __dbl__Array__static__is_array() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
-  __hbl__Util__static__is_defined "$1" || $Error.argument || return
+  __dbl__Util__static__is_defined "$1" || $Error.argument || return
 
-  __hbl__Array__static__is_array_ "$@"
+  __dbl__Array__static__is_array_ "$@"
 }
 
-function __hbl__Array__static__at_() {
+function __dbl__Array__static__at_() {
   local -n arr__ref="$1"
   local arr_size=${#arr__ref[@]}
 
@@ -55,15 +55,15 @@ function __hbl__Array__static__at_() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the array item does not exist
 #
-function __hbl__Array__static__at() {
+function __dbl__Array__static__at() {
   [[ $# -eq 3 && -n $1 && -n $2 && -n $3 ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
-  __hbl__Util__static__is_integer "$2" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Util__static__is_integer "$2" || $Error.argument || return
 
-  __hbl__Array__static__at_ "$@"
+  __dbl__Array__static__at_ "$@"
 }
 
-function __hbl__Array__static__shift_() {
+function __dbl__Array__static__shift_() {
   local -n __ref=$1
 
   [[ ${#__ref[@]} -gt 0 ]] ||
@@ -90,17 +90,17 @@ function __hbl__Array__static__shift_() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the array is empty
 #
-function __hbl__Array__static__shift() {
+function __dbl__Array__static__shift() {
   [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
   if [[ $# -gt 1 ]]; then
     [[ $# -eq 2 && -n "$2" ]] || $Error.argument || return
   fi
 
-  __hbl__Array__static__shift_ "$@"
+  __dbl__Array__static__shift_ "$@"
 }
 
-function __hbl__Array__static__unshift_() {
+function __dbl__Array__static__unshift_() {
   local -n __ref=$1; shift
   __ref=("$@" "${__ref[@]}")
 
@@ -119,14 +119,14 @@ function __hbl__Array__static__unshift_() {
 # @exitcode 0 If successful.
 # @exitcode 1 If the array is empty
 #
-function __hbl__Array__static__unshift() {
+function __dbl__Array__static__unshift() {
   [[ $# -ge 2 && -n "$1" ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
 
-  __hbl__Array__static__unshift_ "$@"
+  __dbl__Array__static__unshift_ "$@"
 }
 
-function __hbl__Array__static__push_() {
+function __dbl__Array__static__push_() {
   local -n __ref="$1"; shift
   __ref+=("$@")
 
@@ -144,14 +144,14 @@ function __hbl__Array__static__push_() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Array__static__push() {
+function __dbl__Array__static__push() {
   [[ $# -ge 2 && -n "$1" ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
 
-  __hbl__Array__static__push_ "$@"
+  __dbl__Array__static__push_ "$@"
 }
 
-function __hbl__Array__static__pop_() {
+function __dbl__Array__static__pop_() {
   local -n __ref="$1"; shift
 
   [[ ${#__ref[@]} -gt 0 ]] || $Error.argument || return
@@ -178,17 +178,17 @@ function __hbl__Array__static__pop_() {
 # @exitcode 0 If successful.
 # @exitcode 1 Empty array was passed
 #
-function __hbl__Array__static__pop() {
+function __dbl__Array__static__pop() {
   [[ $# -ge 1 && -n "$1" ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
   if [[ $# -gt 1 ]]; then
     [[ $# -eq 2 && -n "$2" ]] || $Error.argument || return
   fi
 
-  __hbl__Array__static__pop_ "$@"
+  __dbl__Array__static__pop_ "$@"
 }
 
-function __hbl__Array__static__sort_() {
+function __dbl__Array__static__sort_() {
   local -n __ref="$1"
 
   if [[ ${#__ref[@]} -gt 0 ]]; then
@@ -227,14 +227,14 @@ function __hbl__Array__static__sort_() {
 #
 # @exitcode 0 If successful.
 #
-function __hbl__Array__static__sort() {
+function __dbl__Array__static__sort() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
 
-  __hbl__Array__static__sort_ "$@"
+  __dbl__Array__static__sort_ "$@"
 }
 
-function __hbl__Array__static__contains_() {
+function __dbl__Array__static__contains_() {
   local val=""
   local -n __ref="$1"; shift
   [[ ${#__ref[@]} -gt 0 ]] || return 1
@@ -258,15 +258,15 @@ function __hbl__Array__static__contains_() {
 # @exitcode 0 If the value is present
 # @exitcode 1 If the value is not present
 #
-function __hbl__Array__static__contains() {
+function __dbl__Array__static__contains() {
   [[ $# -eq 2 && -n "$1" ]] || $Error.argument || return
-  __hbl__Array__static__is_array_ "$1" || $Error.argument || return
+  __dbl__Array__static__is_array_ "$1" || $Error.argument || return
 
-  __hbl__Array__static__contains_ "$@"
+  __dbl__Array__static__contains_ "$@"
 }
 
-function __hbl__Array__init() {
-  __hbl__Object__init || return
+function __dbl__Array__init() {
+  __dbl__Object__init || return
 
   this[_raw]="${this[__id__]}__raw_array"
   declare -ag "${this[_raw]}"
@@ -275,15 +275,15 @@ function __hbl__Array__init() {
   this[size]=${#_raw[@]}
 }
 
-function __hbl__Array__at() {
+function __dbl__Array__at() {
   [[ $# -eq 2 && -n "$1" && -n "$2" ]] || $Error.argument || return
-  __hbl__Util__static__is_integer "$1" || $Error.argument || return
+  __dbl__Util__static__is_integer "$1" || $Error.argument || return
 
-  __hbl__Array__static__at_ "${this[_raw]}" "$@"
+  __dbl__Array__static__at_ "${this[_raw]}" "$@"
 }
 
-function __hbl__Array__shift() {
-  __hbl__Array__static__shift_ "${this[_raw]}" "$@" || return
+function __dbl__Array__shift() {
+  __dbl__Array__static__shift_ "${this[_raw]}" "$@" || return
 
   local -n _raw="${this[_raw]}"
 
@@ -292,10 +292,10 @@ function __hbl__Array__shift() {
   return 0
 }
 
-function __hbl__Array__unshift() {
+function __dbl__Array__unshift() {
   [[ $# -ge 1 ]] || $Error.argument || return
 
-  __hbl__Array__static__unshift_ "${this[_raw]}" "$@" || return
+  __dbl__Array__static__unshift_ "${this[_raw]}" "$@" || return
 
   local -n _raw="${this[_raw]}"
 
@@ -304,10 +304,10 @@ function __hbl__Array__unshift() {
   return 0
 }
 
-function __hbl__Array__push() {
+function __dbl__Array__push() {
   [[ $# -ge 1 ]] || $Error.argument || return
 
-  __hbl__Array__static__push_ "${this[_raw]}" "$@" || return
+  __dbl__Array__static__push_ "${this[_raw]}" "$@" || return
 
   local -n _raw="${this[_raw]}"
 
@@ -316,8 +316,8 @@ function __hbl__Array__push() {
   return 0
 }
 
-function __hbl__Array__pop() {
-  __hbl__Array__static__pop_ "${this[_raw]}" "$@" || return
+function __dbl__Array__pop() {
+  __dbl__Array__static__pop_ "${this[_raw]}" "$@" || return
 
   local -n _raw="${this[_raw]}"
 
@@ -326,21 +326,21 @@ function __hbl__Array__pop() {
   return 0
 }
 
-function __hbl__Array__sort() {
+function __dbl__Array__sort() {
   [[ $# -eq 0 ]] || $Error.argument || return
 
-  __hbl__Array__static__sort_ "${this[_raw]}" || return
+  __dbl__Array__static__sort_ "${this[_raw]}" || return
 
   return 0
 }
 
-function __hbl__Array__contains() {
+function __dbl__Array__contains() {
   [[ $# -ge 1 ]] || $Error.argument || return
 
-  __hbl__Array__static__contains_ "${this[_raw]}" "$@"
+  __dbl__Array__static__contains_ "${this[_raw]}" "$@"
 }
 
-function __hbl__Array__to_array() {
+function __dbl__Array__to_array() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
   local -n _raw="${this[_raw]}"

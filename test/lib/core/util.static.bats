@@ -21,21 +21,21 @@ teardown() {
 @test 'Util.is_defined() with insufficient arguments fails' {
   run $Util.is_defined
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Util.is_defined() with an undefined variable fails' {
   run $Util.is_defined undefined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
 @test 'Util.is_defined() with an empty variable name fails' {
   run $Util.is_defined ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -51,14 +51,14 @@ teardown() {
 @test 'Util.is_function() with insufficient arguments fails' {
   run $Util.is_function
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Util.is_function() with an undefined variable fails' {
   run $Util.is_function undefined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
@@ -67,14 +67,14 @@ teardown() {
 
   run $Util.is_function defined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
 @test 'Util.is_function() with an empty variable fails' {
   run $Util.is_function ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -90,13 +90,13 @@ teardown() {
 @test 'Util.is_associative_array() with an undefined variable fails' {
   run $Util.is_associative_array undefined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 
   # Try again forcing BASH4 compatability
   FORCE_BASH4=1 run $Util.is_associative_array undefined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
@@ -105,7 +105,7 @@ teardown() {
 
   run $Util.is_associative_array defined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
@@ -114,21 +114,21 @@ teardown() {
 
   run $Util.is_associative_array defined
 
-  assert_failure $__hbl__rc__error
+  assert_failure $__dbl__rc__error
   refute_output
 }
 
 @test 'Util.is_associative_array() with insufficent arguments fails' {
   run $Util.is_associative_array
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Util.is_associative_array() with an empty variable fails' {
   run $Util.is_associative_array ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -157,21 +157,21 @@ teardown() {
 @test 'Util.dump_associative_array() with insufficient arguments fails' {
   run $Util.dump_associative_array
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Util.dump_associative_array() with an empty array name fails' {
   run $Util.dump_associative_array ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
 @test 'Util.dump_associative_array() with a non-array fails' {
   run $Util.dump_associative_array undefined
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

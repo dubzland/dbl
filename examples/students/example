@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "${BASH_SOURCE%/*}/../../lib/hbl.sh" || exit
+source "${BASH_SOURCE%/*}/../../lib/dbl.bash" || exit
 source "${BASH_SOURCE%/*}/person.bash" || exit
 source "${BASH_SOURCE%/*}/teacher.bash" || exit
 source "${BASH_SOURCE%/*}/student.bash" || exit

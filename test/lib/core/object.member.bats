@@ -26,7 +26,7 @@ teardown() {
   $tester.set_color 'red'
   $tester.set_size 'large'
   run $tester.inspect
-  assert_output "<__hbl__Tester__0 color='red' size='large'>"
+  assert_output "<__dbl__Tester__0 color='red' size='large'>"
 }
 
 @test 'Object#read_attribute() succeeds' {
@@ -54,7 +54,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.read_attribute
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -82,7 +82,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.write_attribute
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Object#has_method() for a valid method succeeds' {
@@ -110,7 +110,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.has_method
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -140,7 +140,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.add_method
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -149,7 +149,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.add_method test Tester__undefined
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -179,7 +179,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.add_getter
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -208,7 +208,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.add_setter
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 
@@ -222,13 +222,13 @@ teardown() {
 }
 
 @test 'Object#add_reference() adds a reference accessor' {
-  stub __hbl__Object__delegate_to_reference_
+  stub __dbl__Object__delegate_to_reference_
   local tester
   $Object.extend Tester
   $Tester.new tester
   $tester.add_reference child
   $tester.child.foo
-  assert_stub_with_args __hbl__Object__delegate_to_reference_ child '.foo'
+  assert_stub_with_args __dbl__Object__delegate_to_reference_ child '.foo'
 }
 
 @test 'Object#add_reference() with insufficient arguments fails' {
@@ -236,7 +236,7 @@ teardown() {
   $Object.extend Tester
   $Tester.new tester
   run $tester.add_reference
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
   refute_output
 }
 

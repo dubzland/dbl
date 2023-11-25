@@ -11,7 +11,7 @@ teardown() {
 
 dummy_id() {
   local -n id__ref="$2"
-  id__ref="__hbl__${1}__0"
+  id__ref="__dbl__${1}__0"
 }
 
 @test 'Class.define() succeeds' {
@@ -60,9 +60,9 @@ dummy_id() {
 
 @test 'Class.new() returns the dispatcher' {
   $Class.define Tester
-  stub __hbl__Object__static__generate_id dummy_id
+  stub __dbl__Object__static__generate_id dummy_id
   $Tester.new tester
-  assert_equal "$tester" "__hbl__Object__dispatch_ __hbl__Tester__0 "
+  assert_equal "$tester" "__dbl__Object__dispatch_ __dbl__Tester__0 "
 }
 
 @test 'Class.new() enables prototype methods' {

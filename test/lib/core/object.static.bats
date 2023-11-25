@@ -21,7 +21,7 @@ function obj__test() { return 0; }
 @test 'Object.generate_id() generates an id' {
   local obj_id
   $Object.generate_id Object obj_id
-  [[ "$obj_id" =~ ^__hbl__Object__[0-9] ]]
+  [[ "$obj_id" =~ ^__dbl__Object__[0-9] ]]
 }
 
 @test 'Object.generate_id() generates unique ids' {

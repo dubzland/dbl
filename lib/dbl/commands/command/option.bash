@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-function __hbl__Command__Option__init() {
+function __dbl__Command__Option__init() {
   [[ $# -eq 1 && -n "$1" ]] || $Error.argument || return
 
-  __hbl__Object__init || return
+  __dbl__Object__init || return
 
   this[name]="$1"
   this[type]=""

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-function __hbl__Error__static__argument_error() {
-  return $__hbl__rc__argument_error
+function __dbl__Error__static__argument_error() {
+  return $__dbl__rc__argument_error
 }
 
-function __hbl__Error__static__undefined_method_error() {
-  return $__hbl__rc__undefined_method
+function __dbl__Error__static__undefined_method_error() {
+  return $__dbl__rc__undefined_method
 }
 
-function __hbl__Error__static__illegal_instruction_error() {
-  return $__hbl__rc__illegal_instruction
+function __dbl__Error__static__illegal_instruction_error() {
+  return $__dbl__rc__illegal_instruction
 }
 
 # function Error__static__invocation() {
@@ -84,13 +84,13 @@ function __hbl__Error__static__illegal_instruction_error() {
 #   for ((i = ${#FUNCNAME[@]}-1; i > offset+1; i--)); do
 #     printf "  [%s] %s:%s:in '%s'\n" \
 #       $((i-offset-1)) \
-#       "${BASH_SOURCE[i]/$HBL_LIB/<hbl>}" \
+#       "${BASH_SOURCE[i]/$HBL_LIB/<dbl>}" \
 #       "${BASH_LINENO[i-1]}" \
 #       "${FUNCNAME[i]}" >&2
 #   done
 
 #   printf "%s:%s:in '%s': %s (%s)\n" \
-#     "${BASH_SOURCE[$offset+1]/$HBL_LIB/<hbl>}" \
+#     "${BASH_SOURCE[$offset+1]/$HBL_LIB/<dbl>}" \
 #     "${BASH_LINENO[$offset]}" \
 #     "${FUNCNAME[$offset+1]}" \
 #     "${message}" \
@@ -117,13 +117,13 @@ function __hbl__Error__static__illegal_instruction_error() {
 
 #declare -Ag Error
 #Error=(
-# [0]='__hbl__Class__static__dispatch_ Error '
+# [0]='__dbl__Class__static__dispatch_ Error '
 # [__name]=Error
 # [__base]=Object
 # [__methods]=Error__methods
 #)
 #readonly Error
 
-#__hbl__classes+=('Error')
+#__dbl__classes+=('Error')
 
 # vim: noai:ts=2:sw=2:et

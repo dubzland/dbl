@@ -14,47 +14,47 @@ teardown() {
 @test 'Array#at() calls the static function' {
   local myvar
 
-  stub __hbl__Array__static__at_
+  stub __dbl__Array__static__at_
 
   $arr.at 0 myvar
 
-  assert_stub_with_args __hbl__Array__static__at_ _anything_ 0 myvar
+  assert_stub_with_args __dbl__Array__static__at_ _anything_ 0 myvar
 }
 
 @test 'Array#at() with insufficient arguments fails' {
-  stub __hbl__Array__static__at_
+  stub __dbl__Array__static__at_
 
   run $arr.at
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#at() with an empty index fails' {
   local myvar
 
-  stub __hbl__Array__static__at_
+  stub __dbl__Array__static__at_
 
   run $arr.at '' myvar
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#at() with a non-integer index fails' {
   local myvar
 
-  stub __hbl__Array__static__at_
+  stub __dbl__Array__static__at_
 
   run $arr.at 'var' myvar
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#at() with an empty target variable fails' {
-  stub __hbl__Array__static__at_
+  stub __dbl__Array__static__at_
 
   run $arr.at 0 ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#at() when the static function returns an error fails' {
@@ -62,7 +62,7 @@ teardown() {
 
   function failure() { return 99; }
 
-  stub __hbl__Array__static__at_ failure
+  stub __dbl__Array__static__at_ failure
 
   run $arr.at 0 myvar
 
@@ -72,11 +72,11 @@ teardown() {
 @test 'Array#shift() calls the static function' {
   local myvar
 
-  stub __hbl__Array__static__shift_
+  stub __dbl__Array__static__shift_
 
   $arr.shift myvar
 
-  assert_stub_with_args __hbl__Array__static__shift_ _anything_ myvar
+  assert_stub_with_args __dbl__Array__static__shift_ _anything_ myvar
 }
 
 @test 'Array#shift() updates the size' {
@@ -93,7 +93,7 @@ teardown() {
 
   function failure() { return 99; }
 
-  stub __hbl__Array__static__shift_ failure
+  stub __dbl__Array__static__shift_ failure
 
   run $arr.shift myvar
 
@@ -101,11 +101,11 @@ teardown() {
 }
 
 @test 'Array#unshift() calls the static function' {
-  stub __hbl__Array__static__unshift_
+  stub __dbl__Array__static__unshift_
 
   $arr.unshift 'four'
 
-  assert_stub_with_args __hbl__Array__static__unshift_ _anything_ 'four'
+  assert_stub_with_args __dbl__Array__static__unshift_ _anything_ 'four'
 }
 
 @test 'Array#unshift() updates the size' {
@@ -118,17 +118,17 @@ teardown() {
 }
 
 @test 'Array#unshift() with insufficient arguments fails' {
-  stub __hbl__Array__static__unshift_
+  stub __dbl__Array__static__unshift_
 
   run $arr.unshift
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#unshift() when the static function returns an error fails' {
   function failure() { return 99; }
 
-  stub __hbl__Array__static__unshift_ failure
+  stub __dbl__Array__static__unshift_ failure
 
   run $arr.unshift 'four'
 
@@ -136,11 +136,11 @@ teardown() {
 }
 
 @test 'Array#push() calls the static function' {
-  stub __hbl__Array__static__push_
+  stub __dbl__Array__static__push_
 
   $arr.push 'four'
 
-  assert_stub_with_args __hbl__Array__static__push_ _anything_ 'four'
+  assert_stub_with_args __dbl__Array__static__push_ _anything_ 'four'
 }
 
 @test 'Array#push() updates the size' {
@@ -153,17 +153,17 @@ teardown() {
 }
 
 @test 'Array#push() with insufficient arguments fails' {
-  stub __hbl__Array__static__push_
+  stub __dbl__Array__static__push_
 
   run $arr.push
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#push() when the static function returns an error fails' {
   function failure() { return 99; }
 
-  stub __hbl__Array__static__push_ failure
+  stub __dbl__Array__static__push_ failure
 
   run $arr.push 'four'
 
@@ -173,11 +173,11 @@ teardown() {
 @test 'Array#pop() calls the static function' {
   local myvar
 
-  stub __hbl__Array__static__pop_
+  stub __dbl__Array__static__pop_
 
   $arr.pop myvar
 
-  assert_stub_with_args __hbl__Array__static__pop_ _anything_ myvar
+  assert_stub_with_args __dbl__Array__static__pop_ _anything_ myvar
 }
 
 @test 'Array#pop() updates the size' {
@@ -192,7 +192,7 @@ teardown() {
 @test 'Array#pop() when the static function returns an error fails' {
   function failure() { return 99; }
 
-  stub __hbl__Array__static__pop_ failure
+  stub __dbl__Array__static__pop_ failure
 
   run $arr.pop
 
@@ -200,25 +200,25 @@ teardown() {
 }
 
 @test 'Array#sort() calls the static function' {
-  stub __hbl__Array__static__sort_
+  stub __dbl__Array__static__sort_
 
   $arr.sort
 
-  assert_stub_with_args __hbl__Array__static__sort_ _anything_
+  assert_stub_with_args __dbl__Array__static__sort_ _anything_
 }
 
 @test 'Array#sort() with any arguments fails' {
-  stub __hbl__Array__static__sort_
+  stub __dbl__Array__static__sort_
 
   run $arr.sort ''
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#sort() when the static function returns an error fails' {
   function failure() { return 99; }
 
-  stub __hbl__Array__static__sort_ failure
+  stub __dbl__Array__static__sort_ failure
 
   run $arr.sort
 
@@ -226,25 +226,25 @@ teardown() {
 }
 
 @test 'Array#contains() calls the static function' {
-  stub __hbl__Array__static__contains_
+  stub __dbl__Array__static__contains_
 
   $arr.contains 'two'
 
-  assert_stub_with_args __hbl__Array__static__contains_ _anything_ 'two'
+  assert_stub_with_args __dbl__Array__static__contains_ _anything_ 'two'
 }
 
 @test 'Array#contains() with insufficient arguments fails' {
-  stub __hbl__Array__static__contains_
+  stub __dbl__Array__static__contains_
 
   run $arr.contains
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 @test 'Array#contains() when the static function returns an error fails' {
   function failure() { return 99; }
 
-  stub __hbl__Array__static__contains_ failure
+  stub __dbl__Array__static__contains_ failure
 
   run $arr.contains 'three'
 
@@ -272,7 +272,7 @@ teardown() {
 @test 'Array#to_array() with insufficient arguments fails' {
   run $arr.to_array
 
-  assert_failure $__hbl__rc__argument_error
+  assert_failure $__dbl__rc__argument_error
 }
 
 # vim: ts=2:sw=2:expandtab

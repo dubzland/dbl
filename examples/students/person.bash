@@ -17,8 +17,8 @@ function Person__say_hello() {
 }
 
 $Object.extend Person
-  $Person.attribute id  $((__hbl__attr__getter | __hbl__attr__setter))
-  $Person.attribute name $((__hbl__attr__getter | __hbl__attr__setter))
+  $Person.attribute id  $((__dbl__attr__getter | __dbl__attr__setter))
+  $Person.attribute name $((__dbl__attr__getter | __dbl__attr__setter))
 
   $Person.method __init    Person__init
   $Person.method say_hello Person__say_hello

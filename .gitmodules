@@ -7,6 +7,6 @@
 [submodule "test/test_helper/bats-assert"]
 	path = test/test_helper/bats-assert
 	url = https://github.com/bats-core/bats-assert.git
-[submodule "test/test_helper/hbl-stubs"]
-	path = test/test_helper/hbl-stubs
-	url = https://git.dubzland.net/holodekk/hbl-stubs.git
+[submodule "test/test_helper/dbl-stubs"]
+	path = test/test_helper/dbl-stubs
+	url = git@git.dubzland.com:dubzland/dbl-stubs.git
